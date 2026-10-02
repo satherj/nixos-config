@@ -1,1 +1,4 @@
 result
+# local backups / empty leftovers, not part of the config
+dotfiles/niri/config.kdl.pre-quickshell
+dotfiles/ghostty/config.ghostty

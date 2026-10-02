@@ -112,6 +112,11 @@
   systemd.tmpfiles.rules = [
     "w /sys/class/power_supply/BAT0/charge_control_start_threshold - - - - 75"
     "w /sys/class/power_supply/BAT0/charge_control_end_threshold - - - - 80"
+    # Dotfiles live in this repo (./dotfiles) and are symlinked into ~/.config, so they stay
+    # live-editable (niri hot-reloads) while being versioned. `L` never clobbers an existing path.
+    "L /home/jonathans/.config/niri - - - - /home/jonathans/nixos-staging/dotfiles/niri"
+    "L /home/jonathans/.config/ghostty - - - - /home/jonathans/nixos-staging/dotfiles/ghostty"
+    "L /home/jonathans/.config/gtk-3.0/settings.ini - - - - /home/jonathans/nixos-staging/dotfiles/gtk-3.0/settings.ini"
   ];
 
   # Firmware updates from LVFS (BIOS/EC/NVMe): `fwupdmgr refresh && fwupdmgr update`
@@ -127,6 +132,8 @@
     options = "--delete-older-than 14d";
   };
   nix.settings.auto-optimise-store = true;
+  # This config is a flake (flake.nix pins nixpkgs); `nix-shell -p` / `nix run nixpkgs#…` follow the same pin
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
@@ -170,19 +177,18 @@
     fastfetch
     # chat (Electron; runs on Wayland via NIXOS_OZONE_WL)
     slack
-    # `nixos-apply`: copy ~/nixos-staging into /etc/nixos, rebuild, push to GitHub, restart quickshell
+    # `nixos-apply`: rebuild from the ~/nixos-staging flake, push to GitHub, restart quickshell
     # `nixos-apply -l` also signs you out afterwards, for changes that need a fresh session
     (writeShellScriptBin "nixos-apply" ''
       set -e
-      sudo cp "$HOME"/nixos-staging/{configuration.nix,helium.nix} /etc/nixos/
-      # --delete so files removed from staging don't linger in the deployed shell
-      sudo ${rsync}/bin/rsync -a --delete "$HOME"/nixos-staging/quickshell/ /etc/nixos/quickshell/
-      sudo nixos-rebuild switch
+      cd "$HOME"/nixos-staging
+      # Flakes only see files git knows about, so pick up new ones before building
+      git add -A
+      # Builds as you, only activation runs through sudo (root can't read a user-owned git repo cleanly)
+      nixos-rebuild switch --flake .#nixos --sudo
       # Publish what was just deployed to github.com/satherj/nixos-config (public!).
       # gitleaks scans the staged changes first; anything that looks like a secret blocks the sync.
       (
-        cd "$HOME"/nixos-staging
-        git add -A
         if ! ${gitleaks}/bin/gitleaks git --pre-commit --staged --no-banner --log-level warn .; then
           git reset -q
           echo "⚠ gitleaks flagged something above, not syncing to GitHub"
