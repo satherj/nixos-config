@@ -1,5 +1,28 @@
 # nixos-config
 
+```
+          ▗▄▄▄       ▗▄▄▄▄    ▄▄▄▖
+          ▜███▙       ▜███▙  ▟███▛
+           ▜███▙       ▜███▙▟███▛
+            ▜███▙       ▜██████▛               jonathans@nixos
+     ▟█████████████████▙ ▜████▛     ▟▙         ───────────────
+    ▟███████████████████▙ ▜███▙    ▟██▙        OS       NixOS 26.05 (Yarara)
+           ▄▄▄▄▖           ▜███▙  ▟███▛        Host     ThinkPad T14 Gen 1 AMD
+          ▟███▛             ▜██▛ ▟███▛         CPU      Ryzen 5 PRO 4650U
+         ▟███▛               ▜▛ ▟███▛          WM       niri, scrollable tiling
+▟███████████▛                  ▟██████████▙    Desktop  Quickshell, hand-rolled QML
+▜██████████▛                  ▟███████████▛    Login    greetd + tuigreet
+      ▟███▛ ▟▙               ▟███▛             Term     ghostty + fish
+     ▟███▛ ▟██▙             ▟███▛              Browser  Helium
+    ▟███▛  ▜███▙           ▝▀▀▀▀               Theme    Catppuccin Mocha
+    ▜██▛    ▜███▙ ▜██████████████████▛         Font     Maple Mono NF / Inter
+     ▜▛     ▟████▙ ▜████████████████▛          Flakes   nope, one configuration.nix
+           ▟██████▙         ▜███▙
+          ▟███▛▜███▙         ▜███▙             (btw i use nixos)
+         ▟███▛  ▜███▙         ▜███▙
+         ▝▀▀▀    ▀▀▀▀▘         ▀▀▀▘
+```
+
 My NixOS setup on a ThinkPad T14 Gen 1 (AMD). Plain `configuration.nix`, no flakes or home-manager.
 
 - **Compositor:** [niri](https://github.com/YaLTeR/niri), with greetd + tuigreet for login
