@@ -1,29 +1,6 @@
 # nixos-config
 
-```
-          ▗▄▄▄       ▗▄▄▄▄    ▄▄▄▖
-          ▜███▙       ▜███▙  ▟███▛
-           ▜███▙       ▜███▙▟███▛
-            ▜███▙       ▜██████▛               jonathans@nixos
-     ▟█████████████████▙ ▜████▛     ▟▙         ───────────────
-    ▟███████████████████▙ ▜███▙    ▟██▙        OS       NixOS 26.05 (Yarara)
-           ▄▄▄▄▖           ▜███▙  ▟███▛        Host     ThinkPad T14 Gen 1 AMD
-          ▟███▛             ▜██▛ ▟███▛         CPU      Ryzen 5 PRO 4650U
-         ▟███▛               ▜▛ ▟███▛          WM       niri, scrollable tiling
-▟███████████▛                  ▟██████████▙    Desktop  Quickshell, hand-rolled QML
-▜██████████▛                  ▟███████████▛    Login    greetd + tuigreet
-      ▟███▛ ▟▙               ▟███▛             Term     ghostty + fish
-     ▟███▛ ▟██▙             ▟███▛              Browser  Helium
-    ▟███▛  ▜███▙           ▝▀▀▀▀               Theme    Catppuccin Mocha
-    ▜██▛    ▜███▙ ▜██████████████████▛         Font     Maple Mono NF / Inter
-     ▜▛     ▟████▙ ▜████████████████▛          Config   flake, nixpkgs pinned
-           ▟██████▙         ▜███▙
-          ▟███▛▜███▙         ▜███▙             (btw i use nixos)
-         ▟███▛  ▜███▙         ▜███▙
-         ▝▀▀▀    ▀▀▀▀▘         ▀▀▀▘
-```
-
-My NixOS setup on a ThinkPad T14 Gen 1 (AMD). A small flake around one `configuration.nix`, no home-manager: dotfiles in [`dotfiles/`](dotfiles) are symlinked into `~/.config` so they stay live-editable.
+My NixOS setup. A small flake around one `configuration.nix`, no home-manager: dotfiles in [`dotfiles/`](dotfiles) are symlinked into `~/.config` so they stay live-editable.
 
 - **Compositor:** [niri](https://github.com/YaLTeR/niri), with greetd + tuigreet for login
 - **Shell:** a custom [Quickshell](https://quickshell.org) desktop in [`quickshell/`](quickshell): bar, wifi/bluetooth/audio/battery panels, launcher, notifications, OSD, lock screen, polkit dialog and wallpaper picker, all Catppuccin Mocha

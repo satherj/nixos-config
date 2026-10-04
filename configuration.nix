@@ -175,8 +175,6 @@
     # files: yazi (TUI) + thunar (GUI, programs.thunar below)
     yazi lazygit
     fastfetch
-    # chat (Electron; runs on Wayland via NIXOS_OZONE_WL)
-    slack
     # `nixos-apply`: rebuild from the ~/nixos-staging flake, push to GitHub, restart quickshell
     # `nixos-apply -l` also signs you out afterwards, for changes that need a fresh session
     (writeShellScriptBin "nixos-apply" ''
@@ -249,7 +247,11 @@
         c = "C-insert";
         v = "S-insert";
         x = "S-delete";
+        a = "C-a"; # select all (no Insert-style alternative exists)
+        z = "C-z"; # undo (no Insert-style alternative exists)
       };
+      # Composite layer: Super+Shift held. Paste without formatting = Ctrl+Shift+V.
+      settings."meta+shift".v = "C-S-v";
     };
   };
 

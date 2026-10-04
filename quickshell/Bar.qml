@@ -2,11 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Widgets
 import Quickshell.Bluetooth
 import Quickshell.Networking
 import Quickshell.Services.Pipewire
-import Quickshell.Services.SystemTray
 import Quickshell.Services.UPower
 
 PanelWindow {
@@ -164,38 +162,6 @@ PanelWindow {
             fg: Battery.charging ? Theme.green : pct <= 10 ? Theme.red : pct <= 25 ? Theme.yellow : Theme.text
             active: UiState.panel === "battery" && UiState.screen === bar.screen
             onClicked: UiState.toggle("battery", bar.screen)
-        }
-
-        Repeater {
-            model: SystemTray.items
-
-            Item {
-                id: trayItem
-                required property var modelData
-                implicitWidth: 28
-                implicitHeight: Theme.barHeight - 8
-
-                IconImage {
-                    anchors.centerIn: parent
-                    implicitSize: 16
-                    source: trayItem.modelData.icon
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: m => {
-                        const item = trayItem.modelData;
-                        if (m.button === Qt.LeftButton && !item.onlyMenu) {
-                            item.activate();
-                        } else if (item.hasMenu) {
-                            const p = trayItem.mapToItem(null, 0, trayItem.height);
-                            item.display(bar, p.x, p.y + 8);
-                        }
-                    }
-                }
-            }
         }
 
         // Control center: toggles, sliders, night light, media, power

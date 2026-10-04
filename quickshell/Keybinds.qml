@@ -135,7 +135,10 @@ Singleton {
     readonly property var systemWide: [
         { title: "Copy", category: "System-wide (keyd)", combos: [["Super", "C"]], run: null },
         { title: "Paste", category: "System-wide (keyd)", combos: [["Super", "V"]], run: null },
-        { title: "Cut", category: "System-wide (keyd)", combos: [["Super", "X"]], run: null }
+        { title: "Paste unformatted", category: "System-wide (keyd)", combos: [["Super", "Shift", "V"]], run: null },
+        { title: "Cut", category: "System-wide (keyd)", combos: [["Super", "X"]], run: null },
+        { title: "Select all", category: "System-wide (keyd)", combos: [["Super", "A"]], run: null },
+        { title: "Undo", category: "System-wide (keyd)", combos: [["Super", "Z"]], run: null }
     ]
 
     FileView {
