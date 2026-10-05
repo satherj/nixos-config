@@ -166,6 +166,14 @@ ColumnLayout {
             on: UiState.dnd
             onToggled: UiState.dnd = !UiState.dnd
         }
+        Tile {
+            Layout.columnSpan: 2
+            icon: "󰍹"
+            title: "Displays"
+            subtitle: Displays.multiple ? Displays.outputs.length + " monitors" : "scale · resolution · arrangement"
+            on: false
+            onToggled: UiState.toggle("displays", UiState.screen)
+        }
     }
 
     // Wallpaper: click opens the picker, the trailing button toggles shuffle

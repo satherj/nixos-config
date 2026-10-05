@@ -111,7 +111,7 @@ Scope {
         }
         // Actions only show up once you start typing
         const apps = Array.from(DesktopEntries.applications.values).filter(e => !e.noDisplay);
-        return (q === "" ? apps : apps.concat(modeActions, Capture.actions, Power.actions, Wallpaper.actions))
+        return (q === "" ? apps : apps.concat(modeActions, Displays.actions, Capture.actions, Power.actions, Wallpaper.actions))
             .map(e => ({ entry: e, score: score(e, q) }))
             .filter(r => r.score > 0)
             .sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name))

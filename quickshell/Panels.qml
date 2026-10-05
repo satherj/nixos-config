@@ -94,7 +94,7 @@ Variants {
                 anchors.right: parent.right
                 anchors.margins: 16
                 active: win.visible
-                sourceComponent: win.shown === "wifi" ? wifi : win.shown === "bluetooth" ? bluetooth : win.shown === "battery" ? battery : win.shown === "audio" ? audio : win.shown === "control" ? control : win.shown === "capture" ? capture : win.shown === "calendar" ? calendar : null
+                sourceComponent: win.shown === "wifi" ? wifi : win.shown === "bluetooth" ? bluetooth : win.shown === "battery" ? battery : win.shown === "audio" ? audio : win.shown === "control" ? control : win.shown === "capture" ? capture : win.shown === "calendar" ? calendar : win.shown === "displays" ? displays : null
             }
 
             Component {
@@ -124,6 +124,10 @@ Variants {
             Component {
                 id: calendar
                 CalendarPanel {}
+            }
+            Component {
+                id: displays
+                DisplaysPanel {}
             }
         }
     }

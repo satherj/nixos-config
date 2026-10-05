@@ -644,6 +644,11 @@ binds {
     // Powers off the monitors. To turn them back on, do any input like
     // moving the mouse or pressing any other key.
     Mod+Shift+P { power-off-monitors; }
+    // Toggle mirroring the laptop screen fullscreen onto the external monitor.
+    Mod+Shift+D { spawn "sh" "-c" "pkill -x wl-mirror || wl-mirror --fullscreen-output HDMI-A-1 eDP-1"; }
+    // Send the focused window (column) to the other monitor.
+    Mod+X { move-column-to-monitor-next; }
+    Mod+Y { focus-monitor-next; }
 }
 
 // Rounded corners on every window
@@ -660,3 +665,6 @@ window-rule {
     default-window-height { fixed 420; }
     default-floating-position x=12 y=48 relative-to="top-right"
 }
+
+// Per-monitor scale/mode/position, managed by the Quickshell Displays panel (untracked file)
+include "outputs.kdl"

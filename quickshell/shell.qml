@@ -83,5 +83,8 @@ ShellRoot {
     PolkitDialog {}
 
     // Touch the Lock singleton at startup so PAM and the session lock are ready before the first lock
-    Component.onCompleted: Lock.locked
+    Component.onCompleted: {
+        Lock.locked;
+        Displays.outputs;
+    }
 }

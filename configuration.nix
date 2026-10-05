@@ -161,7 +161,9 @@
   environment.systemPackages = with pkgs; [
     # niri essentials; quickshell is the bar, launcher and notification daemon (see below)
     # swaylock stays only as an emergency fallback if the quickshell lock screen ever breaks
-    ghostty quickshell swaylock swayidle xwayland-satellite
+    ghostty quickshell swaylock swayidle xwayland-satellite wl-mirror
+    # chat (Electron; runs on Wayland via NIXOS_OZONE_WL)
+    slack
     # wlsunset = night light (driven by quickshell), playerctl = media keys in niri;
     # the wallpaper is drawn by quickshell too (no swaybg)
     wlsunset playerctl
