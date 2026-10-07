@@ -70,6 +70,14 @@
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   services.tailscale.enable = true;
+  # Without resolved, tailscaled is the only entry in resolv.conf and returns
+  # SERVFAIL ("no upstream resolvers set") whenever wifi flaps and NM's DNS is
+  # briefly dropped. resolved keeps per-link DNS and fallbacks stable.
+  services.resolved = {
+    enable = true;
+    fallbackDns = [ "1.1.1.1" "9.9.9.9" ];
+  };
+  networking.networkmanager.dns = "systemd-resolved";
   programs.zoxide.enable = true;  # `z <dir>` jumps to frecent directories
 
   fonts.packages = with pkgs; [
@@ -117,6 +125,7 @@
     "L /home/jonathans/.config/niri - - - - /home/jonathans/nixos-staging/dotfiles/niri"
     "L /home/jonathans/.config/ghostty - - - - /home/jonathans/nixos-staging/dotfiles/ghostty"
     "L /home/jonathans/.config/gtk-3.0/settings.ini - - - - /home/jonathans/nixos-staging/dotfiles/gtk-3.0/settings.ini"
+    "L /home/jonathans/.config/zathura - - - - /home/jonathans/nixos-staging/dotfiles/zathura"
   ];
 
   # Firmware updates from LVFS (BIOS/EC/NVMe): `fwupdmgr refresh && fwupdmgr update`
@@ -209,6 +218,10 @@
     # files & cloud: rclone mounts Proton Drive (rclone config -> "protondrive")
     rsync rclone
     fzf
+    # office: lightweight word processor + spreadsheet (docx/xlsx)
+    abiword gnumeric
+    # PDF viewer (mupdf backend); themed in dotfiles/zathura, default for .pdf via xdg.mime below
+    (zathura.override { plugins = [ zathuraPkgs.zathura_pdf_mupdf ]; })
     # dev tooling
     mise git gh curl unzip
     # browser (not in nixpkgs, see helium.nix)
@@ -225,6 +238,7 @@
     enable = true;
     plugins = with pkgs; [ thunar-archive-plugin thunar-volman ];
   };
+  xdg.mime.defaultApplications."application/pdf" = "org.pwmt.zathura.desktop";
   services.gvfs.enable = true;
   services.tumbler.enable = true;
 
