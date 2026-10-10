@@ -167,12 +167,18 @@ ColumnLayout {
             onToggled: UiState.dnd = !UiState.dnd
         }
         Tile {
-            Layout.columnSpan: 2
             icon: "󰍹"
             title: "Displays"
-            subtitle: Displays.multiple ? Displays.outputs.length + " monitors" : "scale · resolution · arrangement"
+            subtitle: Displays.multiple ? Displays.outputs.length + " monitors" : "scale · layout"
             on: false
             onToggled: UiState.toggle("displays", UiState.screen)
+        }
+        Tile {
+            icon: "󰘖"
+            title: "Auto-hide bar"
+            subtitle: UiState.barAutoHide ? "on" : "off"
+            on: UiState.barAutoHide
+            onToggled: UiState.barAutoHide = !UiState.barAutoHide
         }
     }
 

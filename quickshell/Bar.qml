@@ -19,12 +19,17 @@ PanelWindow {
         right: true
     }
     margins {
-        top: Theme.barMargin
         left: Theme.gap
         right: Theme.gap
     }
-    implicitHeight: Theme.barHeight
+    // The window spans the bar plus its top margin and the pills slide inside it. Hidden, only a
+    // thin strip at the screen edge takes input, so the rest of the area stays click-through.
+    implicitHeight: Theme.barMargin + Theme.barHeight
+    exclusionMode: UiState.barAutoHide ? ExclusionMode.Ignore : ExclusionMode.Auto
     color: "transparent"
+    mask: Region {
+        item: hotZone
+    }
     WlrLayershell.namespace: "quickshell-bar"
 
     readonly property var sink: Pipewire.defaultAudioSink
@@ -36,11 +41,42 @@ PanelWindow {
         objects: [bar.sink]
     }
 
+    // Auto-hide: revealed while hovered or while one of its panels is open, and briefly after the
+    // pointer leaves so an overshooting move does not make it flicker away
+    readonly property bool revealed: !UiState.barAutoHide || hover.hovered || hold.running || (UiState.panel !== "" && UiState.screen === screen)
+    property real slideY: revealed ? Theme.barMargin : -Theme.barHeight
+
+    Behavior on slideY {
+        NumberAnimation {
+            duration: bar.revealed ? Theme.durDropdown : Theme.durDropdownExit
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.easeOut
+        }
+    }
+
+    HoverHandler {
+        id: hover
+        onHoveredChanged: if (!hovered)
+            hold.restart()
+    }
+
+    Timer {
+        id: hold
+        interval: 350
+    }
+
+    Item {
+        id: hotZone
+        width: bar.width
+        height: bar.slideY <= -Theme.barHeight + 1 ? 2 : bar.implicitHeight
+    }
+
     component Pill: Rectangle {
         default property alias content: row.data
         color: Theme.base
         radius: Theme.radius
         implicitHeight: Theme.barHeight
+        y: bar.slideY
         // Same 4px padding on every side as above/below the buttons, so the 8px button corners
         // sit concentric inside the 12px pill corners (12 - 4 = 8)
         implicitWidth: row.implicitWidth + 8

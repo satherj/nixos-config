@@ -17,6 +17,15 @@ ShellRoot {
         }
     }
 
+    // `qs ipc -p /etc/quickshell call bar autohide on|off|toggle`
+    IpcHandler {
+        target: "bar"
+
+        function autohide(mode: string): void {
+            UiState.barAutoHide = mode === "toggle" ? !UiState.barAutoHide : mode === "on";
+        }
+    }
+
     // `qs ipc -p /etc/quickshell call brightness step 5` / `... set 40` (percent)
     IpcHandler {
         target: "brightness"
