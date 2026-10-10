@@ -125,8 +125,25 @@
     "L /home/jonathans/.config/niri - - - - /home/jonathans/nixos-staging/dotfiles/niri"
     "L /home/jonathans/.config/ghostty - - - - /home/jonathans/nixos-staging/dotfiles/ghostty"
     "L /home/jonathans/.config/gtk-3.0/settings.ini - - - - /home/jonathans/nixos-staging/dotfiles/gtk-3.0/settings.ini"
+    "L /home/jonathans/.config/gtk-3.0/bookmarks - - - - /home/jonathans/nixos-staging/dotfiles/gtk-3.0/bookmarks"
     "L /home/jonathans/.config/zathura - - - - /home/jonathans/nixos-staging/dotfiles/zathura"
   ];
+
+  # Proton Drive: mounted at ~/ProtonDrive via rclone (remote "protondrive", set up with `rclone config`)
+  # and shown in Thunar's Places through dotfiles/gtk-3.0/bookmarks.
+  systemd.user.services.rclone-protondrive = {
+    description = "Mount Proton Drive (rclone)";
+    wantedBy = [ "default.target" ];
+    path = [ "/run/wrappers" ];  # rclone shells out to the setuid fusermount3 in /run/wrappers/bin
+    serviceConfig = {
+      Type = "notify";
+      ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p %h/ProtonDrive";
+      ExecStart = "${pkgs.rclone}/bin/rclone mount protondrive: %h/ProtonDrive --vfs-cache-mode full --dir-cache-time 5m";
+      ExecStop = "/run/wrappers/bin/fusermount3 -uz %h/ProtonDrive";
+      Restart = "on-failure";
+      RestartSec = 15;
+    };
+  };
 
   # Firmware updates from LVFS (BIOS/EC/NVMe): `fwupdmgr refresh && fwupdmgr update`
   services.fwupd.enable = true;
@@ -203,7 +220,13 @@
           echo "⚠ gitleaks flagged something above, not syncing to GitHub"
           exit 0
         fi
-        { git diff --cached --quiet || git commit -qm "nixos-apply $(date '+%F %R')"; } && git push -q
+        git diff --cached --quiet || git commit -qm "nixos-apply $(date '+%F %R')"
+        # Retry the push (also sends any earlier unpushed commits) so a Wi-Fi/DNS blip doesn't lose the sync
+        for i in 1 2 3 4 5 6; do
+          git push -q && exit 0
+          [[ $i -lt 6 ]] && { echo "git push failed, retrying in 5s ($i/6)…"; sleep 5; }
+        done
+        exit 1
       ) || echo "⚠ Config sync to GitHub failed (try git push in ~/nixos-staging)"
       if [[ "$1" == "-l" || "$1" == "--logout" ]]; then
         echo "Signing out in 3s (Ctrl+C to stay)…"
