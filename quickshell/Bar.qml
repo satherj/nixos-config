@@ -162,13 +162,6 @@ PanelWindow {
         }
 
         BarButton {
-            visible: Brightness.available
-            text: Brightness.icon + " " + Math.round(Brightness.value * 100) + "%"
-            onClicked: UiState.toggle("control", bar.screen)
-            onScrolled: w => Brightness.step(w.angleDelta.y > 0 ? 0.05 : -0.05)
-        }
-
-        BarButton {
             readonly property real vol: bar.sink?.audio?.volume ?? 0
             readonly property bool muted: bar.sink?.audio?.muted ?? false
             text: muted ? "󰝟 muted" : ["󰕿", "󰖀", "󰕾"][Math.min(2, Math.floor(vol * 3))] + " " + Math.round(vol * 100) + "%"
