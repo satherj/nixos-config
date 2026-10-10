@@ -162,25 +162,6 @@ PanelWindow {
         }
 
         BarButton {
-            readonly property real vol: bar.sink?.audio?.volume ?? 0
-            readonly property bool muted: bar.sink?.audio?.muted ?? false
-            text: muted ? "󰝟 muted" : ["󰕿", "󰖀", "󰕾"][Math.min(2, Math.floor(vol * 3))] + " " + Math.round(vol * 100) + "%"
-            active: UiState.panel === "audio" && UiState.screen === bar.screen
-            fg: muted ? Theme.overlay0 : Theme.text
-            onClicked: m => {
-                if (m.button === Qt.RightButton)
-                    bar.sink.audio.muted = !muted;
-                else
-                    UiState.toggle("audio", bar.screen);
-            }
-            onScrolled: w => {
-                if (!bar.sink?.audio)
-                    return;
-                bar.sink.audio.volume = Math.max(0, Math.min(1, vol + (w.angleDelta.y > 0 ? 0.05 : -0.05)));
-            }
-        }
-
-        BarButton {
             readonly property bool on: bar.adapter?.enabled ?? false
             text: !on ? "󰂲" : bar.btConnected.length > 0 ? "󰂱 " + bar.btConnected[0].name : "󰂯"
             fg: on ? Theme.text : Theme.overlay0
@@ -202,6 +183,25 @@ PanelWindow {
                     Networking.wifiEnabled = !Networking.wifiEnabled;
                 else
                     UiState.toggle("wifi", bar.screen);
+            }
+        }
+
+        BarButton {
+            readonly property real vol: bar.sink?.audio?.volume ?? 0
+            readonly property bool muted: bar.sink?.audio?.muted ?? false
+            text: muted ? "󰝟 muted" : ["󰕿", "󰖀", "󰕾"][Math.min(2, Math.floor(vol * 3))] + " " + Math.round(vol * 100) + "%"
+            active: UiState.panel === "audio" && UiState.screen === bar.screen
+            fg: muted ? Theme.overlay0 : Theme.text
+            onClicked: m => {
+                if (m.button === Qt.RightButton)
+                    bar.sink.audio.muted = !muted;
+                else
+                    UiState.toggle("audio", bar.screen);
+            }
+            onScrolled: w => {
+                if (!bar.sink?.audio)
+                    return;
+                bar.sink.audio.volume = Math.max(0, Math.min(1, vol + (w.angleDelta.y > 0 ? 0.05 : -0.05)));
             }
         }
 
