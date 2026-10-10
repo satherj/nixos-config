@@ -25,6 +25,8 @@ Singleton {
     readonly property int barHeight: 34
     readonly property int barMargin: 6
     readonly property int gap: 12
+    // Space the bar occupies from the top edge (auto-hide adds a bottom margin for its backdrop)
+    readonly property int barExtent: barMargin + barHeight + (UiState.barAutoHide ? barMargin : 0)
     readonly property int radius: 12
 
     // One discreet border for every surface; niri's focused-window border uses the same values

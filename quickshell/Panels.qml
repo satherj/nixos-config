@@ -32,7 +32,7 @@ Variants {
             left: true
             right: true
         }
-        margins.top: Theme.barMargin + Theme.barHeight
+        margins.top: Theme.barExtent
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
         WlrLayershell.layer: WlrLayer.Overlay

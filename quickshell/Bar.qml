@@ -18,13 +18,15 @@ PanelWindow {
         left: true
         right: true
     }
+    // Auto-hide mode: a full-width band (pills inset by the gap); otherwise floating pills
+    readonly property int inset: UiState.barAutoHide ? Theme.gap : 0
     margins {
-        left: Theme.gap
-        right: Theme.gap
+        left: UiState.barAutoHide ? 0 : Theme.gap
+        right: UiState.barAutoHide ? 0 : Theme.gap
     }
-    // The window spans the bar plus its top margin and the pills slide inside it. Hidden, only a
-    // thin strip at the screen edge takes input, so the rest of the area stays click-through.
-    implicitHeight: Theme.barMargin + Theme.barHeight
+    // The window spans the whole bar and the band slides inside it. Hidden, only a thin strip at the
+    // screen edge takes input, so the rest of the area stays click-through.
+    implicitHeight: Theme.barExtent
     exclusionMode: UiState.barAutoHide ? ExclusionMode.Ignore : ExclusionMode.Auto
     color: "transparent"
     mask: Region {
@@ -44,7 +46,8 @@ PanelWindow {
     // Auto-hide: revealed while hovered or while one of its panels is open, and briefly after the
     // pointer leaves so an overshooting move does not make it flicker away
     readonly property bool revealed: !UiState.barAutoHide || hover.hovered || hold.running || (UiState.panel !== "" && UiState.screen === screen)
-    property real slideY: revealed ? Theme.barMargin : -Theme.barHeight
+    // Top edge of the band: 0 shown, -implicitHeight hidden
+    property real slideY: revealed ? 0 : -implicitHeight
 
     Behavior on slideY {
         NumberAnimation {
@@ -65,18 +68,34 @@ PanelWindow {
         interval: 350
     }
 
+    // Full-width backdrop while auto-hide is on, so the bar reads clearly over windows
+    Rectangle {
+        visible: UiState.barAutoHide
+        y: bar.slideY
+        width: bar.width
+        height: bar.implicitHeight
+        color: Theme.base
+
+        Rectangle {
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: Theme.borderWidth
+            color: Theme.border
+        }
+    }
+
     Item {
         id: hotZone
         width: bar.width
-        height: bar.slideY <= -Theme.barHeight + 1 ? 2 : bar.implicitHeight
+        height: bar.slideY <= -bar.implicitHeight + 1 ? 2 : bar.implicitHeight
     }
 
     component Pill: Rectangle {
         default property alias content: row.data
-        color: Theme.base
+        color: UiState.barAutoHide ? "transparent" : Theme.base
         radius: Theme.radius
         implicitHeight: Theme.barHeight
-        y: bar.slideY
+        y: bar.slideY + Theme.barMargin
         // Same 4px padding on every side as above/below the buttons, so the 8px button corners
         // sit concentric inside the 12px pill corners (12 - 4 = 8)
         implicitWidth: row.implicitWidth + 8
@@ -91,6 +110,7 @@ PanelWindow {
     // Left: niri workspaces on this output (empty ones hidden, like the old waybar)
     Pill {
         anchors.left: parent.left
+        anchors.leftMargin: bar.inset
 
         Repeater {
             model: Niri.workspaces.filter(w => w.output === bar.screen?.name && (w.is_active || w.active_window_id !== null))
@@ -124,6 +144,7 @@ PanelWindow {
     // Right: status + controls
     Pill {
         anchors.right: parent.right
+        anchors.rightMargin: bar.inset
 
         // Recording in progress: click to stop
         BarButton {

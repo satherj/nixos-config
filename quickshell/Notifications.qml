@@ -37,7 +37,7 @@ Scope {
             right: true
         }
         margins {
-            top: Theme.barMargin + Theme.barHeight + 8
+            top: Theme.barExtent + 8
             right: Theme.gap
         }
         implicitWidth: 380
