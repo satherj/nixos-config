@@ -18,12 +18,8 @@ PanelWindow {
         left: true
         right: true
     }
-    // Auto-hide mode: a full-width band (pills inset by the gap); otherwise floating pills
-    readonly property int inset: UiState.barAutoHide ? Theme.gap : 0
-    margins {
-        left: UiState.barAutoHide ? 0 : Theme.gap
-        right: UiState.barAutoHide ? 0 : Theme.gap
-    }
+    // Full-width band; the content is inset from the screen edges by the gap
+    readonly property int inset: Theme.gap
     // The window spans the whole bar and the band slides inside it. Hidden, only a thin strip at the
     // screen edge takes input, so the rest of the area stays click-through.
     implicitHeight: Theme.barExtent
@@ -68,13 +64,12 @@ PanelWindow {
         interval: 350
     }
 
-    // Full-width backdrop while auto-hide is on, so the bar reads clearly over windows
+    // Full-width backdrop
     Rectangle {
-        visible: UiState.barAutoHide
         y: bar.slideY
         width: bar.width
         height: bar.implicitHeight
-        color: Theme.base
+        color: Theme.barBg
 
         Rectangle {
             anchors.bottom: parent.bottom
@@ -92,7 +87,7 @@ PanelWindow {
 
     component Pill: Rectangle {
         default property alias content: row.data
-        color: UiState.barAutoHide ? "transparent" : Theme.base
+        color: "transparent"
         radius: Theme.radius
         implicitHeight: Theme.barHeight
         y: bar.slideY + Theme.barMargin

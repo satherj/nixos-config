@@ -25,7 +25,7 @@ Singleton {
 
         JsonAdapter {
             id: barSettings
-            property bool autoHide: true
+            property bool autoHide: false
         }
     }
 

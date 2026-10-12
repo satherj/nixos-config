@@ -5,6 +5,8 @@ import Quickshell
 // Catppuccin Mocha, same palette as the old waybar/fuzzel/mako configs
 Singleton {
     readonly property color base: "#1e1e2e"
+    // Same translucency as the terminal (ghostty background-opacity)
+    readonly property color barBg: Qt.alpha(base, 0.95)
     readonly property color mantle: "#181825"
     readonly property color crust: "#11111b"
     readonly property color surface0: "#313244"
@@ -26,7 +28,7 @@ Singleton {
     readonly property int barMargin: 6
     readonly property int gap: 12
     // Space the bar occupies from the top edge (auto-hide adds a bottom margin for its backdrop)
-    readonly property int barExtent: barMargin + barHeight + (UiState.barAutoHide ? barMargin : 0)
+    readonly property int barExtent: barMargin * 2 + barHeight
     readonly property int radius: 12
 
     // One discreet border for every surface; niri's focused-window border uses the same values
