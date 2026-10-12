@@ -102,27 +102,18 @@ PanelWindow {
         }
     }
 
-    // Left: niri workspaces on this output (empty ones hidden, like the old waybar)
+    // Left: control center + clock
     Pill {
         anchors.left: parent.left
         anchors.leftMargin: bar.inset
 
-        Repeater {
-            model: Niri.workspaces.filter(w => w.output === bar.screen?.name && (w.is_active || w.active_window_id !== null))
-
-            BarButton {
-                required property var modelData
-                text: modelData.idx
-                active: modelData.is_active
-                fg: modelData.is_urgent ? Theme.red : modelData.is_active ? Theme.blue : Theme.overlay0
-                onClicked: Niri.focusWorkspace(modelData)
-            }
+        // Control center: toggles, sliders, night light, media, power
+        BarButton {
+            text: (UiState.dnd ? "󰂛 " : "") + (NightLight.enabled ? "󰖔 " : "") + "󱄅"
+            fg: UiState.dnd || NightLight.enabled ? Theme.mauve : Theme.text
+            active: UiState.panel === "control" && UiState.screen === bar.screen
+            onClicked: UiState.toggle("control", bar.screen)
         }
-    }
-
-    // Center: clock
-    Pill {
-        anchors.horizontalCenter: parent.horizontalCenter
 
         SystemClock {
             id: clock
@@ -207,14 +198,6 @@ PanelWindow {
             fg: Battery.charging ? Theme.green : pct <= 10 ? Theme.red : pct <= 25 ? Theme.yellow : Theme.text
             active: UiState.panel === "battery" && UiState.screen === bar.screen
             onClicked: UiState.toggle("battery", bar.screen)
-        }
-
-        // Control center: toggles, sliders, night light, media, power
-        BarButton {
-            text: (UiState.dnd ? "󰂛 " : "") + (NightLight.enabled ? "󰖔 " : "") + "󱄅"
-            fg: UiState.dnd || NightLight.enabled ? Theme.mauve : Theme.text
-            active: UiState.panel === "control" && UiState.screen === bar.screen
-            onClicked: UiState.toggle("control", bar.screen)
         }
     }
 }

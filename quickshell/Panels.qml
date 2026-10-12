@@ -48,9 +48,9 @@ Variants {
             id: card
 
             anchors.top: parent.top
-            // The calendar drops from the clock (centre); everything else from the right
-            readonly property bool centered: win.shown === "calendar"
-            x: centered ? (parent.width - width) / 2 : parent.width - width - Theme.gap
+            // Control center and calendar drop from the left (their buttons); the rest from the right
+            readonly property bool fromLeft: win.shown === "calendar" || win.shown === "control"
+            x: fromLeft ? Theme.gap : parent.width - width - Theme.gap
             anchors.topMargin: 8
             width: win.shown === "control" ? 360 : 340
             height: loader.implicitHeight + 32
@@ -63,7 +63,7 @@ Variants {
 
             // Dropdown: scale from 0.96 at the trigger corner (top-right) + fade, strong ease-out.
             // Exit is quicker than entry. Behaviors (not keyframes) so rapid toggles retarget.
-            transformOrigin: centered ? Item.Top : Item.TopRight
+            transformOrigin: fromLeft ? Item.TopLeft : Item.TopRight
             opacity: win.open ? 1 : 0
             scale: win.open || Theme.reduceMotion ? 1 : 0.96
             Behavior on opacity {

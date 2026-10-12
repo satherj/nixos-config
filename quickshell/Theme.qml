@@ -24,10 +24,10 @@ Singleton {
 
     readonly property string font: "Maple Mono NF"
     readonly property int fontSize: 13
-    readonly property int barHeight: 34
-    readonly property int barMargin: 6
+    readonly property int barHeight: 28
+    readonly property int barMargin: 3
     readonly property int gap: 12
-    // Space the bar occupies from the top edge (auto-hide adds a bottom margin for its backdrop)
+    // Space the bar occupies from the top edge
     readonly property int barExtent: barMargin * 2 + barHeight
     readonly property int radius: 12
 
