@@ -247,6 +247,32 @@
     (zathura.override { plugins = [ zathuraPkgs.zathura_pdf_mupdf ]; })
     # dev tooling
     mise git gh curl unzip
+    # zip handling: `unzip-here <file.zip>` extracts next to the archive into a folder named after it
+    # (default app for .zip via xdg.mime below); xarchiver backs Thunar's right-click "Extract Here"
+    xarchiver
+    (writeShellScriptBin "unzip-here" ''
+      for f in "$@"; do
+        base="''${f%.*}"
+        dir="$base"
+        # never merge into an existing folder
+        n=1
+        while [[ -e "$dir" ]]; do dir="$base-$((n++))"; done
+        if ${unzip}/bin/unzip -q "$f" -d "$dir"; then
+          ${libnotify}/bin/notify-send -i package-x-generic "Unzipped" "$(basename "$f") → $(basename "$dir")/"
+        else
+          rmdir "$dir" 2>/dev/null
+          ${libnotify}/bin/notify-send -u critical "Unzip failed" "$(basename "$f")"
+        fi
+      done
+    '')
+    (makeDesktopItem {
+      name = "unzip-here";
+      desktopName = "Unzip Here";
+      exec = "unzip-here %F";
+      icon = "package-x-generic";
+      mimeTypes = [ "application/zip" "application/x-zip-compressed" ];
+      noDisplay = true;
+    })
     # browser (not in nixpkgs, see helium.nix)
     (callPackage ./helium.nix { })
   ];
@@ -261,7 +287,11 @@
     enable = true;
     plugins = with pkgs; [ thunar-archive-plugin thunar-volman ];
   };
-  xdg.mime.defaultApplications."application/pdf" = "org.pwmt.zathura.desktop";
+  xdg.mime.defaultApplications = {
+    "application/pdf" = "org.pwmt.zathura.desktop";
+    "application/zip" = "unzip-here.desktop";
+    "application/x-zip-compressed" = "unzip-here.desktop";
+  };
   services.gvfs.enable = true;
   services.tumbler.enable = true;
 
