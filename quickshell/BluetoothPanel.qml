@@ -13,10 +13,21 @@ ColumnLayout {
 
     spacing: 12
 
-    // Discover nearby devices while the panel is open
+    readonly property bool busy: root.devices.some(d => d.pairing || d.state === BluetoothDeviceState.Connecting)
+
+    // Discover nearby devices while the panel is open, but not mid-pairing:
+    // scanning during a BR/EDR pair/connect makes dual-mode headsets drop the link
     Binding {
         target: root.adapter
         property: "discovering"
+        value: !root.busy
+        when: root.on
+    }
+
+    // BlueZ rejects pairing requests while the adapter is not pairable
+    Binding {
+        target: root.adapter
+        property: "pairable"
         value: true
         when: root.on
     }

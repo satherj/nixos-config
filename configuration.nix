@@ -26,6 +26,9 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
+  # mt7921 Wi-Fi power save adds bursty UDP latency/loss, which hurts WebRTC
+  # (Twilio Voice) media and ICE consent checks.
+  networking.networkmanager.wifi.powersave = false;
 
   # Set your time zone.
   time.timeZone = "Europe/Madrid";
@@ -190,6 +193,8 @@
     ghostty quickshell swaylock swayidle xwayland-satellite wl-mirror
     # chat (Electron; runs on Wayland via NIXOS_OZONE_WL)
     slack
+    # stock Chrome, mainly to A/B WebRTC/Twilio behaviour against Helium
+    google-chrome
     # wlsunset = night light (driven by quickshell), playerctl = media keys in niri;
     # the wallpaper is drawn by quickshell too (no swaybg)
     wlsunset playerctl
