@@ -88,7 +88,7 @@ ColumnLayout {
                 fg: tile.on ? Theme.base : Theme.subtext0
                 hoverFg: tile.on ? Theme.base : Theme.text
                 color: "transparent"
-                onClicked: UiState.toggle(tile.detail, UiState.screen)
+                onClicked: UiState.toggleBeside(tile.detail, UiState.screen, "control")
             }
         }
     }
@@ -120,7 +120,7 @@ ColumnLayout {
     }
 
     PanelHeader {
-        icon: "sliders-horizontal"
+        icon: "command"
         title: "Control center"
 
         Row {
@@ -182,14 +182,14 @@ ColumnLayout {
             title: "Displays"
             subtitle: Displays.multiple ? Displays.outputs.length + " monitors" : "scale · layout"
             on: false
-            onToggled: UiState.toggle("displays", UiState.screen)
+            onToggled: UiState.toggleBeside("displays", UiState.screen, "control")
         }
         Tile {
             icon: "palette"
             title: "Theme"
             subtitle: Themes.model.find(p => p.id === Themes.currentId)?.name ?? ""
             on: false
-            onToggled: UiState.toggle("theme", UiState.screen)
+            onToggled: UiState.toggleBeside("theme", UiState.screen, "control")
         }
         Tile {
             icon: "push-pin"

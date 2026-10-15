@@ -60,12 +60,12 @@
   };
   programs.dconf.enable = true;
 
-  # System-wide dark mode: GTK apps, libadwaita, and Chrome/Chromium follow this via the Settings portal.
-  # GTK3 apps (Thunar) get Catppuccin Mocha; libadwaita apps ignore GTK themes and just go dark.
+  # System-wide dark mode: GTK apps, libadwaita, and Chrome follow this via the Settings portal.
+  # adw-gtk3 gives GTK3 apps (Thunar) the libadwaita look; its colours come from the active `theme` preset (gtk.css).
   programs.dconf.profiles.user.databases = [{
     settings."org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";
-      gtk-theme = "Catppuccin-GTK-Blue-Dark";
+      gtk-theme = "adw-gtk3-dark";
       icon-theme = "Papirus-Dark";
       cursor-theme = "catppuccin-mocha-mauve-cursors";
       font-name = "Inter 10";
@@ -204,8 +204,8 @@
     # clipboard history + screen recording for the quickshell launcher / capture menu
     cliphist wf-recorder slurp
     wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme catppuccin-cursors.mochaMauve
-    # Catppuccin Mocha for GTK3 apps + Papirus icons with Catppuccin folders
-    (magnetic-catppuccin-gtk.override { accent = [ "blue" ]; })
+    # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders
+    adw-gtk3
     (catppuccin-papirus-folders.override { flavor = "mocha"; accent = "blue"; })
     # files: yazi (TUI) + thunar (GUI, programs.thunar below)
     yazi lazygit
@@ -305,11 +305,8 @@
   services.gvfs.enable = true;
   services.tumbler.enable = true;
 
-  # Chrome/Chromium read these managed policies: force-install Catppuccin Mocha theme
-  programs.chromium = {
-    enable = true;
-    extensions = [ "bkkmolkhemgaeaeggcmfbghljjjoofoh" ];  # Catppuccin Chrome Theme - Mocha
-  };
+  # Chrome has no forced theme: pick Appearance > Theme > "GTK" once and it follows the GTK
+  # colours the `theme` command generates (a pinned extension theme would override every preset).
 
   # Polkit auth prompts come from quickshell (PolkitDialog.qml), not polkit-gnome.
   # The lock screen is quickshell too (Lock.qml); it checks passwords through this PAM service.

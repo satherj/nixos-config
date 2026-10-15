@@ -109,9 +109,9 @@ PanelWindow {
 
         // Control center: toggles, sliders, night light, media, power
         BarButton {
-            icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["sliders-horizontal"])
+            icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["command"])
             fg: UiState.dnd || NightLight.enabled ? Theme.mauve : Theme.text
-            active: UiState.panel === "control" && UiState.screen === bar.screen
+            active: (UiState.panel === "control" || UiState.base === "control") && UiState.screen === bar.screen
             onClicked: UiState.toggle("control", bar.screen)
         }
 

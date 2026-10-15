@@ -12,6 +12,10 @@ ShellRoot {
         function toggle(name: string): void {
             UiState.toggle(name, UiState.screen ?? Quickshell.screens[0]);
         }
+        // `... call panel beside theme control`: flyout next to the control center
+        function beside(name: string, owner: string): void {
+            UiState.toggleBeside(name, UiState.screen ?? Quickshell.screens[0], owner);
+        }
         function close(): void {
             UiState.close();
         }

@@ -2,8 +2,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 
-// Top-right dropdown for wifi / bluetooth / battery. Covers the screen below the bar so a click
-// anywhere else closes it; the bar itself stays clickable to switch panels.
+// Top dropdowns for wifi / bluetooth / battery / control center etc. Covers the screen below the bar so a
+// click anywhere else closes it; the bar itself stays clickable to switch panels.
+// Panels opened from the control center (UiState.base) appear as a flyout beside it.
 Variants {
     model: Quickshell.screens
 
@@ -14,18 +15,37 @@ Variants {
         screen: modelData
 
         readonly property bool open: UiState.panel !== "" && UiState.screen === modelData
+        readonly property string mainName: UiState.base !== "" ? UiState.base : UiState.panel
+        readonly property string sideName: UiState.base !== "" ? UiState.panel : ""
         // Keep the last panel's content alive while the exit animation plays
-        property string shown: ""
-        onOpenChanged: if (open) shown = UiState.panel
-        Connections {
-            target: UiState
-            function onPanelChanged() {
-                if (win.open)
-                    win.shown = UiState.panel;
+        property string mainShown: ""
+        property string sideShown: ""
+        onOpenChanged: if (open) {
+            mainShown = mainName;
+            if (sideName !== "")
+                sideShown = sideName;
+        }
+        onMainNameChanged: if (open && mainName !== "")
+            mainShown = mainName
+        onSideNameChanged: if (open && sideName !== "")
+            sideShown = sideName
+
+        function component(name) {
+            switch (name) {
+            case "wifi": return wifi;
+            case "bluetooth": return bluetooth;
+            case "battery": return battery;
+            case "audio": return audio;
+            case "control": return control;
+            case "capture": return capture;
+            case "calendar": return calendar;
+            case "displays": return displays;
+            case "theme": return theme;
             }
+            return null;
         }
 
-        visible: open || card.opacity > 0
+        visible: open || mainCard.opacity > 0 || sideCard.opacity > 0
         anchors {
             top: true
             bottom: true
@@ -44,95 +64,67 @@ Variants {
             onClicked: UiState.close()
         }
 
-        Rectangle {
-            id: card
+        PanelCard {
+            id: mainCard
 
             anchors.top: parent.top
-            // Control center and calendar drop from the left (their buttons); the rest from the right
-            readonly property bool fromLeft: win.shown === "calendar" || win.shown === "control"
-            x: fromLeft ? Theme.gap : parent.width - width - Theme.gap
             anchors.topMargin: 8
-            width: win.shown === "control" ? 360 : 340
-            height: loader.implicitHeight + 32
-            radius: Theme.radius
-            color: Theme.base
-            border.color: Theme.border
-            border.width: Theme.borderWidth
-            focus: win.open
-            Keys.onEscapePressed: UiState.close()
+            // Control center and calendar drop from the left (their buttons); the rest from the right
+            fromLeft: win.mainShown === "calendar" || win.mainShown === "control"
+            x: fromLeft ? Theme.gap : parent.width - width - Theme.gap
+            width: win.mainShown === "control" ? 360 : 340
+            open: win.open
+            content: win.component(win.mainShown)
+        }
 
-            // Dropdown: scale from 0.96 at the trigger corner (top-right) + fade, strong ease-out.
-            // Exit is quicker than entry. Behaviors (not keyframes) so rapid toggles retarget.
-            transformOrigin: fromLeft ? Item.TopLeft : Item.TopRight
-            opacity: win.open ? 1 : 0
-            scale: win.open || Theme.reduceMotion ? 1 : 0.96
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: win.open ? Theme.durDropdown : Theme.durDropdownExit
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.easeOut
-                }
-            }
-            Behavior on scale {
-                NumberAnimation {
-                    duration: win.open ? Theme.durDropdown : Theme.durDropdownExit
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.easeOut
-                }
-            }
+        // Sub-panel of the control center, beside it (to the right of the left-hand control center)
+        PanelCard {
+            id: sideCard
 
-            // Swallow clicks so they don't reach the close-catcher behind the card
-            MouseArea {
-                anchors.fill: parent
-            }
+            anchors.top: parent.top
+            anchors.topMargin: 8
+            fromLeft: mainCard.fromLeft
+            x: fromLeft ? mainCard.x + mainCard.width + 8 : mainCard.x - width - 8
+            width: 340
+            open: win.open && win.sideName !== ""
+            content: win.component(win.sideShown)
+        }
 
-            Loader {
-                id: loader
-                focus: true
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.margins: 16
-                active: win.visible
-                sourceComponent: win.shown === "wifi" ? wifi : win.shown === "bluetooth" ? bluetooth : win.shown === "battery" ? battery : win.shown === "audio" ? audio : win.shown === "control" ? control : win.shown === "capture" ? capture : win.shown === "calendar" ? calendar : win.shown === "displays" ? displays : win.shown === "theme" ? theme : null
-            }
-
-            Component {
-                id: wifi
-                WifiPanel {}
-            }
-            Component {
-                id: bluetooth
-                BluetoothPanel {}
-            }
-            Component {
-                id: battery
-                BatteryPanel {}
-            }
-            Component {
-                id: audio
-                AudioPanel {}
-            }
-            Component {
-                id: control
-                ControlCenter {}
-            }
-            Component {
-                id: capture
-                CapturePanel {}
-            }
-            Component {
-                id: calendar
-                CalendarPanel {}
-            }
-            Component {
-                id: displays
-                DisplaysPanel {}
-            }
-            Component {
-                id: theme
-                ThemePanel {}
-            }
+        Component {
+            id: wifi
+            WifiPanel {}
+        }
+        Component {
+            id: bluetooth
+            BluetoothPanel {}
+        }
+        Component {
+            id: battery
+            BatteryPanel {}
+        }
+        Component {
+            id: audio
+            AudioPanel {}
+        }
+        Component {
+            id: control
+            ControlCenter {}
+        }
+        Component {
+            id: capture
+            CapturePanel {}
+        }
+        Component {
+            id: calendar
+            CalendarPanel {}
+        }
+        Component {
+            id: displays
+            DisplaysPanel {}
+        }
+        Component {
+            id: theme
+            ThemePanel {}
         }
     }
 }

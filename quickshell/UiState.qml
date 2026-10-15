@@ -6,6 +6,8 @@ import Quickshell.Io
 // Which dropdown panel is open ("wifi" | "bluetooth" | "battery" | "audio" | "control" | "") and on which screen
 Singleton {
     property string panel: ""
+    // Panel kept open underneath while `panel` is its flyout (set by toggleBeside, e.g. "control")
+    property string base: ""
     property var screen: null
     // Do not disturb: non-critical notifications are dropped instead of shown
     property bool dnd: false
@@ -30,6 +32,7 @@ Singleton {
     }
 
     function toggle(name, scr) {
+        base = "";
         if (panel === name && screen === scr) {
             panel = "";
         } else {
@@ -38,7 +41,20 @@ Singleton {
         }
     }
 
+    // Open `name` as a flyout next to `owner`; a second call closes just the flyout
+    function toggleBeside(name, scr, owner) {
+        if (panel === name && base === owner) {
+            base = "";
+            panel = owner;
+        } else {
+            screen = scr;
+            base = owner;
+            panel = name;
+        }
+    }
+
     function close() {
+        base = "";
         panel = "";
     }
 
