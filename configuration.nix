@@ -59,7 +59,7 @@
   };
   programs.dconf.enable = true;
 
-  # System-wide dark mode: GTK apps, libadwaita, and Chromium/Helium follow this via the Settings portal.
+  # System-wide dark mode: GTK apps, libadwaita, and Chrome/Chromium follow this via the Settings portal.
   # GTK3 apps (Thunar) get Catppuccin Mocha; libadwaita apps ignore GTK themes and just go dark.
   programs.dconf.profiles.user.databases = [{
     settings."org/gnome/desktop/interface" = {
@@ -193,7 +193,7 @@
     ghostty quickshell swaylock swayidle xwayland-satellite wl-mirror
     # chat (Electron; runs on Wayland via NIXOS_OZONE_WL)
     slack
-    # stock Chrome, mainly to A/B WebRTC/Twilio behaviour against Helium
+    # browser (replaced Helium: its WebRTC dropped Twilio calls that stock Chrome kept)
     google-chrome
     # wlsunset = night light (driven by quickshell), playerctl = media keys in niri;
     # the wallpaper is drawn by quickshell too (no swaybg)
@@ -278,8 +278,6 @@
       mimeTypes = [ "application/zip" "application/x-zip-compressed" ];
       noDisplay = true;
     })
-    # browser (not in nixpkgs, see helium.nix)
-    (callPackage ./helium.nix { })
   ];
 
   # Quickshell desktop shell (bar, wifi/bluetooth/battery panels, launcher, notifications).
@@ -294,13 +292,18 @@
   };
   xdg.mime.defaultApplications = {
     "application/pdf" = "org.pwmt.zathura.desktop";
+    "text/html" = "google-chrome.desktop";
+    "x-scheme-handler/http" = "google-chrome.desktop";
+    "x-scheme-handler/https" = "google-chrome.desktop";
+    "x-scheme-handler/about" = "google-chrome.desktop";
+    "x-scheme-handler/unknown" = "google-chrome.desktop";
     "application/zip" = "unzip-here.desktop";
     "application/x-zip-compressed" = "unzip-here.desktop";
   };
   services.gvfs.enable = true;
   services.tumbler.enable = true;
 
-  # Helium is Chromium-based and reads /etc/chromium/policies: force-install Catppuccin Mocha theme
+  # Chrome/Chromium read these managed policies: force-install Catppuccin Mocha theme
   programs.chromium = {
     enable = true;
     extensions = [ "bkkmolkhemgaeaeggcmfbghljjjoofoh" ];  # Catppuccin Chrome Theme - Mocha
