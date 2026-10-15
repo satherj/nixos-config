@@ -200,7 +200,8 @@ layout {
         // The settings are the same as for the focus ring.
         // If you enable the border, you probably want to disable the focus ring.
         // Discreet 1px border, same as the quickshell panels (Theme.border / Theme.borderActive):
-        // focused = Catppuccin blue @ 40%, others = surface0
+        // focused = accent @ 40%, others = surface1 (the values below are overridden by the `theme`
+        // command via the generated include at the end of this file)
         width 1
         active-color "#89b4fa66"
         inactive-color "#313244"
@@ -272,6 +273,8 @@ layout {
 // See the binds section below for more spawn examples.
 
 // Quickshell: bar, wifi/bluetooth/battery panels, launcher, notifications (config in /etc/quickshell, from the NixOS config)
+// Re-render the stored theme (ghostty/niri/GTK/zathura colours) before the shell starts
+spawn-at-startup "theme" "apply"
 spawn-at-startup "qs" "-p" "/etc/quickshell"
 // Wallpaper is drawn by quickshell (Super+Space -> "wallpapers" to pick one)
 // Clipboard history for the launcher (Super+Alt+Space)
@@ -668,3 +671,6 @@ window-rule {
 
 // Per-monitor scale/mode/position, managed by the Quickshell Displays panel (untracked file)
 include "outputs.kdl"
+
+// Border colours from the `theme` command (generated link into ~/.local/state/theme, untracked)
+include "theme.kdl"

@@ -95,5 +95,6 @@ ShellRoot {
     Component.onCompleted: {
         Lock.locked;
         Displays.outputs;
+        Themes.reload();
     }
 }

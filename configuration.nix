@@ -8,6 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./modules/theme.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -86,6 +87,7 @@
   fonts.packages = with pkgs; [
     maple-mono.NF
     inter
+    (callPackage ./pkgs/phosphor-icons.nix { })
   ];
 
   # Configure keymap in X11

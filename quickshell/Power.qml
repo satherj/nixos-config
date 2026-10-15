@@ -26,12 +26,12 @@ Singleton {
     }
 
     readonly property var actions: [
-        action("lock", "Lock", "Lock the screen", "system-lock-screen", "󰌾", ["lock", "screen"], () => Lock.lock()),
-        action("suspend", "Suspend", "Sleep", "system-suspend", "󰤄", ["sleep", "suspend"], ["systemctl", "suspend"]),
-        action("logout", "Log out", "End the niri session", "system-log-out", "󰍃", ["logout", "exit", "quit", "session", "sign out"], ["niri", "msg", "action", "quit", "--skip-confirmation"]),
-        action("reboot", "Reboot", "Restart the computer", "system-reboot", "󰜉", ["restart", "reboot"], ["systemctl", "reboot"]),
-        action("bios", "Reboot to BIOS", "Restart into firmware setup", "system-reboot", "󰘚", ["bios", "uefi", "firmware", "setup"], ["systemctl", "reboot", "--firmware-setup"]),
-        action("poweroff", "Shut down", "Power off the computer", "system-shutdown", "󰐥", ["shutdown", "power off", "poweroff", "turn off"], ["systemctl", "poweroff"])
+        action("lock", "Lock", "Lock the screen", "system-lock-screen", "lock", ["lock", "screen"], () => Lock.lock()),
+        action("suspend", "Suspend", "Sleep", "system-suspend", "moon", ["sleep", "suspend"], ["systemctl", "suspend"]),
+        action("logout", "Log out", "End the niri session", "system-log-out", "sign-out", ["logout", "exit", "quit", "session", "sign out"], ["niri", "msg", "action", "quit", "--skip-confirmation"]),
+        action("reboot", "Reboot", "Restart the computer", "system-reboot", "arrow-clockwise", ["restart", "reboot"], ["systemctl", "reboot"]),
+        action("bios", "Reboot to BIOS", "Restart into firmware setup", "system-reboot", "cpu", ["bios", "uefi", "firmware", "setup"], ["systemctl", "reboot", "--firmware-setup"]),
+        action("poweroff", "Shut down", "Power off the computer", "system-shutdown", "power", ["shutdown", "power off", "poweroff", "turn off"], ["systemctl", "poweroff"])
     ]
 
     function get(id) {

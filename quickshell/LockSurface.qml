@@ -117,9 +117,9 @@ Item {
                 anchors.rightMargin: 20
                 spacing: 12
 
-                StyledText {
-                    text: Lock.busy ? "󰔟" : "󰌾"
-                    font.pixelSize: 18
+                Icon {
+                    name: Lock.busy ? "hourglass-medium" : "lock"
+                    size: 20
                     color: Lock.status !== "" ? Theme.red : Theme.blue
                 }
                 StyledText {
@@ -148,16 +148,37 @@ Item {
         anchors.bottomMargin: 32
         spacing: 24
 
-        StyledText {
-            text: "󰀄 " + Quickshell.env("USER")
-            color: Theme.subtext0
-            font.pixelSize: 13
+        Row {
+            spacing: 6
+            Icon {
+                anchors.verticalCenter: parent.verticalCenter
+                name: "user"
+                size: 16
+                color: Theme.subtext0
+            }
+            StyledText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Quickshell.env("USER")
+                color: Theme.subtext0
+                font.pixelSize: 13
+            }
         }
-        StyledText {
+        Row {
             visible: Battery.dev?.isLaptopBattery ?? false
-            text: Battery.icon + " " + Math.round(Battery.percent) + "%"
-            color: Battery.charging ? Theme.green : Battery.percent <= 15 ? Theme.red : Theme.subtext0
-            font.pixelSize: 13
+            spacing: 6
+            readonly property color tint: Battery.charging ? Theme.green : Battery.percent <= 15 ? Theme.red : Theme.subtext0
+            Icon {
+                anchors.verticalCenter: parent.verticalCenter
+                name: Battery.icon
+                size: 16
+                color: parent.tint
+            }
+            StyledText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Math.round(Battery.percent) + "%"
+                color: parent.tint
+                font.pixelSize: 13
+            }
         }
     }
 }

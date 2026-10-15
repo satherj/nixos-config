@@ -6,8 +6,8 @@ RowLayout {
     id: root
 
     required property var node
-    property string icon: "󰕾"
-    property string mutedIcon: "󰝟"
+    property string icon: "speaker-high"
+    property string mutedIcon: "speaker-x"
 
     readonly property real volume: node?.audio?.volume ?? 0
     readonly property bool muted: node?.audio?.muted ?? false
@@ -15,7 +15,7 @@ RowLayout {
     spacing: 10
 
     IconButton {
-        text: root.muted ? root.mutedIcon : root.icon
+        icon: root.muted ? root.mutedIcon : root.icon
         fg: root.muted ? Theme.overlay0 : Theme.text
         onClicked: if (root.node?.audio) root.node.audio.muted = !root.muted
     }

@@ -5,11 +5,14 @@ Rectangle {
     id: root
 
     property alias text: label.text
+    property string icon: ""
+    property string iconWeight: Theme.iconWeight
+    property int iconSize: Theme.fontSize + 3
     property color fg: Theme.subtext0
     property color hoverFg: Theme.text
     signal clicked
 
-    implicitWidth: Math.max(28, label.implicitWidth + 16)
+    implicitWidth: Math.max(28, (glyph.visible ? glyph.implicitWidth : 0) + (label.visible ? label.implicitWidth : 0) + (glyph.visible && label.visible ? 6 : 0) + 16)
     implicitHeight: 28
     radius: 8
     color: area.containsMouse ? Theme.surface1 : "transparent"
@@ -18,10 +21,25 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: Theme.durHover; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
     Behavior on scale { NumberAnimation { duration: Theme.durPress; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
 
-    StyledText {
-        id: label
+    Row {
         anchors.centerIn: parent
-        color: area.containsMouse ? root.hoverFg : root.fg
+        spacing: 6
+
+        Icon {
+            id: glyph
+            anchors.verticalCenter: parent.verticalCenter
+            visible: root.icon !== ""
+            name: root.icon
+            size: root.iconSize
+            weight: root.iconWeight
+            color: area.containsMouse ? root.hoverFg : root.fg
+        }
+        StyledText {
+            id: label
+            anchors.verticalCenter: parent.verticalCenter
+            visible: text !== ""
+            color: area.containsMouse ? root.hoverFg : root.fg
+        }
     }
 
     MouseArea {

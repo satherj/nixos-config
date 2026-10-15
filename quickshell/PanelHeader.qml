@@ -10,9 +10,9 @@ RowLayout {
 
     spacing: 10
 
-    StyledText {
-        text: root.icon
-        font.pixelSize: 18
+    Icon {
+        name: root.icon
+        size: 20
         color: Theme.blue
     }
     StyledText {

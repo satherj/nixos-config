@@ -16,7 +16,7 @@ Singleton {
     }
     function copy(id) {
         Quickshell.execDetached(["sh", "-c", `cliphist decode ${parseInt(id)} | wl-copy`]);
-        Osd.show("󰅇", "Copied to clipboard");
+        Osd.show("clipboard-text", "Copied to clipboard");
     }
     function remove(id) {
         Quickshell.execDetached(["sh", "-c", `printf '%s\\t\\n' ${parseInt(id)} | cliphist delete`]);

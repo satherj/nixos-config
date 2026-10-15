@@ -16,7 +16,7 @@ Singleton {
     readonly property bool available: max > 0
     // 0..1; while dragging, show the requested value so the slider doesn't lag behind the write
     readonly property real value: pending >= 0 ? pending : available ? raw / max : 0
-    readonly property string icon: ["󰃞", "󰃟", "󰃠"][Math.min(2, Math.floor(value * 3))]
+    readonly property string icon: ["sun-dim", "sun", "sun"][Math.min(2, Math.floor(value * 3))]
 
     // Never go fully black: below ~1% the panel is effectively off and hard to recover from
     readonly property real minimum: 0.01

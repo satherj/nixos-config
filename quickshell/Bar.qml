@@ -109,7 +109,7 @@ PanelWindow {
 
         // Control center: toggles, sliders, night light, media, power
         BarButton {
-            text: (UiState.dnd ? "󰂛 " : "") + (NightLight.enabled ? "󰖔 " : "") + "󱄅"
+            icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["sliders-horizontal"])
             fg: UiState.dnd || NightLight.enabled ? Theme.mauve : Theme.text
             active: UiState.panel === "control" && UiState.screen === bar.screen
             onClicked: UiState.toggle("control", bar.screen)
@@ -135,21 +135,25 @@ PanelWindow {
         // Recording in progress: click to stop
         BarButton {
             visible: Capture.recording
-            text: "󰑊 " + Capture.elapsed
+            icon: "record"
+            iconWeight: "fill"
+            text: Capture.elapsed
             fg: Theme.red
             onClicked: Capture.stop()
         }
 
         BarButton {
             visible: Niri.layouts.length > 1 && Niri.layoutIdx !== 0
-            text: "󰌌 " + (Niri.layoutName.match(/\(([^)]+)\)/)?.[1] ?? Niri.layoutName).toLowerCase()
+            icon: "keyboard"
+            text: (Niri.layoutName.match(/\(([^)]+)\)/)?.[1] ?? Niri.layoutName).toLowerCase()
             fg: Theme.mauve
             onClicked: Quickshell.execDetached(["niri", "msg", "action", "switch-layout", "next"])
         }
 
         BarButton {
             readonly property bool on: bar.adapter?.enabled ?? false
-            text: !on ? "󰂲" : bar.btConnected.length > 0 ? "󰂱 " + bar.btConnected[0].name : "󰂯"
+            icon: !on ? "bluetooth-slash" : bar.btConnected.length > 0 ? "bluetooth-connected" : "bluetooth"
+            text: on && bar.btConnected.length > 0 ? bar.btConnected[0].name : ""
             fg: on ? Theme.text : Theme.overlay0
             active: UiState.panel === "bluetooth" && UiState.screen === bar.screen
             onClicked: m => {
@@ -161,7 +165,7 @@ PanelWindow {
         }
 
         BarButton {
-            text: Net.icon
+            icon: Net.icon
             fg: Net.online ? Theme.text : Theme.overlay0
             active: UiState.panel === "wifi" && UiState.screen === bar.screen
             onClicked: m => {
@@ -175,7 +179,8 @@ PanelWindow {
         BarButton {
             readonly property real vol: bar.sink?.audio?.volume ?? 0
             readonly property bool muted: bar.sink?.audio?.muted ?? false
-            text: muted ? "󰝟 muted" : ["󰕿", "󰖀", "󰕾"][Math.min(2, Math.floor(vol * 3))] + " " + Math.round(vol * 100) + "%"
+            icon: muted ? "speaker-x" : ["speaker-low", "speaker-low", "speaker-high"][Math.min(2, Math.floor(vol * 3))]
+            text: muted ? "muted" : Math.round(vol * 100) + "%"
             active: UiState.panel === "audio" && UiState.screen === bar.screen
             fg: muted ? Theme.overlay0 : Theme.text
             onClicked: m => {
@@ -194,7 +199,8 @@ PanelWindow {
         BarButton {
             visible: bar.battery?.isLaptopBattery ?? false
             readonly property real pct: Battery.percent
-            text: Battery.icon + " " + Math.round(pct) + "%"
+            icon: Battery.icon
+            text: Math.round(pct) + "%"
             fg: Battery.charging ? Theme.green : pct <= 10 ? Theme.red : pct <= 25 ? Theme.yellow : Theme.text
             active: UiState.panel === "battery" && UiState.screen === bar.screen
             onClicked: UiState.toggle("battery", bar.screen)

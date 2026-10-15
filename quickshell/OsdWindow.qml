@@ -52,9 +52,9 @@ Variants {
                 anchors.rightMargin: 20
                 spacing: 14
 
-                StyledText {
-                    text: Osd.icon
-                    font.pixelSize: 18
+                Icon {
+                    name: Osd.icon
+                    size: 20
                     color: Osd.muted ? Theme.overlay0 : Theme.blue
                 }
 

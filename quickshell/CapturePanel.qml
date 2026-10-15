@@ -10,11 +10,11 @@ ColumnLayout {
     focus: true
 
     readonly property var options: [
-        ["󰩭", "Region", "PrtSc", () => Capture.screenshot("region")],
-        ["󰖯", "Window", "Alt+PrtSc", () => Capture.screenshot("window")],
-        ["󰍹", "Screen", "Ctrl+PrtSc", () => Capture.screenshot("screen")],
-        ["󰑋", Capture.recording ? "Stop recording · " + Capture.elapsed : "Record screen", "", () => Capture.recording ? Capture.stop() : Capture.record(false)],
-        ["󰒅", "Record region", "", () => Capture.record(true)]
+        ["selection", "Region", "PrtSc", () => Capture.screenshot("region")],
+        ["app-window", "Window", "Alt+PrtSc", () => Capture.screenshot("window")],
+        ["monitor", "Screen", "Ctrl+PrtSc", () => Capture.screenshot("screen")],
+        ["record", Capture.recording ? "Stop recording · " + Capture.elapsed : "Record screen", "", () => Capture.recording ? Capture.stop() : Capture.record(false)],
+        ["crosshair", "Record region", "", () => Capture.record(true)]
     ]
 
     Keys.onPressed: e => {
@@ -32,7 +32,7 @@ ColumnLayout {
     }
 
     PanelHeader {
-        icon: "󰄀"
+        icon: "camera"
         title: "Capture"
     }
 

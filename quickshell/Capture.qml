@@ -53,7 +53,7 @@ Singleton {
             if (root.copyPath)
                 pathCopy.restart();
             else
-                Osd.show("󰄀", "Screenshot saved");
+                Osd.show("camera", "Screenshot saved");
         }
     }
     // niri puts the image on the clipboard as it saves; replace it a beat later
@@ -62,7 +62,7 @@ Singleton {
         interval: 400
         onTriggered: {
             Quickshell.execDetached(["wl-copy", root.lastScreenshot]);
-            Osd.show("󰄀", "Screenshot path copied");
+            Osd.show("camera", "Screenshot path copied");
         }
     }
 
@@ -94,11 +94,11 @@ Singleton {
         id: rec
         onExited: code => {
             if (code === 2)
-                Osd.show("󰑊", "Recording cancelled");
+                Osd.show("record", "Recording cancelled");
             else if (code === 0)
-                Osd.show("󰄄", "Recording saved to ~/Videos/Recordings");
+                Osd.show("video-camera", "Recording saved to ~/Videos/Recordings");
             else
-                Osd.show("󰑊", "Recording failed");
+                Osd.show("record", "Recording failed");
         }
     }
     Timer {

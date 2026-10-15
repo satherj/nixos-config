@@ -9,8 +9,8 @@ Singleton {
     readonly property real percent: (dev?.percentage ?? 0) <= 1 ? (dev?.percentage ?? 0) * 100 : dev.percentage
     readonly property bool charging: dev?.state === UPowerDeviceState.Charging
     readonly property bool full: dev?.state === UPowerDeviceState.FullyCharged
-    readonly property var icons: ["󰁺", "󰁼", "󰁿", "󰂁", "󰁹"]
-    readonly property string icon: charging ? "󰂄" : full || !UPower.onBattery ? "󰚥" : icons[Math.min(4, Math.floor(percent / 20))]
+    readonly property var icons: ["battery-empty", "battery-low", "battery-medium", "battery-high", "battery-full"]
+    readonly property string icon: charging ? "battery-charging" : full || !UPower.onBattery ? "plug-charging" : icons[Math.min(4, Math.floor(percent / 20))]
 
     function duration(seconds) {
         if (!seconds || seconds <= 0)

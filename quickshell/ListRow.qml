@@ -34,9 +34,9 @@ Rectangle {
         anchors.rightMargin: 10
         spacing: 10
 
-        StyledText {
-            text: root.icon
-            font.pixelSize: 16
+        Icon {
+            name: root.icon
+            size: 18
             color: root.highlighted ? Theme.blue : Theme.text
             Layout.preferredWidth: 20
         }

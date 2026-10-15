@@ -48,9 +48,9 @@ Scope {
     }
 
     readonly property var modes: ({
-        apps: { glyph: ">", placeholder: "Search apps and actions…", hint: "" },
-        clipboard: { glyph: "󰅇", placeholder: "Search clipboard history…", hint: "⏎ copy   Shift+Del remove   Backspace back to apps" },
-        keybinds: { glyph: "󰌌", placeholder: "Search keyboard shortcuts…", hint: "⏎ run it   Backspace back to apps" }
+        apps: { glyph: "magnifying-glass", placeholder: "Search apps and actions…", hint: "" },
+        clipboard: { glyph: "clipboard-text", placeholder: "Search clipboard history…", hint: "⏎ copy   Shift+Del remove   Backspace back to apps" },
+        keybinds: { glyph: "keyboard", placeholder: "Search keyboard shortcuts…", hint: "⏎ run it   Backspace back to apps" }
     })
 
     function score(entry, q) {
@@ -93,7 +93,7 @@ Scope {
                 .filter(e => q === "" || e.text.toLowerCase().includes(q))
                 .slice(0, 100)
                 .map(e => ({
-                    glyph: e.image ? "" : "󰅍",
+                    glyph: e.image ? "" : "copy",
                     image: e.image,
                     title: e.label.replace(/\s*\n\s*/g, " ⏎ "),
                     run: () => Clipboard.copy(e.id),
@@ -107,11 +107,11 @@ Scope {
                     const hay = (e.title + " " + e.category + " " + e.combos.map(c => c.join("+")).join(" ")).toLowerCase();
                     return words.every(w => hay.includes(w));
                 })
-                .map(e => ({ glyph: "󰌌", title: e.title, subtitle: e.category, combos: e.combos, run: e.run }));
+                .map(e => ({ glyph: "keyboard", title: e.title, subtitle: e.category, combos: e.combos, run: e.run }));
         }
         // Actions only show up once you start typing
         const apps = Array.from(DesktopEntries.applications.values).filter(e => !e.noDisplay);
-        return (q === "" ? apps : apps.concat(modeActions, Displays.actions, Capture.actions, Power.actions, Wallpaper.actions))
+        return (q === "" ? apps : apps.concat(modeActions, Displays.actions, Themes.actions, Capture.actions, Power.actions, Wallpaper.actions))
             .map(e => ({ entry: e, score: score(e, q) }))
             .filter(r => r.score > 0)
             .sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name))
@@ -177,10 +177,10 @@ Scope {
                     implicitHeight: 40
                     spacing: 10
 
-                    StyledText {
-                        text: root.modes[root.mode].glyph
+                    Icon {
+                        name: root.modes[root.mode].glyph
+                        size: 18
                         color: Theme.blue
-                        font.pixelSize: 16
                     }
 
                     TextInput {
@@ -291,13 +291,12 @@ Scope {
                                     source: item.modelData.image ? Wallpaper.url(item.modelData.image) : ""
                                 }
                             }
-                            StyledText {
+                            Icon {
                                 visible: !item.modelData.icon && !item.modelData.image
                                 Layout.preferredWidth: 26
-                                horizontalAlignment: Text.AlignHCenter
-                                text: item.modelData.glyph ?? ""
+                                name: item.modelData.glyph ?? ""
+                                size: 18
                                 color: item.current ? Theme.mauve : Theme.overlay0
-                                font.pixelSize: 16
                             }
                             StyledText {
                                 Layout.fillWidth: root.mode === "clipboard"

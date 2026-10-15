@@ -71,8 +71,8 @@ ColumnLayout {
     Segmented {
         current: PowerProfiles.profile
         options: PowerProfiles.hasPerformanceProfile
-            ? [[PowerProfile.PowerSaver, "󰌪 Saver"], [PowerProfile.Balanced, "󰾅 Balanced"], [PowerProfile.Performance, "󰓅 Perf"]]
-            : [[PowerProfile.PowerSaver, "󰌪 Saver"], [PowerProfile.Balanced, "󰾅 Balanced"]]
+            ? [[PowerProfile.PowerSaver, "Saver", "leaf"], [PowerProfile.Balanced, "Balanced", "scales"], [PowerProfile.Performance, "Perf", "lightning"]]
+            : [[PowerProfile.PowerSaver, "Saver", "leaf"], [PowerProfile.Balanced, "Balanced", "scales"]]
         onPicked: p => PowerProfiles.profile = p
     }
 }

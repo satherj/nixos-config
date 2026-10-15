@@ -53,7 +53,7 @@ Singleton {
         const a = sink?.audio;
         if (!a)
             return;
-        show(a.muted ? "󰝟" : ["󰕿", "󰖀", "󰕾"][Math.min(2, Math.floor(a.volume * 3))], "", a.volume, a.muted);
+        show(a.muted ? "speaker-x" : ["speaker-low", "speaker-low", "speaker-high"][Math.min(2, Math.floor(a.volume * 3))], "", a.volume, a.muted);
     }
     Connections {
         target: root.sink?.audio ?? null
@@ -64,7 +64,7 @@ Singleton {
         target: root.source?.audio ?? null
         function onMutedChanged() {
             const m = root.source.audio.muted;
-            root.show(m ? "󰍭" : "󰍬", m ? "Microphone muted" : "Microphone on");
+            root.show(m ? "microphone-slash" : "microphone", m ? "Microphone muted" : "Microphone on");
         }
     }
 
@@ -79,7 +79,7 @@ Singleton {
     Connections {
         target: NightLight
         function onEnabledChanged() {
-            root.show(NightLight.enabled ? "󰖔" : "󰖨", NightLight.enabled ? "Night light on" : "Night light off");
+            root.show(NightLight.enabled ? "moon" : "sun", NightLight.enabled ? "Night light on" : "Night light off");
         }
     }
 
@@ -87,7 +87,7 @@ Singleton {
     Connections {
         target: UiState
         function onDndChanged() {
-            root.show(UiState.dnd ? "󰂛" : "󰂚", UiState.dnd ? "Do not disturb on" : "Do not disturb off");
+            root.show(UiState.dnd ? "bell-slash" : "bell", UiState.dnd ? "Do not disturb on" : "Do not disturb off");
         }
     }
 
@@ -95,14 +95,14 @@ Singleton {
     Connections {
         target: UPower
         function onOnBatteryChanged() {
-            root.show(UPower.onBattery ? Battery.icon : "󰂄", (UPower.onBattery ? "On battery · " : "Charging · ") + Math.round(Battery.percent) + "%");
+            root.show(UPower.onBattery ? Battery.icon : "battery-charging", (UPower.onBattery ? "On battery · " : "Charging · ") + Math.round(Battery.percent) + "%");
         }
     }
     Connections {
         target: PowerProfiles
         function onProfileChanged() {
             const p = PowerProfiles.profile;
-            root.show(p === PowerProfile.PowerSaver ? "󰌪" : p === PowerProfile.Performance ? "󰓅" : "󰾅",
+            root.show(p === PowerProfile.PowerSaver ? "leaf" : p === PowerProfile.Performance ? "lightning" : "scales",
                 p === PowerProfile.PowerSaver ? "Power saver" : p === PowerProfile.Performance ? "Performance" : "Balanced");
         }
     }
@@ -114,7 +114,7 @@ Singleton {
         if (wifiName !== "")
             show(Net.icon, "Connected to " + wifiName);
         else if (lastWifi !== "" && !Net.wiredDevice)
-            show("󰤭", "Disconnected from " + lastWifi);
+            show("wifi-x", "Disconnected from " + lastWifi);
         lastWifi = wifiName;
     }
 
@@ -123,10 +123,10 @@ Singleton {
     onBtDevicesChanged: {
         for (const d of btDevices)
             if (!lastBt.includes(d))
-                show("󰂱", d + " connected");
+                show("bluetooth-connected", d + " connected");
         for (const d of lastBt)
             if (!btDevices.includes(d))
-                show("󰂲", d + " disconnected");
+                show("bluetooth-slash", d + " disconnected");
         lastBt = btDevices;
     }
 }

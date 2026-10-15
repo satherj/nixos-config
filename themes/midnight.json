@@ -1,0 +1,33 @@
+{
+  "id": "midnight",
+  "name": "Midnight",
+  "variant": "dark",
+  "colors": {
+    "base": "#0b0f1a",
+    "mantle": "#080b14",
+    "crust": "#05070d",
+    "surface0": "#151b2b",
+    "surface1": "#212a42",
+    "surface2": "#2f3a58",
+    "overlay0": "#667191",
+    "subtext0": "#9ba6c6",
+    "text": "#cdd6f4",
+    "blue": "#89b4fa",
+    "mauve": "#cba6f7",
+    "green": "#a6e3a1",
+    "yellow": "#f9e2af",
+    "peach": "#fab387",
+    "red": "#f38ba8",
+    "teal": "#94e2d5",
+    "pink": "#f5c2e7",
+    "lavender": "#b4befe",
+    "sky": "#89dceb",
+    "sapphire": "#74c7ec",
+    "maroon": "#eba0ac",
+    "rosewater": "#f5e0dc",
+    "flamingo": "#f2cdcd"
+  },
+  "accent": "blue",
+  "barOpacity": 0.95,
+  "iconWeight": "regular"
+}

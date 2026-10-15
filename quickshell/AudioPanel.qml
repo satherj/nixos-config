@@ -63,7 +63,7 @@ ColumnLayout {
                 required property var modelData
                 width: list.width
                 implicitHeight: 34
-                icon: modelData === list.current ? "󰄴" : "󰄰"
+                icon: modelData === list.current ? "check-circle" : "circle"
                 title: root.label(modelData)
                 highlighted: modelData === list.current
                 onClicked: list.picked(modelData)
@@ -72,7 +72,7 @@ ColumnLayout {
     }
 
     PanelHeader {
-        icon: "󰕾"
+        icon: "speaker-high"
         title: "Sound"
     }
 
@@ -91,8 +91,8 @@ ColumnLayout {
     VolumeRow {
         Layout.fillWidth: true
         node: root.source
-        icon: "󰍬"
-        mutedIcon: "󰍭"
+        icon: "microphone"
+        mutedIcon: "microphone-slash"
     }
     DeviceList {
         nodes: root.sources

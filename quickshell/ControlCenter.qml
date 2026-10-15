@@ -56,9 +56,9 @@ ColumnLayout {
             anchors.rightMargin: 4
             spacing: 10
 
-            StyledText {
-                text: tile.icon
-                font.pixelSize: 18
+            Icon {
+                name: tile.icon
+                size: 20
                 color: tile.on ? Theme.base : Theme.text
             }
             ColumnLayout {
@@ -83,7 +83,7 @@ ColumnLayout {
             }
             IconButton {
                 visible: tile.detail !== ""
-                text: "󰅂"
+                icon: "caret-right"
                 implicitWidth: 24
                 fg: tile.on ? Theme.base : Theme.subtext0
                 hoverFg: tile.on ? Theme.base : Theme.text
@@ -104,7 +104,8 @@ ColumnLayout {
 
         Layout.fillWidth: true
         implicitHeight: 36
-        text: armed ? def.glyph + " " + def.name + "?" : def.glyph
+        icon: def.glyph
+        text: armed ? def.name + "?" : ""
         fg: armed ? Theme.red : Theme.subtext0
         hoverFg: armed ? Theme.red : Theme.text
         color: armed ? Theme.surface1 : "transparent"
@@ -119,13 +120,23 @@ ColumnLayout {
     }
 
     PanelHeader {
-        icon: "󱄅"
+        icon: "sliders-horizontal"
         title: "Control center"
 
-        StyledText {
-            text: Battery.icon + " " + Math.round(Battery.percent) + "%"
-            color: Theme.subtext0
-            font.pixelSize: 12
+        Row {
+            spacing: 4
+            Icon {
+                anchors.verticalCenter: parent.verticalCenter
+                name: Battery.icon
+                size: 15
+                color: Theme.subtext0
+            }
+            StyledText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Math.round(Battery.percent) + "%"
+                color: Theme.subtext0
+                font.pixelSize: 12
+            }
         }
     }
 
@@ -145,7 +156,7 @@ ColumnLayout {
         }
         Tile {
             readonly property bool enabled: root.adapter?.enabled ?? false
-            icon: enabled ? (root.btConnected.length > 0 ? "󰂱" : "󰂯") : "󰂲"
+            icon: enabled ? (root.btConnected.length > 0 ? "bluetooth-connected" : "bluetooth") : "bluetooth-slash"
             title: "Bluetooth"
             subtitle: !enabled ? "off" : root.btConnected.length > 0 ? root.btConnected[0].name : "on"
             on: enabled
@@ -153,28 +164,35 @@ ColumnLayout {
             onToggled: if (root.adapter) root.adapter.enabled = !enabled
         }
         Tile {
-            icon: "󰖔"
+            icon: "moon"
             title: "Night light"
             subtitle: !NightLight.enabled ? "off" : NightLight.mode === "always" ? "on · " + NightLight.temperature + "K" : "sunset to sunrise"
             on: NightLight.enabled
             onToggled: NightLight.toggle()
         }
         Tile {
-            icon: UiState.dnd ? "󰂛" : "󰂚"
+            icon: UiState.dnd ? "bell-slash" : "bell"
             title: "Do not disturb"
             subtitle: UiState.dnd ? "on" : "off"
             on: UiState.dnd
             onToggled: UiState.dnd = !UiState.dnd
         }
         Tile {
-            icon: "󰍹"
+            icon: "monitor"
             title: "Displays"
             subtitle: Displays.multiple ? Displays.outputs.length + " monitors" : "scale · layout"
             on: false
             onToggled: UiState.toggle("displays", UiState.screen)
         }
         Tile {
-            icon: "󰘖"
+            icon: "palette"
+            title: "Theme"
+            subtitle: Themes.model.find(p => p.id === Themes.currentId)?.name ?? ""
+            on: false
+            onToggled: UiState.toggle("theme", UiState.screen)
+        }
+        Tile {
+            icon: "push-pin"
             title: "Auto-hide bar"
             subtitle: UiState.barAutoHide ? "on" : "off"
             on: UiState.barAutoHide
@@ -241,12 +259,12 @@ ColumnLayout {
                 }
             }
             IconButton {
-                text: Wallpaper.shuffle ? "󰒝" : "󰒞"
+                icon: "shuffle"
                 fg: Wallpaper.shuffle ? Theme.mauve : Theme.subtext0
                 onClicked: Wallpaper.setShuffle(!Wallpaper.shuffle)
             }
             IconButton {
-                text: "󰑓"
+                icon: "arrow-clockwise"
                 onClicked: Wallpaper.random()
             }
         }
@@ -259,7 +277,7 @@ ColumnLayout {
         spacing: 10
 
         IconButton {
-            text: Brightness.icon
+            icon: Brightness.icon
             fg: Theme.text
             onClicked: Brightness.step(-0.1)
         }
@@ -293,17 +311,16 @@ ColumnLayout {
         Section { text: "NIGHT LIGHT" }
         Segmented {
             current: NightLight.mode
-            options: [["sunset", "󰖜 Sunset to sunrise"], ["always", "󰖔 Always on"]]
+            options: [["sunset", "Sunset to sunrise", "sun-horizon"], ["always", "Always on", "moon"]]
             onPicked: m => NightLight.setMode(m)
         }
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
 
-            StyledText {
+            Icon {
                 Layout.preferredWidth: 28
-                horizontalAlignment: Text.AlignHCenter
-                text: "󰈸"
+                name: "fire"
                 color: Theme.peach
             }
             Slider {
@@ -340,11 +357,11 @@ ColumnLayout {
                 radius: 8
                 color: Theme.surface1
 
-                StyledText {
+                Icon {
                     anchors.centerIn: parent
                     visible: art.status !== Image.Ready
-                    text: "󰎆"
-                    font.pixelSize: 20
+                    name: "music-notes"
+                    size: 22
                     color: Theme.overlay0
                 }
                 Image {
@@ -387,17 +404,18 @@ ColumnLayout {
             }
 
             IconButton {
-                text: "󰒮"
+                icon: "skip-back"
                 visible: root.player?.canGoPrevious ?? false
                 onClicked: root.player.previous()
             }
             IconButton {
-                text: root.player?.isPlaying ? "󰏤" : "󰐊"
+                icon: root.player?.isPlaying ? "pause" : "play"
+                iconWeight: "fill"
                 fg: Theme.text
                 onClicked: root.player.togglePlaying()
             }
             IconButton {
-                text: "󰒭"
+                icon: "skip-forward"
                 visible: root.player?.canGoNext ?? false
                 onClicked: root.player.next()
             }

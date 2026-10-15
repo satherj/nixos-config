@@ -15,11 +15,11 @@ ColumnLayout {
     Component.onCompleted: Displays.refresh()
 
     PanelHeader {
-        icon: "󰍹"
+        icon: "monitor"
         title: "Displays"
 
         IconButton {
-            text: "󰑓"
+            icon: "arrow-clockwise"
             onClicked: Displays.refresh()
         }
     }
@@ -65,7 +65,7 @@ ColumnLayout {
                 // Turning off the only active output would leave no screen
                 IconButton {
                     visible: Displays.multiple
-                    text: card.off ? "󰐥" : "󰍺"
+                    text: card.off ? "power" : "monitor"
                     fg: card.off ? Theme.red : Theme.subtext0
                     onClicked: Displays.setOff(card.o, !card.off)
                 }
@@ -86,7 +86,7 @@ ColumnLayout {
                 spacing: 8
 
                 IconButton {
-                    text: "󰅁"
+                    icon: "caret-left"
                     enabled: card.modeIdx < card.modes.length - 1
                     opacity: enabled ? 1 : 0.35
                     onClicked: Displays.setMode(card.o, card.modes[card.modeIdx + 1])
@@ -97,7 +97,7 @@ ColumnLayout {
                     text: Displays.modeText(card.mode)
                 }
                 IconButton {
-                    text: "󰅂"
+                    icon: "caret-right"
                     enabled: card.modeIdx > 0
                     opacity: enabled ? 1 : 0.35
                     onClicked: Displays.setMode(card.o, card.modes[card.modeIdx - 1])

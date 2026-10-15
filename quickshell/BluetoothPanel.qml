@@ -34,24 +34,24 @@ ColumnLayout {
 
     function glyph(icon) {
         if (/headset|headphone/.test(icon))
-            return "󰋋";
+            return "headphones";
         if (/audio|speaker/.test(icon))
-            return "󰓃";
+            return "speaker-hifi";
         if (/keyboard/.test(icon))
-            return "󰌌";
+            return "keyboard";
         if (/mouse/.test(icon))
-            return "󰍽";
+            return "mouse-simple";
         if (/phone/.test(icon))
-            return "󰏲";
+            return "device-mobile";
         if (/gaming|joystick/.test(icon))
-            return "󰊴";
+            return "game-controller";
         if (/computer/.test(icon))
-            return "󰟀";
-        return "󰂯";
+            return "desktop";
+        return "bluetooth";
     }
 
     PanelHeader {
-        icon: root.on ? "󰂯" : "󰂲"
+        icon: root.on ? "bluetooth" : "bluetooth-slash"
         title: "Bluetooth"
 
         StyledText {
@@ -119,7 +119,7 @@ ColumnLayout {
 
                 IconButton {
                     visible: row.modelData.paired
-                    text: "󰆴"
+                    icon: "trash"
                     hoverFg: Theme.red
                     onClicked: row.modelData.forget()
                 }

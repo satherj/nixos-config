@@ -72,8 +72,8 @@ ColumnLayout {
                 root.month = root.today.getMonth();
             }
         }
-        IconButton { text: "󰅁"; onClicked: root.shift(-1) }
-        IconButton { text: "󰅂"; onClicked: root.shift(1) }
+        IconButton { icon: "caret-left"; onClicked: root.shift(-1) }
+        IconButton { icon: "caret-right"; onClicked: root.shift(1) }
     }
 
     GridLayout {

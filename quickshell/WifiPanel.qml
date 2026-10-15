@@ -36,7 +36,7 @@ ColumnLayout {
     ListRow {
         Layout.fillWidth: true
         visible: Net.wiredDevice !== null
-        icon: "󰈀"
+        icon: "plugs-connected"
         title: "Wired"
         subtitle: "Connected"
         highlighted: true
@@ -93,14 +93,15 @@ ColumnLayout {
                     }
                 }
 
-                StyledText {
+                Icon {
                     visible: row.modelData.security !== WifiSecurityType.Open
-                    text: "󰌾"
+                    name: "lock"
+                    size: 15
                     color: Theme.overlay0
                 }
                 IconButton {
                     visible: row.modelData.known
-                    text: "󰆴"
+                    icon: "trash"
                     hoverFg: Theme.red
                     onClicked: row.modelData.forget()
                 }

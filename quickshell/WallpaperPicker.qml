@@ -263,8 +263,13 @@ Scope {
                 RowLayout {
                     spacing: 8
 
+                    Icon {
+                        name: "shuffle"
+                        size: 15
+                        color: Wallpaper.shuffle ? Theme.mauve : Theme.overlay0
+                    }
                     StyledText {
-                        text: Wallpaper.shuffle ? `󰒝 Shuffle · ${Wallpaper.shuffleCategory}` : "󰒞 Shuffle off"
+                        text: Wallpaper.shuffle ? `Shuffle · ${Wallpaper.shuffleCategory}` : "Shuffle off"
                         color: Wallpaper.shuffle ? Theme.mauve : Theme.overlay0
                         font.pixelSize: 12
                     }
