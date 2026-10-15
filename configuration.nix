@@ -109,13 +109,13 @@
     # jack.enable = true;
   };
 
-  # Bluetooth (noctalia panel; bluetui = TUI)
+  # Bluetooth (quickshell panel; bluetui = TUI behind its "More settings…")
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
 
-  # Battery time estimates / power profiles (noctalia battery panel)
+  # Battery time estimates / power profiles (quickshell battery panel)
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
 
@@ -181,13 +181,6 @@
   # --- niri (Wayland compositor); pick "niri" in GDM's session menu ---
   programs.niri.enable = true;
   security.polkit.enable = true;
-  # Polkit agent (noctalia ships none)
-  systemd.user.services.polkit-gnome-agent = {
-    wantedBy = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig.ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-    serviceConfig.Restart = "on-failure";
-  };
   services.gnome.gnome-keyring.enable = true;
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
@@ -195,18 +188,19 @@
   programs.nix-ld.enable = true;
 
   environment.systemPackages = with pkgs; [
-    # niri essentials; noctalia-shell is the bar, launcher, notifications, lock screen and wallpaper
-    # swaylock stays only as an emergency fallback if the noctalia lock screen ever breaks
-    ghostty noctalia-shell polkit_gnome swaylock swayidle xwayland-satellite wl-mirror
+    # niri essentials; quickshell is the bar, launcher and notification daemon (see below)
+    # swaylock stays only as an emergency fallback if the quickshell lock screen ever breaks
+    ghostty quickshell swaylock swayidle xwayland-satellite wl-mirror
     # chat (Electron; runs on Wayland via NIXOS_OZONE_WL)
     slack
     # browser (replaced Helium: its WebRTC dropped Twilio calls that stock Chrome kept)
     google-chrome
-    # wlsunset = night light and cliphist = clipboard history (both driven by noctalia),
-    # playerctl = media keys in niri
-    wlsunset playerctl cliphist
-    # optional noctalia extras: audio visualizer, external-monitor brightness, wallpaper-derived colours
-    cava ddcutil matugen
+    # wlsunset = night light (driven by quickshell), playerctl = media keys in niri;
+    # the wallpaper is drawn by quickshell too (no swaybg)
+    wlsunset playerctl
+    imagemagick  # wallpaper thumbnails for the quickshell picker
+    # clipboard history + screen recording for the quickshell launcher / capture menu
+    cliphist wf-recorder slurp
     wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme catppuccin-cursors.mochaMauve
     # Catppuccin Mocha for GTK3 apps + Papirus icons with Catppuccin folders
     (magnetic-catppuccin-gtk.override { accent = [ "blue" ]; })
@@ -214,7 +208,7 @@
     # files: yazi (TUI) + thunar (GUI, programs.thunar below)
     yazi lazygit
     fastfetch
-    # `nixos-apply`: rebuild from the ~/nixos-staging flake, push to GitHub, restart noctalia-shell
+    # `nixos-apply`: rebuild from the ~/nixos-staging flake, push to GitHub, restart quickshell
     # `nixos-apply -l` also signs you out afterwards, for changes that need a fresh session
     (writeShellScriptBin "nixos-apply" ''
       set -e
@@ -243,10 +237,10 @@
         echo "Signing out in 3s (Ctrl+C to stay)…"
         sleep 3
         niri msg action quit --skip-confirmation
-      elif pgrep -f noctalia-shell >/dev/null; then
-        pkill -f noctalia-shell
+      elif pgrep -x quickshell >/dev/null; then
+        pkill -x quickshell
         sleep 0.3
-        setsid -f noctalia-shell >/dev/null 2>&1
+        qs -p /etc/quickshell -d >/dev/null
       fi
     '')
     # files & cloud: rclone mounts Proton Drive (rclone config -> "protondrive")
@@ -286,6 +280,11 @@
     })
   ];
 
+  # Quickshell desktop shell (bar, wifi/bluetooth/battery panels, launcher, notifications).
+  # QML lives next to this file in ./quickshell and is linked to /etc/quickshell;
+  # niri starts it with `qs -p /etc/quickshell` and binds talk to it via `qs ipc -p /etc/quickshell ...`
+  environment.etc."quickshell".source = ./quickshell;
+
   # Thunar with trash/mounts (gvfs) and thumbnails (tumbler)
   programs.thunar = {
     enable = true;
@@ -309,6 +308,10 @@
     enable = true;
     extensions = [ "bkkmolkhemgaeaeggcmfbghljjjoofoh" ];  # Catppuccin Chrome Theme - Mocha
   };
+
+  # Polkit auth prompts come from quickshell (PolkitDialog.qml), not polkit-gnome.
+  # The lock screen is quickshell too (Lock.qml); it checks passwords through this PAM service.
+  security.pam.services.quickshell = { };
 
   # macOS-style clipboard keys, system-wide. Super+C/V/X become Ctrl+Insert / Shift+Insert /
   # Shift+Delete, which GUI apps and terminals (incl. ghostty) all treat as copy/paste/cut
