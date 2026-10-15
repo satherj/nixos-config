@@ -199,7 +199,7 @@ layout {
     border {
         // The settings are the same as for the focus ring.
         // If you enable the border, you probably want to disable the focus ring.
-        // Discreet 1px border, same as the quickshell panels (Theme.border / Theme.borderActive):
+        // Discreet 1px border, subtle, to match the shell:
         // focused = Catppuccin blue @ 40%, others = surface0
         width 1
         active-color "#89b4fa66"
@@ -271,13 +271,9 @@ layout {
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
 
-// Quickshell: bar, wifi/bluetooth/battery panels, launcher, notifications (config in /etc/quickshell, from the NixOS config)
-spawn-at-startup "qs" "-p" "/etc/quickshell"
-// Wallpaper is drawn by quickshell (Super+Space -> "wallpapers" to pick one)
-// Clipboard history for the launcher (Super+Alt+Space)
-spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
-spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
-spawn-at-startup "swayidle" "-w" "timeout" "600" "qs ipc -p /etc/quickshell call lock lock" "timeout" "900" "niri msg action power-off-monitors" "before-sleep" "qs ipc -p /etc/quickshell call lock lock && sleep 1"
+// Noctalia: bar, launcher, notifications, lock screen, wallpaper, control center, clipboard history (settings in ~/.config/noctalia)
+spawn-at-startup "noctalia-shell"
+spawn-at-startup "swayidle" "-w" "timeout" "600" "noctalia-shell ipc call lockScreen lock" "timeout" "900" "niri msg action power-off-monitors" "before-sleep" "noctalia-shell ipc call lockScreen lock && sleep 1"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
 // spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
@@ -368,17 +364,17 @@ binds {
 
     // Mod-Shift-/, which is usually the same as Mod-?,
     // shows a list of important hotkeys.
-    Mod+Shift+Slash hotkey-overlay-title="Keyboard shortcuts" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "keybinds"; }
-    Mod+Alt+Space hotkey-overlay-title="Clipboard history" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "clipboard"; }
-    Mod+Shift+S hotkey-overlay-title="Screenshot & recording menu" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "panel" "toggle" "capture"; }
+    Mod+Shift+Slash { show-hotkey-overlay; }
+    Mod+Alt+Space hotkey-overlay-title="Clipboard history" { spawn "noctalia-shell" "ipc" "call" "launcher" "clipboard"; }
+    Mod+Shift+S hotkey-overlay-title="Screenshot" { screenshot; }
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
     Mod+Shift+Return hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable"; }
-    Mod+D hotkey-overlay-title="Run an Application" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "toggle"; }
-    Mod+Space hotkey-overlay-title="Run an Application" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "toggle"; }
+    Mod+D hotkey-overlay-title="Run an Application" { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Mod+Space hotkey-overlay-title="Run an Application" { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+E hotkey-overlay-title="Open Files: thunar" { spawn "thunar"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "lock" "lock"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen" { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
@@ -657,7 +653,7 @@ window-rule {
     clip-to-geometry true
 }
 
-// Bar click-popups (quickshell "More settings…"): small floating terminals under the bar, top-right
+// Bar click-popups: small floating terminals under the bar, top-right
 window-rule {
     match app-id=r#"^dev\.popup\."#
     open-floating true
@@ -666,5 +662,5 @@ window-rule {
     default-floating-position x=12 y=48 relative-to="top-right"
 }
 
-// Per-monitor scale/mode/position, managed by the Quickshell Displays panel (untracked file)
+// Per-monitor scale/mode/position, managed by the niri msg output (untracked file)
 include "outputs.kdl"
