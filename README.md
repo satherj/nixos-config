@@ -19,4 +19,6 @@ theme next            # cycle
 theme apply           # re-render the stored one (niri runs this at startup)
 ```
 
+Each preset has `"variant": "dark"` or `"light"`; applying one also switches the system colour scheme (dconf `color-scheme`, adw-gtk3 / Papirus variant, GTK `settings.ini`), so libadwaita, GTK and Chrome follow. Light counterparts: `latte`, `latte-deep`, `gruvbox-light`, `gruvbox-hard-light`, `midnight-light`. Light presets keep the same token order (base lightest, text darkest); ghostty ANSI black/white are swapped for them.
+
 Add a preset: copy a file from `themes/` to `themes/<id>.json` (tracked, needs `nixos-apply`) or to `~/.config/theme/themes/<id>.json` (untracked, instant; wins over a built-in with the same id). Generated files never land in the repo; the dotfiles reach them through gitignored links created by `modules/theme.nix`. Running GTK (Thunar, Chrome set to Appearance > Theme > GTK) and zathura windows pick up a switch on restart; the Papirus folder colour is not themed.

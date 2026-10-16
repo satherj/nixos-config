@@ -1,0 +1,17 @@
+{
+  "id": "gruvbox-hard-light",
+  "name": "Gruvbox Hard Light",
+  "variant": "light",
+  "colors": {
+    "base": "#f9f5d7", "mantle": "#f2e8bd", "crust": "#ebdbb2",
+    "surface0": "#ebdbb2", "surface1": "#d5c4a1", "surface2": "#bdae93",
+    "overlay0": "#a89984", "subtext0": "#665c54", "text": "#3c3836",
+    "blue": "#076678", "mauve": "#8f3f71", "green": "#79740e", "yellow": "#b57614",
+    "peach": "#af3a03", "red": "#9d0006", "teal": "#427b58", "pink": "#b16286",
+    "lavender": "#6c782e", "sky": "#458588", "sapphire": "#357585",
+    "maroon": "#cc241d", "rosewater": "#af5a50", "flamingo": "#d65d0e"
+  },
+  "accent": "peach",
+  "barOpacity": 0.95,
+  "iconWeight": "regular"
+}

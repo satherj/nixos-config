@@ -1,0 +1,17 @@
+{
+  "id": "latte",
+  "name": "Catppuccin Latte",
+  "variant": "light",
+  "colors": {
+    "base": "#eff1f5", "mantle": "#e6e9ef", "crust": "#dce0e8",
+    "surface0": "#ccd0da", "surface1": "#bcc0cc", "surface2": "#acb0be",
+    "overlay0": "#9ca0b0", "subtext0": "#6c6f85", "text": "#4c4f69",
+    "blue": "#1e66f5", "mauve": "#8839ef", "green": "#40a02b", "yellow": "#df8e1d",
+    "peach": "#fe640b", "red": "#d20f39", "teal": "#179299", "pink": "#ea76cb",
+    "lavender": "#7287fd", "sky": "#04a5e5", "sapphire": "#209fb5",
+    "maroon": "#e64553", "rosewater": "#dc8a78", "flamingo": "#dd7878"
+  },
+  "accent": "blue",
+  "barOpacity": 0.95,
+  "iconWeight": "regular"
+}

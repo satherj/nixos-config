@@ -129,7 +129,6 @@
     # live-editable (niri hot-reloads) while being versioned. `L` never clobbers an existing path.
     "L /home/jonathans/.config/niri - - - - /home/jonathans/nixos-staging/dotfiles/niri"
     "L /home/jonathans/.config/ghostty - - - - /home/jonathans/nixos-staging/dotfiles/ghostty"
-    "L /home/jonathans/.config/gtk-3.0/settings.ini - - - - /home/jonathans/nixos-staging/dotfiles/gtk-3.0/settings.ini"
     "L /home/jonathans/.config/gtk-3.0/bookmarks - - - - /home/jonathans/nixos-staging/dotfiles/gtk-3.0/bookmarks"
     "L /home/jonathans/.config/zathura - - - - /home/jonathans/nixos-staging/dotfiles/zathura"
   ];

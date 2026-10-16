@@ -1,0 +1,17 @@
+{
+  "id": "midnight-light",
+  "name": "Midnight Day",
+  "variant": "light",
+  "colors": {
+    "base": "#f4f6fb", "mantle": "#eceff7", "crust": "#e1e5f0",
+    "surface0": "#dde2ef", "surface1": "#cbd2e4", "surface2": "#b4bdd6",
+    "overlay0": "#8791b0", "subtext0": "#566086", "text": "#1f2640",
+    "blue": "#2f5fd0", "mauve": "#7a4fd6", "green": "#2f8f4e", "yellow": "#b07a10",
+    "peach": "#d2601a", "red": "#cc2f4a", "teal": "#17857f", "pink": "#c4489c",
+    "lavender": "#5b6bd6", "sky": "#1f8fc2", "sapphire": "#1b7fa6",
+    "maroon": "#b53a4c", "rosewater": "#c9857a", "flamingo": "#c4727a"
+  },
+  "accent": "blue",
+  "barOpacity": 0.95,
+  "iconWeight": "regular"
+}

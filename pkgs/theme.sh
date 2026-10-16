@@ -28,6 +28,8 @@ valid_preset() {
       and (.colors[.accent] | hex)
       and ((.barOpacity // 0.95) | type == "number" and . >= 0 and . <= 1)
       and ((.iconWeight // "regular") | IN("thin", "light", "regular", "bold", "fill"))
+      and ((.variant // "dark") | IN("dark", "light"))
+      and ((.variant // "dark") | IN("dark", "light"))
   ' "$1" >/dev/null 2>&1
 }
 
@@ -103,11 +105,31 @@ reload_apps() {
   niri msg action load-config-file >/dev/null 2>&1 || true
 }
 
+# System-wide light/dark: the Settings portal (libadwaita, GTK4, Chrome, Electron) follows color-scheme live.
+set_system_scheme() { # $1 = dark|light, $2 = "<gtk theme> <icon theme>"
+  [ "${THEME_NO_RELOAD:-0}" = 1 ] && return 0
+  [ "$state_base" = "$home/.local/state" ] && [ "$conf_base" = "$home/.config" ] || return 0
+  local scheme=prefer-dark gtk icons
+  [ "$1" = light ] && scheme=prefer-light
+  read -r gtk icons <<<"$2"
+  local p=/org/gnome/desktop/interface
+  dconf write "$p/color-scheme" "'$scheme'" 2>/dev/null || true
+  dconf write "$p/gtk-theme" "'$gtk'" 2>/dev/null || true
+  dconf write "$p/icon-theme" "'$icons'" 2>/dev/null || true
+}
+
 apply_preset() { # $1 = id, $2 = force reload (0/1)
   local preset map changed=$2
   preset=$(load_preset "$1")
   map=$(jq -c '.colors + {id, name, accent_name: .accent, accent: .colors[.accent],
-                          barOpacity: (.barOpacity | tostring), iconWeight}' <<<"$preset")
+                          barOpacity: (.barOpacity | tostring), iconWeight,
+                          prefer_dark: (if .variant == "light" then "0" else "1" end),
+                          gtk_theme: (if .variant == "light" then "adw-gtk3" else "adw-gtk3-dark" end),
+                          icon_theme: (if .variant == "light" then "Papirus-Light" else "Papirus-Dark" end),
+                          ansi0: (if .variant == "light" then .colors.subtext0 else .colors.surface1 end),
+                          ansi8: (if .variant == "light" then .colors.overlay0 else .colors.surface2 end),
+                          ansi7: (if .variant == "light" then .colors.surface2 else .colors.subtext0 end),
+                          ansi15: (if .variant == "light" then .colors.surface1 else .colors.text end)}' <<<"$preset")
   mkdir -p "$state_dir"
   render ghostty.conf "$map" | write_file "$state_dir/ghostty.conf" && changed=1
   render niri.kdl "$map" | write_file "$state_dir/niri.kdl" && changed=1
@@ -115,6 +137,9 @@ apply_preset() { # $1 = id, $2 = force reload (0/1)
   render colors.env "$map" | write_file "$state_dir/colors.env" && changed=1
   render gtk.css "$map" | write_gtk "$conf_base/gtk-3.0/gtk.css" && changed=1
   render gtk.css "$map" | write_gtk "$conf_base/gtk-4.0/gtk.css" && changed=1
+  render gtk-settings.ini "$map" | write_gtk "$conf_base/gtk-3.0/settings.ini" && changed=1
+  render gtk-settings.ini "$map" | write_gtk "$conf_base/gtk-4.0/settings.ini" && changed=1
+  set_system_scheme "$(jq -r '.variant' <<<"$preset")" "$(jq -r '.gtk_theme + " " + .icon_theme' <<<"$map")"
   [ "$changed" = 1 ] && reload_apps
   # last: the shell recolors when this changes, apps are already themed
   jq . <<<"$preset" | write_file "$state_dir/current.json" || true
