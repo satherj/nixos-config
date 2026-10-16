@@ -328,6 +328,12 @@
       };
       # Composite layer: Super+Shift held. Paste without formatting = Ctrl+Shift+V.
       settings."meta+shift".v = "C-S-v";
+      # Mac muscle memory: Shift+Super / Shift+Alt + the colon key still types the shifted
+      # character (colon on Swerty's . key and on US's ; key), instead of being swallowed.
+      settings."meta+shift".semicolon = "S-semicolon";
+      settings."meta+shift".dot = "S-dot";
+      settings."alt+shift".semicolon = "S-semicolon";
+      settings."alt+shift".dot = "S-dot";
     };
   };
 
