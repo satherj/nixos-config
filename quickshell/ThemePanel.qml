@@ -37,20 +37,21 @@ ColumnLayout {
                 highlighted: active
                 onClicked: Themes.set(modelData.id)
 
-                // Swatch strip
-                Row {
-                    spacing: 3
-                    Repeater {
-                        model: [row.c.base, row.c.surface0, row.c.text, row.c[modelData.accent ?? "blue"], row.c.green, row.c.red]
-                        Rectangle {
-                            required property var modelData
-                            width: 14
-                            height: 14
-                            radius: 7
-                            color: modelData ?? "transparent"
-                            border.color: Theme.border
-                            border.width: Theme.borderWidth
-                        }
+                // Preview chip: the theme's background with its accent as a dot
+                Rectangle {
+                    implicitWidth: 28
+                    implicitHeight: 20
+                    radius: 6
+                    color: row.c.base ?? "transparent"
+                    border.color: Theme.border
+                    border.width: Theme.borderWidth
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 10
+                        height: 10
+                        radius: 5
+                        color: row.c[modelData.accent ?? "blue"] ?? "transparent"
                     }
                 }
                 Icon {
