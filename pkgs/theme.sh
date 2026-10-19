@@ -98,7 +98,7 @@ write_gtk() { # $1 = dest, stdin = css
   printf '%s\n' "$css" | write_file "$dest"
 }
 
-# GTK3 apps (Chrome in GTK mode, Thunar) read ~/.config/gtk-3.0/gtk.css only at startup, but they
+# GTK3 apps (Chrome in GTK mode) read ~/.config/gtk-3.0/gtk.css only at startup, but they
 # reload live when the GTK theme *name* changes. So each preset becomes a tiny real theme that
 # imports adw-gtk3 and overrides its colours, named after a hash of its CSS: switching presets (or
 # editing one) changes the name, dconf/the Settings portal announce it, and running apps recolour.

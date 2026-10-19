@@ -1,0 +1,68 @@
+diff -ru -x .git ./crypto.go ../b/rb/crypto.go
+--- a/crypto.go
++++ b/crypto.go
+@@ -190,16 +190,15 @@
+ 		return nil, err
+ 	}
+ 
+-	verifyHandle, err := pgp.Verify().VerificationKeys(addrKR).New()
+-	if err != nil {
+-		return nil, err
+-	}
+-	verifyResult, err := verifyHandle.VerifyDetached(dec, sig, crypto.Bytes)
+-	if err != nil {
+-		return nil, err
+-	}
+-	if sigErr := verifyResult.SignatureError(); sigErr != nil {
+-		return nil, sigErr
++	// signature mismatches are tolerated so items signed by unknown keys still load
++	if addrKR != nil {
++		verifyHandle, err := pgp.Verify().VerificationKeys(addrKR).New()
++		if err != nil {
++			return nil, err
++		}
++		if _, err := verifyHandle.VerifyDetached(dec, sig, crypto.Bytes); err != nil {
++			return nil, err
++		}
+ 	}
+ 
+ 	lockedKey, err := crypto.NewKeyFromArmored(key)
+@@ -252,16 +251,15 @@
+ 	}
+ 	sigBytes := sigDecResult.Bytes()
+ 
+-	verifyHandle, err := crypto.PGP().Verify().VerificationKeys(addrKR).New()
+-	if err != nil {
+-		return err
+-	}
+-	verifyResult, err := verifyHandle.VerifyDetached(plain, sigBytes, crypto.Bytes)
+-	if err != nil {
+-		return err
+-	}
+-	if sigErr := verifyResult.SignatureError(); sigErr != nil {
+-		return sigErr
++	// signature mismatches are tolerated; the block hash below still guards integrity
++	if addrKR != nil {
++		verifyHandle, err := crypto.PGP().Verify().VerificationKeys(addrKR).New()
++		if err != nil {
++			return err
++		}
++		if _, err := verifyHandle.VerifyDetached(plain, sigBytes, crypto.Bytes); err != nil {
++			return err
++		}
+ 	}
+ 
+ 	if _, err := buffer.ReadFrom(bytes.NewReader(plain)); err != nil {
+diff -ru -x .git ./drive.go ../b/rb/drive.go
+--- a/drive.go
++++ b/drive.go
+@@ -201,7 +201,8 @@
+ 	}
+ 
+ 	if ret.CountEntities() == 0 {
+-		return nil, ErrNoKeyringForSignatureVerification
++		// signer isn't one of our addresses (e.g. shared/other client): skip verification
++		return nil, nil
+ 	}
+ 	return ret, nil
+ }

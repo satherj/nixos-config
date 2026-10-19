@@ -4,7 +4,7 @@ My NixOS setup. A small flake around one `configuration.nix`, no home-manager: d
 
 - **Compositor:** [niri](https://github.com/YaLTeR/niri), with greetd + tuigreet for login
 - **Shell:** a custom [Quickshell](https://quickshell.org) desktop in [`quickshell/`](quickshell): bar, wifi/bluetooth/audio/battery panels, launcher, notifications, OSD, lock screen, polkit dialog and wallpaper picker (dynamic wallpapers that follow the time of day or the sun; import one with `wallpaper-dynamic <dynamicwallpaper.club URL>`), all Catppuccin Mocha
-- **Apps:** ghostty + fish, Google Chrome, yazi, Thunar
+- **Apps:** ghostty + fish, Google Chrome, yazi, Nautilus
 
 Design rules for the shell (motion, materials, layout) and the reasoning behind them: [`docs/design.md`](docs/design.md).
 
@@ -23,4 +23,4 @@ theme apply           # re-render the stored one (niri runs this at startup)
 
 Each preset has `"variant": "dark"` or `"light"`; applying one also switches the system colour scheme (dconf `color-scheme`, adw-gtk3 / Papirus variant, GTK `settings.ini`), so libadwaita, GTK and Chrome follow. Light counterparts: `latte`, `latte-deep`, `gruvbox-light`, `gruvbox-hard-light`, `midnight-light`. Light presets keep the same token order (base lightest, text darkest); ghostty ANSI black/white are swapped for them.
 
-Add a preset: copy a file from `themes/` to `themes/<id>.json` (tracked, needs `nixos-apply`) or to `~/.config/theme/themes/<id>.json` (untracked, instant; wins over a built-in with the same id). Generated files never land in the repo; the dotfiles reach them through gitignored links created by `modules/theme.nix`. Running GTK3 apps (Thunar, Chrome set to Appearance > Theme > GTK) recolour live, because each preset is rendered as its own generated GTK theme; zathura picks up a switch on restart; the Papirus folder colour is not themed.
+Add a preset: copy a file from `themes/` to `themes/<id>.json` (tracked, needs `nixos-apply`) or to `~/.config/theme/themes/<id>.json` (untracked, instant; wins over a built-in with the same id). Generated files never land in the repo; the dotfiles reach them through gitignored links created by `modules/theme.nix`. Running GTK3 apps (Chrome set to Appearance > Theme > GTK) recolour live, GTK4/libadwaita apps (Nautilus) on their next launch, because each preset is rendered as its own generated GTK theme; zathura picks up a switch on restart; the Papirus folder colour is not themed.

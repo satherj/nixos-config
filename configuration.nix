@@ -61,7 +61,7 @@
   programs.dconf.enable = true;
 
   # System-wide dark mode: GTK apps, libadwaita, and Chrome follow this via the Settings portal.
-  # adw-gtk3 gives GTK3 apps (Thunar) the libadwaita look; its colours come from the active `theme` preset (gtk.css).
+  # adw-gtk3 gives GTK3 apps (Chrome in GTK mode) the libadwaita look; its colours come from the active `theme` preset (gtk.css).
   programs.dconf.profiles.user.databases = [{
     settings."org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";
@@ -134,7 +134,20 @@
   ];
 
   # Proton Drive: mounted at ~/ProtonDrive via rclone (remote "protondrive", set up with `rclone config`)
-  # and shown in Thunar's Places through dotfiles/gtk-3.0/bookmarks.
+  # and shown in the Nautilus sidebar through dotfiles/gtk-3.0/bookmarks.
+  # rclone's Proton library refuses to list a whole folder when any item in it is signed by a key
+  # that isn't one of our addresses ("no keyring is generated"); patch it to skip those checks.
+  nixpkgs.overlays = [
+    (final: prev: {
+      rclone = prev.rclone.overrideAttrs (old: {
+        preBuild = (old.preBuild or "") + ''
+          chmod -R u+w vendor/github.com/rclone
+          patch -p1 -d vendor/github.com/rclone/Proton-API-Bridge < ${./patches/rclone-proton-bridge-lenient-signatures.patch}
+          patch -p1 -d vendor/github.com/rclone/go-proton-api < ${./patches/rclone-go-proton-api-lenient-signatures.patch}
+        '';
+      });
+    })
+  ];
   systemd.user.services.rclone-protondrive = {
     description = "Mount Proton Drive (rclone)";
     wantedBy = [ "default.target" ];
@@ -142,7 +155,7 @@
     serviceConfig = {
       Type = "notify";
       ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p %h/ProtonDrive";
-      ExecStart = "${pkgs.rclone}/bin/rclone mount protondrive: %h/ProtonDrive --vfs-cache-mode full --dir-cache-time 5m";
+      ExecStart = "${pkgs.rclone}/bin/rclone mount protondrive: %h/ProtonDrive --vfs-cache-mode full --dir-cache-time 30s --rc";  # no ChangeNotify on Proton: short cache; `rclone rc vfs/refresh recursive=true` forces a refresh
       ExecStop = "/run/wrappers/bin/fusermount3 -uz %h/ProtonDrive";
       Restart = "on-failure";
       RestartSec = 15;
@@ -212,8 +225,9 @@
     # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders
     adw-gtk3
     (catppuccin-papirus-folders.override { flavor = "mocha"; accent = "blue"; })
-    # files: yazi (TUI) + thunar (GUI, programs.thunar below)
-    yazi lazygit
+    # files: yazi (TUI) + nautilus (GUI; rename/progress/conflicts stay inside its window, themed via gtk-4.0/gtk.css)
+    # ffmpegthumbnailer gives it video thumbnails (images/PDFs are built in)
+    yazi lazygit nautilus ffmpegthumbnailer
     fastfetch
     # `nixos-apply`: rebuild from the ~/nixos-staging flake, push to GitHub, restart quickshell
     # `nixos-apply -l` also signs you out afterwards, for changes that need a fresh session
@@ -260,8 +274,7 @@
     # dev tooling
     mise git gh curl unzip
     # zip handling: `unzip-here <file.zip>` extracts next to the archive into a folder named after it
-    # (default app for .zip via xdg.mime below); xarchiver backs Thunar's right-click "Extract Here"
-    xarchiver
+    # (default app for .zip via xdg.mime below); Nautilus has its own right-click Compress/Extract
     (writeShellScriptBin "unzip-here" ''
       for f in "$@"; do
         base="''${f%.*}"
@@ -292,12 +305,13 @@
   # niri starts it with `qs -p /etc/quickshell` and binds talk to it via `qs ipc -p /etc/quickshell ...`
   environment.etc."quickshell".source = ./quickshell;
 
-  # Thunar with trash/mounts (gvfs) and thumbnails (tumbler)
-  programs.thunar = {
+  # Nautilus: right-click "Open in Ghostty"; trash/mounts/network locations come from gvfs below
+  programs.nautilus-open-any-terminal = {
     enable = true;
-    plugins = with pkgs; [ thunar-archive-plugin thunar-volman ];
+    terminal = "ghostty";
   };
   xdg.mime.defaultApplications = {
+    "inode/directory" = "org.gnome.Nautilus.desktop";
     "application/pdf" = "org.pwmt.zathura.desktop";
     "text/html" = "google-chrome.desktop";
     "x-scheme-handler/http" = "google-chrome.desktop";
@@ -308,7 +322,6 @@
     "application/x-zip-compressed" = "unzip-here.desktop";
   };
   services.gvfs.enable = true;
-  services.tumbler.enable = true;
 
   # Chrome has no forced theme: pick Appearance > Theme > "GTK" once and it follows the GTK
   # colours the `theme` command generates (a pinned extension theme would override every preset).

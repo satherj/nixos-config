@@ -108,11 +108,11 @@ ColumnLayout {
         Layout.alignment: Qt.AlignRight
         IconButton {
             text: "Screenshots…"
-            onClicked: { UiState.close(); Quickshell.execDetached(["thunar", Capture.screenshotsDir]); }
+            onClicked: { UiState.close(); Quickshell.execDetached(["nautilus", "--new-window", Capture.screenshotsDir]); }
         }
         IconButton {
             text: "Recordings…"
-            onClicked: { UiState.close(); Quickshell.execDetached(["sh", "-c", `mkdir -p "${Capture.recordingsDir}" && exec thunar "${Capture.recordingsDir}"`]); }
+            onClicked: { UiState.close(); Quickshell.execDetached(["sh", "-c", `mkdir -p "${Capture.recordingsDir}" && exec nautilus --new-window "${Capture.recordingsDir}"`]); }
         }
     }
 }

@@ -1,0 +1,55 @@
+diff -ru -x .git ./crypto_v3_compat.go ../b/rp/crypto_v3_compat.go
+--- a/crypto_v3_compat.go
++++ b/crypto_v3_compat.go
+@@ -112,11 +112,7 @@
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if verifyKR != nil {
+-		if sigErr := result.SignatureError(); sigErr != nil {
+-			return nil, sigErr
+-		}
+-	}
++	// signature mismatches are tolerated so items signed by unknown keys still load
+ 	return result.Bytes(), nil
+ }
+ 
+@@ -149,28 +145,28 @@
+ // v2 crypto.GetUnixTime() semantics). Equivalent to v2
+ // kr.VerifyDetached(NewPlainMessage(b), sig, t).
+ func verifyDetached(kr *crypto.KeyRing, plaintext, signature []byte, verifyTime int64) error {
+-	vh, err := crypto.PGP().Verify().VerificationKeys(kr).VerifyTime(resolveVerifyTime(verifyTime)).New()
+-	if err != nil {
+-		return err
++	if kr == nil {
++		return nil
+ 	}
+-	result, err := vh.VerifyDetached(plaintext, signature, crypto.Bytes)
++	vh, err := crypto.PGP().Verify().VerificationKeys(kr).VerifyTime(resolveVerifyTime(verifyTime)).New()
+ 	if err != nil {
+ 		return err
+ 	}
+-	return result.SignatureError()
++	_, err = vh.VerifyDetached(plaintext, signature, crypto.Bytes)
++	return err
+ }
+ 
+ // verifyDetachedArmored verifies an armored detached signature over plaintext.
+ func verifyDetachedArmored(kr *crypto.KeyRing, plaintext []byte, armoredSig string, verifyTime int64) error {
+-	vh, err := crypto.PGP().Verify().VerificationKeys(kr).VerifyTime(resolveVerifyTime(verifyTime)).New()
+-	if err != nil {
+-		return err
++	if kr == nil {
++		return nil
+ 	}
+-	result, err := vh.VerifyDetached(plaintext, []byte(armoredSig), crypto.Armor)
++	vh, err := crypto.PGP().Verify().VerificationKeys(kr).VerifyTime(resolveVerifyTime(verifyTime)).New()
+ 	if err != nil {
+ 		return err
+ 	}
+-	return result.SignatureError()
++	_, err = vh.VerifyDetached(plaintext, []byte(armoredSig), crypto.Armor)
++	return err
+ }
+ 
+ // encryptAttachment encrypts attachment bytes, returning the PGP message
