@@ -50,7 +50,7 @@ Singleton {
         settings.interval = minutes;
     }
     function openPicker() {
-        UiState.close();
+        UiState.close(true);
         rescan();
         pickerOpen = true;
     }

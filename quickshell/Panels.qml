@@ -59,6 +59,27 @@ Variants {
         WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         WlrLayershell.namespace: "quickshell-panel"
 
+        // Compositor blur behind the cards (their material is translucent), following each card's
+        // current on-screen size so the frost never peeks out during the grow animation
+        BackgroundEffect.blurRegion: Region {
+            Region {
+                readonly property rect r: mainCard.opacity > 0 && !Theme.reduceTransparency ? mainCard.visualRect : Qt.rect(0, 0, 0, 0)
+                x: r.x
+                y: r.y
+                width: r.width
+                height: r.height
+                radius: Theme.radius
+            }
+            Region {
+                readonly property rect r: sideCard.opacity > 0 && !Theme.reduceTransparency ? sideCard.visualRect : Qt.rect(0, 0, 0, 0)
+                x: r.x
+                y: r.y
+                width: r.width
+                height: r.height
+                radius: Theme.radius
+            }
+        }
+
         MouseArea {
             anchors.fill: parent
             onClicked: UiState.close()
@@ -69,9 +90,12 @@ Variants {
 
             anchors.top: parent.top
             anchors.topMargin: 8
-            // Control center and calendar drop from the left (their buttons); the rest from the right
+            // Control center and calendar drop from the left (their buttons); the rest from the right.
+            // Under the button that opened it (centred, kept on screen), growing out of that button.
             fromLeft: win.mainShown === "calendar" || win.mainShown === "control"
-            x: fromLeft ? Theme.gap : parent.width - width - Theme.gap
+            readonly property real cornerX: fromLeft ? Theme.gap : parent.width - width - Theme.gap
+            x: UiState.anchorX < 0 ? cornerX : Math.max(Theme.gap, Math.min(parent.width - width - Theme.gap, UiState.anchorX - width / 2))
+            originX: UiState.anchorX < 0 ? (fromLeft ? 0 : width) : Math.max(Theme.radius, Math.min(width - Theme.radius, UiState.anchorX - x))
             width: win.mainShown === "control" ? 360 : 340
             open: win.open
             content: win.component(win.mainShown)

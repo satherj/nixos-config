@@ -53,7 +53,7 @@ Singleton {
             comment: "",
             execString: "",
             noDisplay: false,
-            execute: () => UiState.toggle("theme", UiState.screen ?? Quickshell.screens[0])
+            execute: () => UiState.toggle("theme", UiState.screen ?? Quickshell.screens[0], true)
         },
         {
             name: "Theme: next",

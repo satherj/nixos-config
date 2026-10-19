@@ -33,10 +33,14 @@ Scope {
             right: true
         }
         exclusionMode: ExclusionMode.Ignore
-        color: Qt.rgba(Theme.crust.r, Theme.crust.g, Theme.crust.b, 0.55)
+        color: "transparent"
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
         WlrLayershell.namespace: "quickshell-polkit"
+        BackgroundEffect.blurRegion: Region {
+            item: Theme.reduceTransparency ? null : card
+            radius: Theme.radius
+        }
 
         function submit() {
             if (!root.flow || !root.flow.isResponseRequired)
@@ -45,21 +49,33 @@ Scope {
             input.text = "";
         }
 
+        // Dim fades in with the card rather than the screen darkening in one frame
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(Theme.crust.r, Theme.crust.g, Theme.crust.b, 0.55)
+            opacity: win.visible ? 1 : 0
+            Behavior on opacity { EaseOut { duration: Theme.durDropdown } }
+        }
+
         Rectangle {
             id: card
             anchors.centerIn: parent
             width: 420
             height: body.implicitHeight + 48
             radius: Theme.radius
-            color: Theme.base
+            color: Theme.material
             border.color: Theme.border
             border.width: Theme.borderWidth
+
+            Shadow {
+                depth: 1.4
+            }
 
             // Entrance only (it's triggered by an app, not the keyboard): small scale + fade
             opacity: win.visible ? 1 : 0
             scale: win.visible || Theme.reduceMotion ? 1 : 0.96
-            Behavior on opacity { NumberAnimation { duration: Theme.durDropdown; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
-            Behavior on scale { NumberAnimation { duration: Theme.durDropdown; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+            Behavior on opacity { EaseOut { duration: Theme.durDropdown } }
+            Behavior on scale { EaseOut { duration: Theme.durDropdown } }
 
             ColumnLayout {
                 id: body
@@ -105,6 +121,24 @@ Scope {
                     color: Theme.surface0
                     border.width: Theme.borderWidth
                     border.color: root.flow?.supplementaryIsError ? Theme.red : input.activeFocus ? Theme.blue : Theme.border
+                    Behavior on border.color { ColorFade {} }
+
+                    // Wrong password: the same short, damped shake as the lock screen
+                    transform: Translate { id: shakeX }
+                    SequentialAnimation {
+                        id: shake
+                        EaseOut { target: shakeX; property: "x"; to: -8; duration: 50 }
+                        EaseOut { target: shakeX; property: "x"; to: 7; duration: 70; easing.bezierCurve: Theme.easeInOut }
+                        EaseOut { target: shakeX; property: "x"; to: -4; duration: 60; easing.bezierCurve: Theme.easeInOut }
+                        EaseOut { target: shakeX; property: "x"; to: 0; duration: 80 }
+                    }
+                    Connections {
+                        target: root.flow
+                        function onAuthenticationFailed() {
+                            if (!Theme.reduceMotion)
+                                shake.restart();
+                        }
+                    }
 
                     TextInput {
                         id: input
@@ -162,7 +196,7 @@ Scope {
                         implicitHeight: 34
                         fg: Theme.base
                         hoverFg: Theme.base
-                        color: Theme.blue
+                        baseColor: Theme.blue
                         onClicked: win.submit()
                     }
                 }

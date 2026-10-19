@@ -67,34 +67,73 @@ Singleton {
         onTriggered: stateFile.reload()
     }
 
-    readonly property color base: col("base")
-    // Same translucency as the terminal (ghostty background-opacity)
-    readonly property real barOpacity: typeof preset.barOpacity === "number" ? preset.barOpacity : 0.95
+    property color base: col("base")
+    // Glass strength shared by the bar, the panels and the terminal (ghostty background-opacity):
+    // one per-theme value, so every frosted surface matches
+    readonly property real barOpacity: typeof preset.barOpacity === "number" ? preset.barOpacity : 0.85
     readonly property color barBg: Qt.alpha(base, barOpacity)
-    readonly property color mantle: col("mantle")
-    readonly property color crust: col("crust")
-    readonly property color surface0: col("surface0")
-    readonly property color surface1: col("surface1")
-    readonly property color surface2: col("surface2")
-    readonly property color overlay0: col("overlay0")
-    readonly property color subtext0: col("subtext0")
-    readonly property color text: col("text")
-    readonly property color blue: col("blue")
-    readonly property color mauve: col("mauve")
-    readonly property color green: col("green")
-    readonly property color yellow: col("yellow")
-    readonly property color peach: col("peach")
-    readonly property color red: col("red")
-    readonly property color teal: col("teal")
-    readonly property color pink: col("pink")
-    readonly property color lavender: col("lavender")
-    readonly property color sky: col("sky")
-    readonly property color sapphire: col("sapphire")
-    readonly property color maroon: col("maroon")
-    readonly property color rosewater: col("rosewater")
-    readonly property color flamingo: col("flamingo")
+    property color mantle: col("mantle")
+    property color crust: col("crust")
+    property color surface0: col("surface0")
+    property color surface1: col("surface1")
+    property color surface2: col("surface2")
+    property color overlay0: col("overlay0")
+    property color subtext0: col("subtext0")
+    property color text: col("text")
+    property color blue: col("blue")
+    property color mauve: col("mauve")
+    property color green: col("green")
+    property color yellow: col("yellow")
+    property color peach: col("peach")
+    property color red: col("red")
+    property color teal: col("teal")
+    property color pink: col("pink")
+    property color lavender: col("lavender")
+    property color sky: col("sky")
+    property color sapphire: col("sapphire")
+    property color maroon: col("maroon")
+    property color rosewater: col("rosewater")
+    property color flamingo: col("flamingo")
     readonly property string accentName: typeof preset.accent === "string" && fallback[preset.accent] !== undefined ? preset.accent : "blue"
-    readonly property color accent: col(accentName)
+    property color accent: col(accentName)
+
+    // Switching themes morphs every colour in the shell instead of snapping (a rare, deliberate
+    // action, so it gets a slower beat). Off until the first preset load so startup doesn't fade.
+    property bool settled: false
+    Timer {
+        running: true
+        interval: 1500
+        onTriggered: root.settled = true
+    }
+    component ThemeFade: ColorAnimation {
+        duration: root.reduceMotion ? 0 : root.durTheme
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: root.ease
+    }
+    Behavior on base { enabled: root.settled; ThemeFade {} }
+    Behavior on mantle { enabled: root.settled; ThemeFade {} }
+    Behavior on crust { enabled: root.settled; ThemeFade {} }
+    Behavior on surface0 { enabled: root.settled; ThemeFade {} }
+    Behavior on surface1 { enabled: root.settled; ThemeFade {} }
+    Behavior on surface2 { enabled: root.settled; ThemeFade {} }
+    Behavior on overlay0 { enabled: root.settled; ThemeFade {} }
+    Behavior on subtext0 { enabled: root.settled; ThemeFade {} }
+    Behavior on text { enabled: root.settled; ThemeFade {} }
+    Behavior on blue { enabled: root.settled; ThemeFade {} }
+    Behavior on mauve { enabled: root.settled; ThemeFade {} }
+    Behavior on green { enabled: root.settled; ThemeFade {} }
+    Behavior on yellow { enabled: root.settled; ThemeFade {} }
+    Behavior on peach { enabled: root.settled; ThemeFade {} }
+    Behavior on red { enabled: root.settled; ThemeFade {} }
+    Behavior on teal { enabled: root.settled; ThemeFade {} }
+    Behavior on pink { enabled: root.settled; ThemeFade {} }
+    Behavior on lavender { enabled: root.settled; ThemeFade {} }
+    Behavior on sky { enabled: root.settled; ThemeFade {} }
+    Behavior on sapphire { enabled: root.settled; ThemeFade {} }
+    Behavior on maroon { enabled: root.settled; ThemeFade {} }
+    Behavior on rosewater { enabled: root.settled; ThemeFade {} }
+    Behavior on flamingo { enabled: root.settled; ThemeFade {} }
+    Behavior on accent { enabled: root.settled; ThemeFade {} }
 
     readonly property string font: "Maple Mono NF"
     // Phosphor weight used by Icon.qml: thin | light | regular | bold | fill
@@ -106,6 +145,15 @@ Singleton {
     // Space the bar occupies from the top edge
     readonly property int barExtent: barMargin * 2 + barHeight
     readonly property int radius: 12
+
+    // Materials (Apple's translucent layers): floating surfaces are frosted glass over a compositor
+    // blur (niri ext-background-effect), so they sit above the desktop without hiding it.
+    // QS_REDUCE_TRANSPARENCY=1 makes them solid.
+    readonly property bool reduceTransparency: Quickshell.env("QS_REDUCE_TRANSPARENCY") === "1"
+    readonly property real materialOpacity: reduceTransparency ? 1 : barOpacity
+    readonly property color material: Qt.alpha(base, materialOpacity)
+    // Depth: bigger surfaces read as thicker, so they cast a deeper shadow
+    readonly property color shadow: Qt.rgba(0, 0, 0, 0.45)
 
     // One discreet border for every surface; niri's focused-window border uses the same values
     readonly property color border: surface1
@@ -123,4 +171,8 @@ Singleton {
     readonly property int durDropdown: 180
     readonly property int durDropdownExit: 140
     readonly property int durToast: 250
+    // Card resizing to fit new content (list grows, section appears)
+    readonly property int durResize: 200
+    // Whole-shell colour morph when the theme changes
+    readonly property int durTheme: 400
 }

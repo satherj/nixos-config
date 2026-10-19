@@ -10,23 +10,14 @@ ShellRoot {
         target: "panel"
 
         function toggle(name: string): void {
-            UiState.toggle(name, UiState.screen ?? Quickshell.screens[0]);
+            UiState.toggle(name, UiState.screen ?? Quickshell.screens[0], true);
         }
         // `... call panel beside theme control`: flyout next to the control center
         function beside(name: string, owner: string): void {
-            UiState.toggleBeside(name, UiState.screen ?? Quickshell.screens[0], owner);
+            UiState.toggleBeside(name, UiState.screen ?? Quickshell.screens[0], owner, true);
         }
         function close(): void {
-            UiState.close();
-        }
-    }
-
-    // `qs ipc -p /etc/quickshell call bar autohide on|off|toggle`
-    IpcHandler {
-        target: "bar"
-
-        function autohide(mode: string): void {
-            UiState.barAutoHide = mode === "toggle" ? !UiState.barAutoHide : mode === "on";
+            UiState.close(true);
         }
     }
 
@@ -72,6 +63,21 @@ ShellRoot {
         }
     }
 
+    // `qs ipc -p /etc/quickshell call screenshot region|window|screen` (PrtSc / Alt+PrtSc)
+    IpcHandler {
+        target: "screenshot"
+
+        function region(): void {
+            Capture.screenshot("region");
+        }
+        function window(): void {
+            Capture.screenshot("pick");
+        }
+        function screen(): void {
+            Capture.screenshot("screen");
+        }
+    }
+
     // `qs ipc -p /etc/quickshell call nightlight toggle`
     IpcHandler {
         target: "nightlight"
@@ -94,11 +100,13 @@ ShellRoot {
     Launcher {}
     Notifications {}
     PolkitDialog {}
+    ScreenshotOverlay {}
 
     // Touch the Lock singleton at startup so PAM and the session lock are ready before the first lock
     Component.onCompleted: {
         Lock.locked;
         Displays.outputs;
+        BluetoothTrust.pending;
         Themes.reload();
     }
 }

@@ -20,8 +20,24 @@ ColumnLayout {
 
     function shift(n) {
         const d = new Date(year, month + n, 1);
-        year = d.getFullYear();
-        month = d.getMonth();
+        show(d.getFullYear(), d.getMonth());
+    }
+    // Jump to a month; the grid slides in from the side you're heading to (later months from
+    // the right), a short nudge plus fade so it reads as paging without slowing a fast scroll
+    function show(y, m) {
+        const dir = Math.sign((y - year) * 12 + (m - month));
+        year = y;
+        month = m;
+        if (dir === 0)
+            return;
+        page.from = Theme.reduceMotion ? 0 : dir * 16;
+        page.restart();
+    }
+    ParallelAnimation {
+        id: page
+        property real from: 0
+        EaseOut { target: grid; property: "slide"; from: page.from; to: 0; duration: Theme.durDropdown }
+        EaseOut { target: grid; property: "opacity"; from: 0.3; to: 1; duration: Theme.durDropdown }
     }
     function isoWeek(d) {
         const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -67,16 +83,16 @@ ColumnLayout {
         IconButton {
             visible: !root.isCurrentMonth
             text: "Today"
-            onClicked: {
-                root.year = root.today.getFullYear();
-                root.month = root.today.getMonth();
-            }
+            onClicked: root.show(root.today.getFullYear(), root.today.getMonth())
         }
         IconButton { icon: "caret-left"; onClicked: root.shift(-1) }
         IconButton { icon: "caret-right"; onClicked: root.shift(1) }
     }
 
     GridLayout {
+        id: grid
+        property real slide: 0
+        transform: Translate { x: grid.slide }
         Layout.fillWidth: true
         columns: 8
         columnSpacing: 2
@@ -138,8 +154,17 @@ ColumnLayout {
         }
     }
 
-    // Scroll anywhere on the calendar to change month
+    // Scroll anywhere on the calendar to change month. A touchpad sends many small deltas, so
+    // they add up to one month per mouse-wheel notch (120) instead of flying through the year.
+    property real wheelAcc: 0
     WheelHandler {
-        onWheel: e => root.shift(e.angleDelta.y > 0 ? -1 : 1)
+        onWheel: e => {
+            root.wheelAcc += e.angleDelta.y;
+            while (Math.abs(root.wheelAcc) >= 120) {
+                const n = root.wheelAcc > 0 ? -1 : 1;
+                root.wheelAcc += n * 120;
+                root.shift(n);
+            }
+        }
     }
 }

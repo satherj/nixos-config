@@ -20,15 +20,19 @@ PanelWindow {
     }
     // Full-width band; the content is inset from the screen edges by the gap
     readonly property int inset: Theme.gap
-    // The window spans the whole bar and the band slides inside it. Hidden, only a thin strip at the
-    // screen edge takes input, so the rest of the area stays click-through.
-    implicitHeight: Theme.barExtent
-    exclusionMode: UiState.barAutoHide ? ExclusionMode.Ignore : ExclusionMode.Auto
-    color: "transparent"
+    // The window reaches a little below the bar to draw tooltips there; only the bar itself
+    // reserves space and takes input
+    implicitHeight: Theme.barExtent + 48
+    exclusionMode: ExclusionMode.Normal
+    exclusiveZone: Theme.barExtent
     mask: Region {
-        item: hotZone
+        item: backdrop
     }
+    color: "transparent"
     WlrLayershell.namespace: "quickshell-bar"
+    BackgroundEffect.blurRegion: Region {
+        item: Theme.reduceTransparency ? null : backdrop
+    }
 
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var adapter: Bluetooth.defaultAdapter
@@ -39,36 +43,11 @@ PanelWindow {
         objects: [bar.sink]
     }
 
-    // Auto-hide: revealed while hovered or while one of its panels is open, and briefly after the
-    // pointer leaves so an overshooting move does not make it flicker away
-    readonly property bool revealed: !UiState.barAutoHide || hover.hovered || hold.running || (UiState.panel !== "" && UiState.screen === screen)
-    // Top edge of the band: 0 shown, -implicitHeight hidden
-    property real slideY: revealed ? 0 : -implicitHeight
-
-    Behavior on slideY {
-        NumberAnimation {
-            duration: bar.revealed ? Theme.durDropdown : Theme.durDropdownExit
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.easeOut
-        }
-    }
-
-    HoverHandler {
-        id: hover
-        onHoveredChanged: if (!hovered)
-            hold.restart()
-    }
-
-    Timer {
-        id: hold
-        interval: 350
-    }
-
     // Full-width backdrop
     Rectangle {
-        y: bar.slideY
+        id: backdrop
         width: bar.width
-        height: bar.implicitHeight
+        height: Theme.barExtent
         color: Theme.barBg
 
         Rectangle {
@@ -79,10 +58,11 @@ PanelWindow {
         }
     }
 
-    Item {
-        id: hotZone
-        width: bar.width
-        height: bar.slideY <= -bar.implicitHeight + 1 ? 2 : bar.implicitHeight
+    BarTooltip {
+        id: tip
+        y: Theme.barExtent + 4
+        minX: bar.inset
+        maxX: bar.width - bar.inset
     }
 
     component Pill: Rectangle {
@@ -90,7 +70,7 @@ PanelWindow {
         color: "transparent"
         radius: Theme.radius
         implicitHeight: Theme.barHeight
-        y: bar.slideY + Theme.barMargin
+        y: Theme.barMargin
         // Same 4px padding on every side as above/below the buttons, so the 8px button corners
         // sit concentric inside the 12px pill corners (12 - 4 = 8)
         implicitWidth: row.implicitWidth + 8
@@ -102,6 +82,16 @@ PanelWindow {
         }
     }
 
+    // ISO week number, for the clock tooltip
+    function isoWeek(d) {
+        const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+        return Math.ceil(((t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7);
+    }
+
+    // The bar shows only what you need at a glance (icons and the time); the details live in
+    // each button's tooltip and its panel.
+
     // Left: control center + clock
     Pill {
         anchors.left: parent.left
@@ -109,10 +99,13 @@ PanelWindow {
 
         // Control center: toggles, sliders, night light, media, power
         BarButton {
+            tooltip: tip
+            barScreen: bar.screen
             icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["command"])
             fg: UiState.dnd || NightLight.enabled ? Theme.mauve : Theme.text
-            active: (UiState.panel === "control" || UiState.base === "control") && UiState.screen === bar.screen
-            onClicked: UiState.toggle("control", bar.screen)
+            panel: "control"
+            tip: "Control center"
+            tipHint: [].concat(UiState.dnd ? ["Do not disturb on"] : [], NightLight.enabled ? ["Night light on"] : []).join(" · ")
         }
 
         SystemClock {
@@ -121,9 +114,14 @@ PanelWindow {
         }
 
         BarButton {
-            text: Qt.formatDateTime(clock.date, "ddd dd MMM  HH:mm")
-            active: UiState.panel === "calendar" && UiState.screen === bar.screen
-            onClicked: UiState.toggle("calendar", bar.screen)
+
+            tooltip: tip
+
+            barScreen: bar.screen
+            text: Qt.formatDateTime(clock.date, "HH:mm")
+            panel: "calendar"
+            tip: Qt.formatDateTime(clock.date, "dddd d MMMM yyyy")
+            tipHint: "Week " + bar.isoWeek(clock.date)
         }
     }
 
@@ -132,78 +130,109 @@ PanelWindow {
         anchors.right: parent.right
         anchors.rightMargin: bar.inset
 
-        // Recording in progress: click to stop
+        // Recording in progress: the timer stays visible (it's the point), click to stop
         BarButton {
+            tooltip: tip
+            barScreen: bar.screen
             visible: Capture.recording
             icon: "record"
             iconWeight: "fill"
             text: Capture.elapsed
             fg: Theme.red
+            tip: "Recording"
+            tipHint: "Click to stop"
             onClicked: Capture.stop()
         }
 
+        // Shown only off the default layout, so the short code is the state itself
         BarButton {
+            tooltip: tip
+            barScreen: bar.screen
             visible: Niri.layouts.length > 1 && Niri.layoutIdx !== 0
             icon: "keyboard"
             text: (Niri.layoutName.match(/\(([^)]+)\)/)?.[1] ?? Niri.layoutName).toLowerCase()
             fg: Theme.mauve
+            tip: Niri.layoutName
+            tipHint: "Click to switch layout"
             onClicked: Quickshell.execDetached(["niri", "msg", "action", "switch-layout", "next"])
         }
 
         BarButton {
+
+            tooltip: tip
+
+            barScreen: bar.screen
             readonly property bool on: bar.adapter?.enabled ?? false
             icon: !on ? "bluetooth-slash" : bar.btConnected.length > 0 ? "bluetooth-connected" : "bluetooth"
-            text: on && bar.btConnected.length > 0 ? bar.btConnected[0].name : ""
             fg: on ? Theme.text : Theme.overlay0
-            active: UiState.panel === "bluetooth" && UiState.screen === bar.screen
+            panel: "bluetooth"
+            tip: !bar.adapter ? "No Bluetooth adapter"
+                : !on ? "Bluetooth off"
+                : bar.btConnected.length === 0 ? "Bluetooth on · nothing connected"
+                : bar.btConnected.map(d => d.name + (d.batteryAvailable ? ` ${Math.round(d.battery * 100)}%` : "")).join(", ")
+            tipHint: bar.adapter ? (on ? "Right-click to turn off" : "Right-click to turn on") : ""
             onClicked: m => {
                 if (m.button === Qt.RightButton && bar.adapter)
                     bar.adapter.enabled = !on;
-                else
-                    UiState.toggle("bluetooth", bar.screen);
             }
         }
 
         BarButton {
+
+            tooltip: tip
+
+            barScreen: bar.screen
             icon: Net.icon
             fg: Net.online ? Theme.text : Theme.overlay0
-            active: UiState.panel === "wifi" && UiState.screen === bar.screen
+            panel: "wifi"
+            tip: Net.wiredDevice ? "Wired connection"
+                : !Networking.wifiEnabled ? "Wi-Fi off"
+                : Net.activeWifi ? `${Net.activeWifi.name} · ${Math.round(Net.strength(Net.activeWifi) * 100)}%`
+                : "Not connected"
+            tipHint: Networking.wifiEnabled ? "Right-click to turn Wi-Fi off" : "Right-click to turn Wi-Fi on"
             onClicked: m => {
                 if (m.button === Qt.RightButton)
                     Networking.wifiEnabled = !Networking.wifiEnabled;
-                else
-                    UiState.toggle("wifi", bar.screen);
             }
         }
 
         BarButton {
+
+            tooltip: tip
+
+            barScreen: bar.screen
             readonly property real vol: bar.sink?.audio?.volume ?? 0
             readonly property bool muted: bar.sink?.audio?.muted ?? false
-            icon: muted ? "speaker-x" : ["speaker-low", "speaker-low", "speaker-high"][Math.min(2, Math.floor(vol * 3))]
-            text: muted ? "muted" : Math.round(vol * 100) + "%"
-            active: UiState.panel === "audio" && UiState.screen === bar.screen
+            icon: muted ? "speaker-x" : vol <= 0.005 ? "speaker-none" : vol < 0.5 ? "speaker-low" : "speaker-high"
             fg: muted ? Theme.overlay0 : Theme.text
+            panel: "audio"
+            tip: (muted ? `Muted (${Math.round(vol * 100)}%)` : `Volume ${Math.round(vol * 100)}%`) + (bar.sink?.description ? " · " + bar.sink.description : "")
+            tipHint: muted ? "Scroll to adjust · right-click to unmute" : "Scroll to adjust · right-click to mute"
             onClicked: m => {
                 if (m.button === Qt.RightButton)
                     bar.sink.audio.muted = !muted;
-                else
-                    UiState.toggle("audio", bar.screen);
             }
             onScrolled: w => {
                 if (!bar.sink?.audio)
                     return;
-                bar.sink.audio.volume = Math.max(0, Math.min(1, vol + (w.angleDelta.y > 0 ? 0.05 : -0.05)));
+                bar.sink.audio.volume = Math.max(0, Math.min(1, vol + w.angleDelta.y / 120 * 0.05));
             }
         }
 
         BarButton {
+
+            tooltip: tip
+
+            barScreen: bar.screen
             visible: bar.battery?.isLaptopBattery ?? false
             readonly property real pct: Battery.percent
+            readonly property bool low: pct <= 20 && !Battery.charging && UPower.onBattery
             icon: Battery.icon
-            text: Math.round(pct) + "%"
+            // Running low is the one time the number matters at a glance
+            text: low ? Math.round(pct) + "%" : ""
             fg: Battery.charging ? Theme.green : pct <= 10 ? Theme.red : pct <= 25 ? Theme.yellow : Theme.text
-            active: UiState.panel === "battery" && UiState.screen === bar.screen
-            onClicked: UiState.toggle("battery", bar.screen)
+            panel: "battery"
+            tip: Math.round(pct) + "% · " + Battery.status
         }
     }
 }

@@ -15,35 +15,47 @@ Variants {
 
         visible: Osd.shown || pill.opacity > 0
         anchors.bottom: true
-        margins.bottom: 72
-        implicitWidth: 300
-        implicitHeight: 52
+        // The window is padded so the pill's shadow isn't cut off
+        readonly property int pad: 28
+        margins.bottom: 72 - pad
+        implicitWidth: 300 + pad * 2
+        implicitHeight: 52 + pad * 2
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
         mask: Region {}
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "quickshell-osd"
+        BackgroundEffect.blurRegion: Region {
+            item: pill.opacity > 0 && !Theme.reduceTransparency ? pill : null
+            radius: pill.radius
+        }
 
         Rectangle {
             id: pill
 
             anchors.fill: parent
+            anchors.margins: win.pad
             radius: height / 2
-            color: Theme.base
+            color: Theme.material
             border.color: Theme.border
             border.width: Theme.borderWidth
 
-            // Rises a few px and fades in; leaves faster than it came. Updates while visible just
-            // change the content, no re-animation.
+            Shadow {
+                depth: 0.6
+            }
+
+            // Mostly answers media/brightness keys, so it arrives fast (a quick fade with a tiny
+            // rise) and leaves unhurried, since nobody is waiting on the exit. Updates while visible
+            // just change the content, no re-animation.
             opacity: Osd.shown ? 1 : 0
             transform: Translate {
-                y: Osd.shown || Theme.reduceMotion ? 0 : 8
+                y: Osd.shown || Theme.reduceMotion ? 0 : 4
                 Behavior on y {
-                    NumberAnimation { duration: Osd.shown ? Theme.durToast : Theme.durDropdownExit; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut }
+                    EaseOut { duration: Osd.shown ? Theme.durPress : Theme.durDropdown }
                 }
             }
             Behavior on opacity {
-                NumberAnimation { duration: Osd.shown ? Theme.durDropdown : Theme.durDropdownExit; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut }
+                EaseOut { duration: Osd.shown ? Theme.durPress : Theme.durDropdown }
             }
 
             RowLayout {
@@ -72,7 +84,7 @@ Variants {
                         radius: 3
                         color: Osd.muted ? Theme.overlay0 : Theme.blue
                         Behavior on width {
-                            NumberAnimation { duration: 80; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut }
+                            EaseOut { duration: 80 }
                         }
                     }
                 }

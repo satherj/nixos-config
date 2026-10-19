@@ -38,7 +38,7 @@ Item {
         x: (root.width - width) * root.clamp(root.value)
         color: root.muted ? Theme.subtext0 : Theme.text
         scale: area.pressed && !Theme.reduceMotion ? 1.15 : 1
-        Behavior on scale { NumberAnimation { duration: Theme.durPress; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+        Behavior on scale { EaseOut {} }
     }
 
     MouseArea {
@@ -46,11 +46,20 @@ Item {
         anchors.fill: parent
         preventStealing: true
         cursorShape: Qt.PointingHandCursor
-        onPressed: m => root.moved(root.clamp(m.x / width))
+        property real grab: 0
+        function valueAt(x) {
+            return root.clamp((x - grab - 7) / (width - 14));
+        }
+        onPressed: m => {
+            const knob = 7 + (width - 14) * root.clamp(root.value);
+            grab = Math.abs(m.x - knob) <= 10 ? m.x - knob : 0;
+            if (grab === 0)
+                root.moved(valueAt(m.x));
+        }
         onPositionChanged: m => {
             if (pressed)
-                root.moved(root.clamp(m.x / width));
+                root.moved(valueAt(m.x));
         }
-        onWheel: w => root.moved(root.clamp(root.value + (w.angleDelta.y > 0 ? 0.05 : -0.05)))
+        onWheel: w => root.moved(root.clamp(root.value + w.angleDelta.y / 120 * 0.05))
     }
 }

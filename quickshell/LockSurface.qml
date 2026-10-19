@@ -40,8 +40,11 @@ Item {
         sourceSize.height: Math.max(1, root.height / 3)
         source: Wallpaper.url(Wallpaper.current)
     }
+    // Fades in once decoded, so locking eases from dark into the picture instead of flashing
     MultiEffect {
         anchors.fill: parent
+        opacity: wall.status === Image.Ready ? 1 : 0
+        Behavior on opacity { EaseOut { duration: 300 } }
         source: wall
         blurEnabled: true
         blur: 1
@@ -67,7 +70,7 @@ Item {
 
         opacity: 0
         Component.onCompleted: opacity = 1
-        Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+        Behavior on opacity { EaseOut { duration: 300 } }
 
         StyledText {
             Layout.alignment: Qt.AlignHCenter
@@ -93,15 +96,15 @@ Item {
             color: Qt.rgba(Theme.base.r, Theme.base.g, Theme.base.b, 0.85)
             border.width: Theme.borderWidth
             border.color: Lock.status !== "" ? Theme.red : Lock.busy ? Theme.blue : Theme.border
-            Behavior on border.color { ColorAnimation { duration: Theme.durHover } }
+            Behavior on border.color { ColorFade {} }
 
             transform: Translate { id: shakeX }
             SequentialAnimation {
                 id: shake
-                NumberAnimation { target: shakeX; property: "x"; to: -10; duration: 50 }
-                NumberAnimation { target: shakeX; property: "x"; to: 10; duration: 70 }
-                NumberAnimation { target: shakeX; property: "x"; to: -6; duration: 60 }
-                NumberAnimation { target: shakeX; property: "x"; to: 0; duration: 60; easing.type: Easing.OutQuad }
+                EaseOut { target: shakeX; property: "x"; to: -10; duration: 50 }
+                EaseOut { target: shakeX; property: "x"; to: 9; duration: 70; easing.bezierCurve: Theme.easeInOut }
+                EaseOut { target: shakeX; property: "x"; to: -5; duration: 60; easing.bezierCurve: Theme.easeInOut }
+                EaseOut { target: shakeX; property: "x"; to: 0; duration: 80 }
             }
             Connections {
                 target: Lock

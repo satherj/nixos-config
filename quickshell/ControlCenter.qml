@@ -20,6 +20,9 @@ ColumnLayout {
         Layout.topMargin: 4
         color: Theme.overlay0
         font.pixelSize: 11
+        // All-caps labels need extra tracking to stay legible
+        autoTracking: false
+        font.letterSpacing: 0.8
     }
 
     // Toggle tile; the chevron (when there's a detail panel) opens it instead of toggling
@@ -33,14 +36,19 @@ ColumnLayout {
         property string detail: ""
         signal toggled
 
+        property color fg: on ? Theme.base : Theme.text
+        property color fgDim: on ? Theme.surface0 : Theme.overlay0
+        Behavior on fg { ColorFade {} }
+        Behavior on fgDim { ColorFade {} }
+
         Layout.fillWidth: true
         Layout.preferredWidth: 1
         implicitHeight: 56
         radius: 12
         color: on ? Theme.blue : tileArea.containsMouse ? Theme.surface1 : Theme.surface0
         scale: tileArea.pressed && !Theme.reduceMotion ? 0.97 : 1
-        Behavior on color { ColorAnimation { duration: Theme.durHover; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
-        Behavior on scale { NumberAnimation { duration: Theme.durPress; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+        Behavior on color { ColorFade {} }
+        Behavior on scale { EaseOut {} }
 
         MouseArea {
             id: tileArea
@@ -59,7 +67,7 @@ ColumnLayout {
             Icon {
                 name: tile.icon
                 size: 20
-                color: tile.on ? Theme.base : Theme.text
+                color: tile.fg
             }
             ColumnLayout {
                 Layout.fillWidth: true
@@ -71,14 +79,14 @@ ColumnLayout {
                     font.bold: true
                     font.pixelSize: 12
                     elide: Text.ElideRight
-                    color: tile.on ? Theme.base : Theme.text
+                    color: tile.fg
                 }
                 StyledText {
                     Layout.fillWidth: true
                     text: tile.subtitle
                     font.pixelSize: 11
                     elide: Text.ElideRight
-                    color: tile.on ? Theme.surface0 : Theme.overlay0
+                    color: tile.fgDim
                 }
             }
             IconButton {
@@ -87,7 +95,8 @@ ColumnLayout {
                 implicitWidth: 24
                 fg: tile.on ? Theme.base : Theme.subtext0
                 hoverFg: tile.on ? Theme.base : Theme.text
-                color: "transparent"
+                baseColor: "transparent"
+                hoverColor: tile.on ? Qt.alpha(Theme.base, 0.18) : Theme.surface2
                 onClicked: UiState.toggleBeside(tile.detail, UiState.screen, "control")
             }
         }
@@ -108,7 +117,28 @@ ColumnLayout {
         text: armed ? def.name + "?" : ""
         fg: armed ? Theme.red : Theme.subtext0
         hoverFg: armed ? Theme.red : Theme.text
-        color: armed ? Theme.surface1 : "transparent"
+        baseColor: armed ? Theme.surface1 : "transparent"
+
+        // Armed: a red fuse burns down over the confirm window, so the 3s timeout is visible
+        // instead of the button silently reverting
+        property real fuse: 0
+        onArmedChanged: if (armed) burn.restart(); else burn.stop()
+        NumberAnimation {
+            id: burn
+            target: pb
+            property: "fuse"
+            from: 1
+            to: 0
+            duration: disarm.interval
+        }
+        Rectangle {
+            visible: pb.armed
+            width: parent.width * pb.fuse
+            height: parent.height
+            radius: parent.radius
+            color: Qt.alpha(Theme.red, 0.16)
+        }
+
         onClicked: {
             if (confirm && !armed) {
                 powerRow.armed = action;
@@ -191,13 +221,6 @@ ColumnLayout {
             on: false
             onToggled: UiState.toggleBeside("theme", UiState.screen, "control")
         }
-        Tile {
-            icon: "push-pin"
-            title: "Auto-hide bar"
-            subtitle: UiState.barAutoHide ? "on" : "off"
-            on: UiState.barAutoHide
-            onToggled: UiState.barAutoHide = !UiState.barAutoHide
-        }
     }
 
     // Wallpaper: click opens the picker, the trailing button toggles shuffle
@@ -207,8 +230,8 @@ ColumnLayout {
         radius: 12
         color: wallArea.containsMouse ? Theme.surface1 : Theme.surface0
         scale: wallArea.pressed && !Theme.reduceMotion ? 0.98 : 1
-        Behavior on color { ColorAnimation { duration: Theme.durHover; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
-        Behavior on scale { NumberAnimation { duration: Theme.durPress; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+        Behavior on color { ColorFade {} }
+        Behavior on scale { EaseOut {} }
 
         MouseArea {
             id: wallArea
@@ -232,6 +255,8 @@ ColumnLayout {
 
                 Image {
                     anchors.fill: parent
+                    opacity: status === Image.Ready ? 1 : 0
+                    Behavior on opacity { EaseOut { duration: Theme.durDropdown } }
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     sourceSize.width: 144
@@ -367,6 +392,8 @@ ColumnLayout {
                 Image {
                     id: art
                     anchors.fill: parent
+                    opacity: status === Image.Ready ? 1 : 0
+                    Behavior on opacity { EaseOut { duration: Theme.durDropdown } }
                     source: root.player?.trackArtUrl ?? ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true

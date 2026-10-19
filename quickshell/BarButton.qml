@@ -10,17 +10,32 @@ Rectangle {
     property string iconWeight: Theme.iconWeight
     property color fg: Theme.text
     property bool active: false
+    // Bar panel this button opens on left click ("" = none); barScreen is the bar's screen
+    property string panel: ""
+    property var barScreen: null
+    readonly property bool panelOpen: panel !== "" && (UiState.panel === panel || UiState.base === panel) && UiState.screen === barScreen
+    // Hover tooltip (the bar's BarTooltip): a title line and an optional dim hint line
+    property string tip: ""
+    property string tipHint: ""
+    property var tooltip: null
+    readonly property bool hovered: area.containsMouse
+    readonly property bool pressed: area.pressed
     signal clicked(var mouse)
+
+    function openPanel() {
+        UiState.toggle(panel, barScreen, false, mapToItem(null, width / 2, 0).x);
+    }
     signal scrolled(var wheel)
 
-    implicitWidth: content.implicitWidth + 20
+    // Icon-only buttons are near-square; ones with a label get room for it
+    implicitWidth: content.implicitWidth + (label.visible ? 20 : 12)
     implicitHeight: Theme.barHeight - 8
     radius: 8
-    color: active || area.containsMouse ? Theme.surface0 : "transparent"
+    color: active || panelOpen || area.containsMouse ? Theme.surface0 : "transparent"
     scale: area.pressed && !Theme.reduceMotion ? 0.97 : 1
 
-    Behavior on color { ColorAnimation { duration: Theme.durHover; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
-    Behavior on scale { NumberAnimation { duration: Theme.durPress; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+    Behavior on color { ColorFade {} }
+    Behavior on scale { EaseOut {} }
 
     Row {
         id: content
@@ -51,7 +66,25 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-        onClicked: m => root.clicked(m)
+        onContainsMouseChanged: {
+            if (!root.tooltip || root.tip === "")
+                return;
+            if (containsMouse)
+                root.tooltip.enter(root);
+            else
+                root.tooltip.leave(root);
+        }
+        onPressed: if (root.tooltip) root.tooltip.dismiss()
+        onClicked: m => {
+            if (root.panel !== "" && m.button === Qt.LeftButton)
+                root.openPanel();
+            root.clicked(m);
+        }
+        // Once one bar panel is open, sliding along the bar opens the others without clicking
+        onEntered: {
+            if (root.panel !== "" && UiState.panel !== "" && UiState.screen === root.barScreen && !root.panelOpen)
+                root.openPanel();
+        }
         onWheel: w => root.scrolled(w)
     }
 }

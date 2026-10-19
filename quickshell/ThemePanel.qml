@@ -58,7 +58,7 @@ ColumnLayout {
                     name: "check"
                     color: Theme.blue
                     opacity: row.active ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Theme.durHover; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
+                    Behavior on opacity { EaseOut { duration: Theme.durHover } }
                 }
             }
         }

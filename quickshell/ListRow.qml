@@ -9,6 +9,8 @@ Rectangle {
     property string title: ""
     property string subtitle: ""
     property bool highlighted: false
+    property color fg: highlighted ? Theme.blue : Theme.text
+    Behavior on fg { ColorFade {} }
     default property alias trailing: trailingRow.data
     signal clicked
 
@@ -17,8 +19,8 @@ Rectangle {
     color: area.containsMouse ? Theme.surface0 : "transparent"
     scale: area.pressed && !Theme.reduceMotion ? 0.98 : 1
 
-    Behavior on color { ColorAnimation { duration: Theme.durHover; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.ease } }
-    Behavior on scale { NumberAnimation { duration: Theme.durPress; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+    Behavior on color { ColorFade {} }
+    Behavior on scale { EaseOut {} }
 
     MouseArea {
         id: area
@@ -37,7 +39,7 @@ Rectangle {
         Icon {
             name: root.icon
             size: 18
-            color: root.highlighted ? Theme.blue : Theme.text
+            color: root.fg
             Layout.preferredWidth: 20
         }
 
@@ -49,7 +51,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: root.title
                 elide: Text.ElideRight
-                color: root.highlighted ? Theme.blue : Theme.text
+                color: root.fg
             }
             StyledText {
                 Layout.fillWidth: true

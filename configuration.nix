@@ -201,7 +201,7 @@
     wlsunset playerctl
     imagemagick  # wallpaper thumbnails for the quickshell picker
     # clipboard history + screen recording for the quickshell launcher / capture menu
-    cliphist wf-recorder slurp
+    cliphist wf-recorder slurp grim
     wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme catppuccin-cursors.mochaMauve
     # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders
     adw-gtk3

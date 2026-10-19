@@ -99,11 +99,11 @@ ColumnLayout {
                     size: 15
                     color: Theme.overlay0
                 }
-                IconButton {
+                ConfirmButton {
                     visible: row.modelData.known
                     icon: "trash"
-                    hoverFg: Theme.red
-                    onClicked: row.modelData.forget()
+                    confirmText: "Forget?"
+                    onConfirmed: row.modelData.forget()
                 }
             }
         }
@@ -144,6 +144,13 @@ ColumnLayout {
                 echoMode: TextInput.Password
                 selectionColor: Theme.surface2
                 onAccepted: connectBtn.clicked()
+
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: psk.text === ""
+                    text: "At least 8 characters"
+                    color: Theme.overlay0
+                }
                 Keys.onEscapePressed: root.pskTarget = null
             }
         }
@@ -158,8 +165,9 @@ ColumnLayout {
                 id: connectBtn
                 text: "Connect"
                 fg: Theme.blue
+                enabled: psk.text.length >= 8
                 onClicked: {
-                    if (psk.text.length > 0) {
+                    if (enabled) {
                         root.pskTarget.connectWithPsk(psk.text);
                         root.pskTarget = null;
                     }

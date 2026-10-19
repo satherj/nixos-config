@@ -37,6 +37,8 @@ Singleton {
     // spawn commands -> names (first match wins)
     readonly property var commandNames: [
         [/call launcher toggle/, "App launcher"],
+        [/call screenshot region/, "Screenshot"],
+        [/call screenshot window/, "Screenshot a window"],
         [/call launcher clipboard/, "Clipboard history"],
         [/call launcher keybinds/, "Keyboard shortcuts"],
         [/call lock lock/, "Lock screen"],

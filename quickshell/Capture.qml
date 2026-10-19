@@ -4,7 +4,9 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
 
-// Screenshots (niri's own tools) and screen recording (wf-recorder, slurp for regions).
+// Screenshots and screen recording. Region screenshots use our own picker (ScreenshotOverlay.qml:
+// frozen screen, drag a region, or switch to picking a window / the whole screen) and grim; window
+// and screen shots use niri's own tools. Recording: wf-recorder, slurp for regions.
 // After every screenshot the file path replaces the image on the clipboard, handy for pasting
 // into a terminal; the image itself stays in clipboard history.
 Singleton {
@@ -37,23 +39,71 @@ Singleton {
     }
 
     // --- Screenshots ---
-    // Small delay so the menu/launcher is gone before niri captures
+    // The region picker is open (on pickScreen)
+    property bool picking: false
+    property var pickScreen: null
+
+    // kind: "region" (picker), "pick" (click a window), "window" (focused window), "screen"
     function screenshot(kind) {
-        UiState.close();
-        Quickshell.execDetached(["sh", "-c", `sleep 0.25; niri msg action ${kind === "screen" ? "screenshot-screen" : kind === "window" ? "screenshot-window" : "screenshot"}`]);
+        UiState.close(true);
+        picking = false;
+        if (kind === "region") {
+            const out = Niri.workspaces.find(w => w.is_focused)?.output ?? "";
+            pickScreen = Quickshell.screens.find(s => s.name === out) ?? UiState.screen ?? Quickshell.screens[0];
+            picking = true;
+        } else if (kind === "pick") {
+            // niri lets you click any window (tiled windows have no position we could hit-test)
+            picker.running = true;
+        } else {
+            // Small delay so the menu/launcher/picker is gone before niri captures
+            Quickshell.execDetached(["sh", "-c", `sleep 0.25; niri msg action ${kind === "screen" ? "screenshot-screen" : "screenshot-window"}`]);
+        }
+    }
+
+    // Region in global logical coordinates, from the picker
+    function captureRegion(x, y, w, h) {
+        picking = false;
+        const file = `${screenshotsDir}/Screenshot from ${Qt.formatDateTime(new Date(), "yyyy-MM-dd HH-mm-ss")}.png`;
+        grim.file = file;
+        // A beat for the picker to unmap; the picker showed a frozen copy of this same screen
+        grim.command = ["sh", "-c", `mkdir -p "$1"; sleep 0.08; grim -g "${Math.round(x)},${Math.round(y)} ${Math.round(w)}x${Math.round(h)}" "$2" && wl-copy --type image/png < "$2"`, "sh", screenshotsDir, file];
+        grim.running = true;
+    }
+    Process {
+        id: grim
+        property string file
+        onExited: code => code === 0 ? root.saved(file) : Osd.show("camera", "Screenshot failed")
+    }
+    Process {
+        id: picker
+        command: ["niri", "msg", "-j", "pick-window"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let w = null;
+                try {
+                    w = JSON.parse(text);
+                } catch (e) {}
+                if (w?.id !== undefined)
+                    Quickshell.execDetached(["niri", "msg", "action", "screenshot-window", "--id", String(w.id), "--write-to-disk", "true"]);
+            }
+        }
+    }
+
+    // A screenshot landed on disk (and its image on the clipboard)
+    function saved(path) {
+        root.lastScreenshot = path;
+        if (root.copyPath)
+            pathCopy.restart();
+        else
+            Osd.show("camera", "Screenshot saved");
     }
 
     property string lastScreenshot: ""
     Connections {
         target: Niri
         function onScreenshotCaptured(path) {
-            if (!path)
-                return;
-            root.lastScreenshot = path;
-            if (root.copyPath)
-                pathCopy.restart();
-            else
-                Osd.show("camera", "Screenshot saved");
+            if (path)
+                root.saved(path);
         }
     }
     // niri puts the image on the clipboard as it saves; replace it a beat later
@@ -75,7 +125,7 @@ Singleton {
     function record(region) {
         if (rec.running)
             return;
-        UiState.close();
+        UiState.close(true);
         file = `${recordingsDir}/Recording ${Qt.formatDateTime(new Date(), "yyyy-MM-dd HH-mm-ss")}.mp4`;
         const output = Niri.workspaces.find(w => w.is_focused)?.output ?? "";
         const sink = Pipewire.defaultAudioSink?.name ?? "";
@@ -114,7 +164,8 @@ Singleton {
     }
     readonly property var actions: [
         action("Screenshot region", "Select an area", "applets-screenshooter", ["screenshot", "capture", "snip", "print"], () => root.screenshot("region")),
-        action("Screenshot window", "The focused window", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("window")),
+        action("Screenshot a window", "Click the window to capture", "applets-screenshooter", ["screenshot", "capture", "print", "window"], () => root.screenshot("pick")),
+        action("Screenshot focused window", "The focused window", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("window")),
         action("Screenshot screen", "The whole screen", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("screen")),
         action(recording ? "Stop recording" : "Record screen", recording ? "Save the recording (" + elapsed + ")" : "Record the whole screen", "media-record", ["record", "video", "screencast", "capture", "stop"], () => recording ? root.stop() : root.record(false)),
         action("Record region", "Select an area to record", "media-record", ["record", "video", "screencast", "capture"], () => root.record(true))

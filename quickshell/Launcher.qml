@@ -9,8 +9,9 @@ import Quickshell.Widgets
 //   apps      (Super+Space)      apps + power/wallpaper/capture actions
 //   clipboard (Super+Alt+Space)  cliphist history; Enter copies, Shift+Del removes
 //   keybinds  (Super+?)          every niri shortcut, searchable; Enter runs it
-// Opened from the keyboard many times a day, so per the animation rules it opens and closes
-// instantly: no motion at all.
+// Opened from the keyboard many times a day, so per the animation rules the card itself opens
+// and closes instantly. Only the depth settles in behind it (the dim and the shadow fade over
+// ~150ms), which softens the arrival without delaying a single keystroke.
 Scope {
     id: root
 
@@ -128,8 +129,23 @@ Scope {
     }
 
     PanelWindow {
+        id: launcherWin
         visible: root.open
-        onVisibleChanged: if (visible) search.forceActiveFocus()
+        onVisibleChanged: if (visible) {
+            search.forceActiveFocus();
+            settle.restart();
+        }
+
+        // 0 -> 1 right after opening: drives the dim and the shadow, never the card
+        property real depth: 1
+        EaseOut {
+            id: settle
+            target: launcherWin
+            property: "depth"
+            from: Theme.reduceMotion ? 1 : 0
+            to: 1
+            duration: Theme.durHover
+        }
 
         anchors {
             top: true
@@ -138,10 +154,20 @@ Scope {
             right: true
         }
         exclusionMode: ExclusionMode.Ignore
-        color: Qt.rgba(0.07, 0.07, 0.11, 0.35)
+        color: "transparent"
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
         WlrLayershell.namespace: "quickshell-launcher"
+        BackgroundEffect.blurRegion: Region {
+            item: Theme.reduceTransparency ? null : card
+            radius: Theme.radius
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(Theme.crust.r, Theme.crust.g, Theme.crust.b, 0.35)
+            opacity: launcherWin.depth
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -153,10 +179,16 @@ Scope {
             y: parent.height * 0.2
             width: root.mode === "keybinds" ? 680 : 580
             height: content.implicitHeight + 24
+            id: card
             radius: Theme.radius
-            color: Theme.base
+            color: Theme.material
             border.color: Theme.border
             border.width: Theme.borderWidth
+
+            Shadow {
+                depth: 1.4
+                opacity: launcherWin.depth
+            }
 
             MouseArea {
                 anchors.fill: parent

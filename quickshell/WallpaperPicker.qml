@@ -197,13 +197,15 @@ Scope {
                         color: Theme.surface0
                         scale: card.current ? 1 : 0.86
                         opacity: card.current ? 1 : 0.6
-                        Behavior on scale { NumberAnimation { duration: Theme.durDropdown; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
-                        Behavior on opacity { NumberAnimation { duration: Theme.durDropdown; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.easeOut } }
+                        Behavior on scale { EaseOut { duration: Theme.durDropdown } }
+                        Behavior on opacity { EaseOut { duration: Theme.durDropdown } }
 
                         // Cached thumbnail; until it exists, a downscaled decode of the original
                         Image {
                             id: thumb
                             anchors.fill: parent
+                            opacity: status === Image.Ready ? 1 : 0
+                            Behavior on opacity { EaseOut { duration: Theme.durDropdown } }
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             cache: false

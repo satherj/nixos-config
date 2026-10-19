@@ -18,7 +18,7 @@ Singleton {
     }
 
     function run(cmd) {
-        UiState.close();
+        UiState.close(true);
         if (typeof cmd === "function")
             cmd();
         else

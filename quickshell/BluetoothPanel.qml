@@ -101,6 +101,8 @@ ColumnLayout {
                     if (modelData.connected) {
                         modelData.disconnect();
                     } else if (modelData.paired) {
+                        // Trusted devices may reconnect on their own (BlueZ ignores untrusted ones)
+                        modelData.trusted = true;
                         modelData.connect();
                     } else {
                         modelData.trusted = true;
@@ -112,16 +114,27 @@ ColumnLayout {
                 Connections {
                     target: row.modelData
                     function onPairedChanged() {
-                        if (row.modelData.paired && !row.modelData.connected)
-                            row.modelData.connect();
+                        if (row.modelData.paired) {
+                            row.modelData.trusted = true;
+                            if (!row.modelData.connected)
+                                row.modelData.connect();
+                        }
                     }
                 }
 
+                // Trusted = reconnects on its own when powered on; click to toggle
                 IconButton {
                     visible: row.modelData.paired
+                    icon: row.modelData.trusted ? "lightning" : "lightning-slash"
+                    fg: row.modelData.trusted ? Theme.blue : Theme.subtext0
+                    onClicked: row.modelData.trusted = !row.modelData.trusted
+                }
+
+                ConfirmButton {
+                    visible: row.modelData.paired
                     icon: "trash"
-                    hoverFg: Theme.red
-                    onClicked: row.modelData.forget()
+                    confirmText: "Unpair?"
+                    onConfirmed: row.modelData.forget()
                 }
             }
         }

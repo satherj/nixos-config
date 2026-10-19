@@ -12,6 +12,6 @@
     "maroon": "#cc241d", "rosewater": "#af5a50", "flamingo": "#d65d0e"
   },
   "accent": "peach",
-  "barOpacity": 0.95,
+  "barOpacity": 0.85,
   "iconWeight": "regular"
 }

@@ -626,9 +626,12 @@ binds {
     // Mod+Space       { switch-layout "next"; }
     Mod+Shift+Space { switch-layout "next"; }
 
-    Print { screenshot; }
+    // Screenshots: PrtSc = quickshell picker (drag a region; W = click a window, Enter = screen),
+    // Alt = click a window, Ctrl = whole screen. The path lands on the clipboard (Capture.qml).
+    // If the shell is not running, they fall back to niri's own tools.
+    Print hotkey-overlay-title="Screenshot" { spawn-sh "[ -z \"$(qs ipc -p /etc/quickshell call screenshot region 2>&1)\" ] || niri msg action screenshot"; }
     Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }
+    Alt+Print hotkey-overlay-title="Screenshot a window" { spawn-sh "[ -z \"$(qs ipc -p /etc/quickshell call screenshot window 2>&1)\" ] || niri msg action screenshot-window"; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here
@@ -667,6 +670,33 @@ window-rule {
     default-column-width { fixed 560; }
     default-window-height { fixed 420; }
     default-floating-position x=12 y=48 relative-to="top-right"
+}
+
+// Ghostty matches the shell's frosted glass: translucent (background-opacity from the theme) over
+// a blur. Tiled terminals sit on the wallpaper, so the cheap default xray blur is right here.
+window-rule {
+    match app-id=r#"^com\.mitchellh\.ghostty$"#
+    match app-id=r#"^dev\.popup\."#
+    background-effect {
+        blur true
+    }
+}
+// The bar's popup terminals float over other windows: blur those, not the wallpaper behind them
+window-rule {
+    match app-id=r#"^dev\.popup\."#
+    background-effect {
+        xray false
+    }
+}
+
+// Quickshell frosted surfaces (panels, launcher, OSD, polkit) request blur themselves; they float
+// over windows, so blur what is really underneath rather than the cheaper wallpaper-only "xray".
+// The bar keeps xray: it only ever sits over the wallpaper.
+layer-rule {
+    match namespace="^quickshell-(panel|launcher|osd|polkit)$"
+    background-effect {
+        xray false
+    }
 }
 
 // Per-monitor scale/mode/position, managed by the Quickshell Displays panel (untracked file)

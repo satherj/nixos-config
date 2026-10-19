@@ -11,7 +11,7 @@ ColumnLayout {
 
     readonly property var options: [
         ["selection", "Region", "PrtSc", () => Capture.screenshot("region")],
-        ["app-window", "Window", "Alt+PrtSc", () => Capture.screenshot("window")],
+        ["app-window", "Window", "Alt+PrtSc", () => Capture.screenshot("pick")],
         ["monitor", "Screen", "Ctrl+PrtSc", () => Capture.screenshot("screen")],
         ["record", Capture.recording ? "Stop recording · " + Capture.elapsed : "Record screen", "", () => Capture.recording ? Capture.stop() : Capture.record(false)],
         ["crosshair", "Record region", "", () => Capture.record(true)]
@@ -29,6 +29,9 @@ ColumnLayout {
         Layout.topMargin: 4
         color: Theme.overlay0
         font.pixelSize: 11
+        // All-caps labels need extra tracking to stay legible
+        autoTracking: false
+        font.letterSpacing: 0.8
     }
 
     PanelHeader {
