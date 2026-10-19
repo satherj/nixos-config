@@ -78,7 +78,9 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
 
 - **One material:** floating surfaces (panels, launcher, OSD, polkit card, bar) are translucent
   `Theme.material` over a real compositor blur (`BackgroundEffect.blurRegion`, niri 26.04's
-  ext-background-effect). The blur region follows the card's on-screen size, including mid-animation.
+  ext-background-effect). The blur region follows the card's on-screen size, including mid-animation,
+  and is dropped the moment a surface starts closing: blur can't fade, so tying it to opacity > 0
+  leaves a bare frosted rectangle behind the fading card.
   niri layer rules turn off "xray" for overlays so they blur the windows beneath, not just the wallpaper.
 - **One glass value per theme:** a preset's `barOpacity` sets the opacity of the bar, the panels
   and ghostty together (niri blurs behind ghostty via a window rule), so all glass matches.

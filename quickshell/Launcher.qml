@@ -26,9 +26,10 @@ Scope {
         mode = m;
         if (m === "clipboard")
             Clipboard.refresh();
-        open = true;
+        // Reset before mapping, so the window is never sized for the previous query's results
         search.text = "";
         list.currentIndex = 0;
+        open = true;
     }
 
     IpcHandler {

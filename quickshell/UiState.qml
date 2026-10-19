@@ -6,10 +6,13 @@ import Quickshell
 Singleton {
     id: root
 
-    property string panel: ""
+    // panel/base/screen change together, so listeners (Panels.qml) never see a half-updated state,
+    // such as the flyout briefly taking over the main card while the control center closes
+    property var current: ({ panel: "", base: "", screen: null })
+    readonly property string panel: current.panel
     // Panel kept open underneath while `panel` is its flyout (set by toggleBeside, e.g. "control")
-    property string base: ""
-    property var screen: null
+    readonly property string base: current.base
+    readonly property var screen: current.screen
     // Do not disturb: non-critical notifications are dropped instead of shown
     property bool dnd: false
     // The last open/close came from the keyboard (keybind, launcher, Esc): panels skip their
@@ -21,33 +24,27 @@ Singleton {
 
     function toggle(name, scr, keyboard, anchor) {
         root.instant = !!keyboard;
-        base = "";
-        if (panel === name && screen === scr) {
-            panel = "";
+        // Its button stays lit while a flyout is open beside it, so clicking it closes both
+        if ((panel === name || base === name) && screen === scr) {
+            current = { panel: "", base: "", screen: screen };
         } else {
             anchorX = anchor ?? -1;
-            screen = scr;
-            panel = name;
+            current = { panel: name, base: "", screen: scr };
         }
     }
 
     // Open `name` as a flyout next to `owner`; a second call closes just the flyout
     function toggleBeside(name, scr, owner, keyboard) {
         root.instant = !!keyboard;
-        if (panel === name && base === owner) {
-            base = "";
-            panel = owner;
-        } else {
-            screen = scr;
-            base = owner;
-            panel = name;
-        }
+        if (panel === name && base === owner)
+            current = { panel: owner, base: "", screen: screen };
+        else
+            current = { panel: name, base: owner, screen: scr };
     }
 
     function close(keyboard) {
         root.instant = !!keyboard;
-        base = "";
-        panel = "";
+        current = { panel: "", base: "", screen: screen };
     }
 
     // Small floating terminal for the "advanced" tools (niri window-rule matches dev.popup.*)

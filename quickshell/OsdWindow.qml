@@ -25,8 +25,9 @@ Variants {
         mask: Region {}
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "quickshell-osd"
+        // Blur can't fade, so it leaves when the pill starts to (see PanelCard.frosted)
         BackgroundEffect.blurRegion: Region {
-            item: pill.opacity > 0 && !Theme.reduceTransparency ? pill : null
+            item: Osd.shown && !Theme.reduceTransparency ? pill : null
             radius: pill.radius
         }
 

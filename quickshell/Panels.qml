@@ -60,10 +60,11 @@ Variants {
         WlrLayershell.namespace: "quickshell-panel"
 
         // Compositor blur behind the cards (their material is translucent), following each card's
-        // current on-screen size so the frost never peeks out during the grow animation
+        // current on-screen size so the frost never peeks out during the grow animation, and
+        // dropping it as soon as a card starts closing (PanelCard.frosted)
         BackgroundEffect.blurRegion: Region {
             Region {
-                readonly property rect r: mainCard.opacity > 0 && !Theme.reduceTransparency ? mainCard.visualRect : Qt.rect(0, 0, 0, 0)
+                readonly property rect r: mainCard.frosted ? mainCard.visualRect : Qt.rect(0, 0, 0, 0)
                 x: r.x
                 y: r.y
                 width: r.width
@@ -71,7 +72,7 @@ Variants {
                 radius: Theme.radius
             }
             Region {
-                readonly property rect r: sideCard.opacity > 0 && !Theme.reduceTransparency ? sideCard.visualRect : Qt.rect(0, 0, 0, 0)
+                readonly property rect r: sideCard.frosted ? sideCard.visualRect : Qt.rect(0, 0, 0, 0)
                 x: r.x
                 y: r.y
                 width: r.width

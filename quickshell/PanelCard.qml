@@ -45,6 +45,10 @@ Rectangle {
 
     // On-screen rectangle including the grow scale, for the blur region behind the card
     readonly property rect visualRect: Qt.rect(x + originX * (1 - grow), y, width * grow, height * grow)
+    // The compositor blur can't fade, so it goes the moment the card starts closing. Kept until the
+    // opacity hits 0, it would outlive the content (ease-out empties the card early in the exit)
+    // and leave a bare frosted rectangle behind.
+    readonly property bool frosted: open && !Theme.reduceTransparency
 
     // Content that grows or shrinks while the card is up (networks found, a section toggled on,
     // the Wi-Fi password prompt) resizes the card smoothly instead of jumping; the clip turns
@@ -55,7 +59,11 @@ Rectangle {
         swapping = true;
         Qt.callLater(() => swapping = false);
     }
-    height: loader.implicitHeight + 32
+    // Frozen while closing: content that changes during the exit (a scan result, a device
+    // dropping off) must not resize a card that is on its way out
+    readonly property real fullHeight: loader.implicitHeight + 32
+    height: fullHeight
+    onOpenChanged: height = open ? Qt.binding(() => fullHeight) : height
     Behavior on height {
         enabled: card.open && card.opacity === 1 && !card.swapping && !Theme.reduceMotion
         EaseOut { duration: Theme.durResize }
