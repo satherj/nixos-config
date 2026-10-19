@@ -297,6 +297,13 @@ hotkey-overlay {
 // After enabling or disabling this, you need to restart the apps for this to take effect.
 prefer-no-csd
 
+// macOS-style cursors (apple-cursor), same theme as GTK (configuration.nix dconf). Without it niri falls back to a built-in
+// set that only has the arrow, so crosshair / pointing-hand shapes requested by the shell never show.
+cursor {
+    xcursor-theme "macOS"
+    xcursor-size 24
+}
+
 // You can change the path where screenshots are saved.
 // A ~ at the front will be expanded to the home directory.
 // The path is formatted with strftime(3) to give you the screenshot date and time.
@@ -680,6 +687,9 @@ window-rule {
     background-effect {
         blur true
     }
+    // niri fills the area behind a window with its border colour by default; the inactive border
+    // colour is opaque, so an unfocused terminal would lose its glass. Draw the border as a ring only.
+    draw-border-with-background false
 }
 // The bar's popup terminals float over other windows: blur those, not the wallpaper behind them
 window-rule {

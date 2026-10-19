@@ -48,14 +48,8 @@ PanelWindow {
         id: backdrop
         width: bar.width
         height: Theme.barExtent
+        // No divider line: the frosted material already separates the bar from what is below
         color: Theme.barBg
-
-        Rectangle {
-            anchors.bottom: parent.bottom
-            width: parent.width
-            height: Theme.borderWidth
-            color: Theme.border
-        }
     }
 
     BarTooltip {

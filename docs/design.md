@@ -86,7 +86,12 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
 - **Depth:** `Shadow {}` behind every floating surface, deeper for bigger ones (launcher and polkit
   1.4, panels 1, toasts and OSD 0.6, tooltips 0.4). A modal task (polkit, launcher) dims the screen;
   a parallel one (panels) doesn't.
-- **One discreet 1 px border** (`Theme.border`), matching niri's window borders.
+- **One discreet 1 px border** (`Theme.border`), matching niri's window borders. The bar has none
+  underneath: as frosted glass it separates itself, and a hard divider only adds noise.
+- **Window corners come from niri alone** (10 px, `clip-to-geometry`). Apps that draw their own
+  rounded frame fight it (Chrome: turn on "Use system title bar and borders"). Translucent windows
+  use `draw-border-with-background false`, or the inactive border colour fills in behind the glass.
+- **niri sets the cursor theme** (`cursor {}`); shapes the shell asks for (crosshair, hand) need it.
 - Scroll lists fade at the edge where content continues (`ScrollList`), instead of a hard cut.
 
 ## 3. Information and layout

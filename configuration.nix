@@ -67,7 +67,7 @@
       color-scheme = "prefer-dark";
       gtk-theme = "adw-gtk3-dark";
       icon-theme = "Papirus-Dark";
-      cursor-theme = "catppuccin-mocha-mauve-cursors";
+      cursor-theme = "macOS";
       font-name = "Inter 10";
     };
   }];
@@ -202,7 +202,8 @@
     imagemagick  # wallpaper thumbnails for the quickshell picker
     # clipboard history + screen recording for the quickshell launcher / capture menu
     cliphist wf-recorder slurp grim
-    wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme catppuccin-cursors.mochaMauve
+    wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme
+    apple-cursor  # cursors: "macOS" (black, white outline) and "macOS-White"
     # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders
     adw-gtk3
     (catppuccin-papirus-folders.override { flavor = "mocha"; accent = "blue"; })

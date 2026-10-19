@@ -6,3 +6,7 @@ window-decoration = false
 confirm-close-surface = false
 # colours + background-opacity come from the `theme` command (generated, untracked)
 config-file = ?theme.conf
+
+# Super+V is remapped to Shift+Insert by keyd (configuration.nix); ghostty's default for that key
+# pastes the primary selection, so make it paste the real clipboard like every other app
+keybind = shift+insert=paste_from_clipboard
