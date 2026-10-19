@@ -58,7 +58,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 radius: 8
-                color: !selected && segArea.containsMouse ? Theme.surface1 : "transparent"
+                color: !selected && segArea.containsMouse ? Theme.surface1 : Qt.alpha(Theme.surface1, 0)
                 Behavior on color { ColorFade {} }
                 Behavior on fg { ColorFade { duration: Theme.durDropdown } }
 

@@ -137,7 +137,9 @@ Singleton {
 
     readonly property string font: "Maple Mono NF"
     // Phosphor weight used by Icon.qml: thin | light | regular | bold | fill
-    readonly property string iconWeight: ["thin", "light", "regular", "bold", "fill"].includes(preset.iconWeight) ? preset.iconWeight : "regular"
+    readonly property string iconWeight: ["thin", "light", "regular", "bold", "fill"].includes(preset.iconWeight) ? preset.iconWeight : "bold"
+    // The bar is read at a glance over any wallpaper, so its icons are solid; menus use iconWeight
+    readonly property string barIconWeight: ["thin", "light", "regular", "bold", "fill"].includes(preset.barIconWeight) ? preset.barIconWeight : "fill"
     readonly property int fontSize: 13
     readonly property int barHeight: 28
     readonly property int barMargin: 3
@@ -159,6 +161,11 @@ Singleton {
     readonly property color border: surface1
     readonly property color borderActive: Qt.alpha(accent, 0.4)
     readonly property int borderWidth: 1
+
+    // Hover/active fill on glass: a tint of the text colour, so it reads on any material. Fade it with
+    // `hover` vs `clear` (same colour, alpha 0); "transparent" is transparent *black* and dips grey.
+    readonly property color hover: Qt.alpha(text, 0.12)
+    readonly property color clear: Qt.alpha(text, 0)
 
     // Motion (Emil Kowalski's animation rules): strong custom curves, UI stays under 300ms,
     // only opacity/scale/translate animate. QS_REDUCE_MOTION=1 keeps fades, drops movement.

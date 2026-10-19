@@ -23,8 +23,8 @@ Variants {
 
         WallpaperImage {
             anchors.fill: parent
-            source: Wallpaper.current
-            duration: 1200
+            source: Wallpaper.image
+            duration: Wallpaper.fadeDuration
         }
     }
 }

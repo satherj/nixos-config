@@ -37,7 +37,7 @@ Scope {
                 strip.currentIndex = Math.max(0, root.list.findIndex(i => i.path === Wallpaper.current));
                 strip.positionViewAtIndex(strip.currentIndex, ListView.Center);
             });
-            preview.source = Wallpaper.current;
+            preview.source = Wallpaper.image;
             keys.forceActiveFocus();
         }
 
@@ -62,7 +62,7 @@ Scope {
         Timer {
             id: previewDelay
             interval: 120
-            onTriggered: if (root.selected) preview.source = root.selected.path
+            onTriggered: if (root.selected) preview.source = Wallpaper.imageFor(root.selected.path)
         }
 
         Item {
@@ -212,7 +212,7 @@ Scope {
                             sourceSize.width: 480
                             sourceSize.height: 270
                             source: Wallpaper.thumbsReady >= 0 ? Wallpaper.url(Wallpaper.thumb(card.modelData.path)) : ""
-                            onStatusChanged: if (status === Image.Error) source = Wallpaper.url(card.modelData.path)
+                            onStatusChanged: if (status === Image.Error) source = Wallpaper.url(card.modelData.preview)
                         }
 
                         Rectangle {
@@ -253,7 +253,7 @@ Scope {
                         font.pixelSize: 15
                     }
                     StyledText {
-                        text: root.selected ? `${root.selected.category} · ${strip.currentIndex + 1} / ${root.list.length}` + (root.selected.path === Wallpaper.current ? " · current" : "") : ""
+                        text: root.selected ? `${root.selected.category} · ${strip.currentIndex + 1} / ${root.list.length}` + (root.selected.dynamic ? ` · ${Wallpaper.describe(root.selected)}` : "") + (root.selected.path === Wallpaper.current ? " · current" : "") : ""
                         color: Theme.overlay0
                         font.pixelSize: 12
                     }

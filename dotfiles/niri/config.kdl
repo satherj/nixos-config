@@ -710,6 +710,13 @@ layer-rule {
 }
 
 // Per-monitor scale/mode/position, managed by the Quickshell Displays panel (untracked file)
+// No hot corner: pushing the cursor into the top-left corner would open the overview (Mod+O does)
+gestures {
+    hot-corners {
+        off
+    }
+}
+
 include "outputs.kdl"
 
 // Border colours from the `theme` command (generated link into ~/.local/state/theme, untracked)

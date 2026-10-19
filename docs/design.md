@@ -37,7 +37,8 @@ or durations inline.
   pill, toast stack); plain `ease` for colour changes. **Never ease-in**: it starts slowly, which
   delays exactly the moment you are watching.
 - **Durations:** UI stays under 300 ms. Press 120, hover 150, dropdown 180 (exit 140),
-  resize 200, toast 250. Only ambient things are longer: wallpaper crossfade 1200, theme morph 400.
+  resize 200, toast 250. Only ambient things are longer: wallpaper crossfade 1200, theme morph 400, and a dynamic
+  wallpaper drifting to its next frame of the day 8000.
 - **Exits are quicker than entrances.** Nobody waits on something leaving.
 - **Nothing appears from nothing:** enter from `scale 0.96` + opacity, never from scale 0.
 
@@ -100,6 +101,9 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
   names, the full date and the hidden right-click actions live in **tooltips** (`BarTooltip`) and
   in the panels. The exceptions are states that matter at a glance: low battery shows its percentage,
   recording shows its timer, and a non-default keyboard layout shows its code.
+- **Icon weight:** bar icons are Phosphor **fill** (`Theme.barIconWeight`): solid shapes read at a
+  glance over any wallpaper. Everything inside panels, menus and the launcher is **bold**
+  (`Theme.iconWeight`), which matches the weight of the text next to it.
 - **Tooltips follow toolbar rules:** the first waits 500 ms and fades in; while one is up (or was,
   a moment ago) the next appears instantly with no animation. They are hidden while a bar panel is
   open and after a click.

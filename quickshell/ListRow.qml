@@ -16,7 +16,7 @@ Rectangle {
 
     implicitHeight: 44
     radius: 8
-    color: area.containsMouse ? Theme.surface0 : "transparent"
+    color: area.containsMouse ? Theme.surface0 : Qt.alpha(Theme.surface0, 0)
     scale: area.pressed && !Theme.reduceMotion ? 0.98 : 1
 
     Behavior on color { ColorFade {} }

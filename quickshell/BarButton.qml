@@ -7,7 +7,7 @@ Rectangle {
     property string icon: ""
     // Several leading icons (overrides icon)
     property var icons: icon !== "" ? [icon] : []
-    property string iconWeight: Theme.iconWeight
+    property string iconWeight: Theme.barIconWeight
     property color fg: Theme.text
     property bool active: false
     // Bar panel this button opens on left click ("" = none); barScreen is the bar's screen
@@ -31,7 +31,7 @@ Rectangle {
     implicitWidth: content.implicitWidth + (label.visible ? 20 : 12)
     implicitHeight: Theme.barHeight - 8
     radius: 8
-    color: active || panelOpen || area.containsMouse ? Theme.surface0 : "transparent"
+    color: active || panelOpen || area.containsMouse ? Theme.hover : Theme.clear
     scale: area.pressed && !Theme.reduceMotion ? 0.97 : 1
 
     Behavior on color { ColorFade {} }

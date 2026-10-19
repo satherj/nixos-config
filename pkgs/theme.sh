@@ -29,7 +29,8 @@ valid_preset() {
       and (.colors | type == "object") and (.colors as $c | $keys | all(. as $k | $c[$k] | hex))
       and (.colors[.accent] | hex)
       and ((.barOpacity // 0.85) | type == "number" and . >= 0 and . <= 1)
-      and ((.iconWeight // "regular") | IN("thin", "light", "regular", "bold", "fill"))
+      and ((.iconWeight // "bold") | IN("thin", "light", "regular", "bold", "fill"))
+      and ((.barIconWeight // "fill") | IN("thin", "light", "regular", "bold", "fill"))
       and ((.variant // "dark") | IN("dark", "light"))
       and ((.variant // "dark") | IN("dark", "light"))
   ' "$1" >/dev/null 2>&1
@@ -49,7 +50,7 @@ load_preset() {
   local f
   f=$(preset_path "$1")
   [ -n "$f" ] || die "unknown or invalid theme '$1' (see: theme list)"
-  jq -c '{variant: "dark", barOpacity: 0.85, iconWeight: "regular"} + .' "$f"
+  jq -c '{variant: "dark", barOpacity: 0.85, iconWeight: "bold", barIconWeight: "fill"} + .' "$f"
 }
 
 all_ids() {

@@ -38,7 +38,7 @@ Item {
         asynchronous: true
         sourceSize.width: Math.max(1, root.width / 3)
         sourceSize.height: Math.max(1, root.height / 3)
-        source: Wallpaper.url(Wallpaper.current)
+        source: Wallpaper.url(Wallpaper.image)
     }
     // Fades in once decoded, so locking eases from dark into the picture instead of flashing
     MultiEffect {

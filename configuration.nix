@@ -200,6 +200,11 @@
     # the wallpaper is drawn by quickshell too (no swaybg)
     wlsunset playerctl
     imagemagick  # wallpaper thumbnails for the quickshell picker
+    # `wallpaper-dynamic <dynamicwallpaper.club URL | .heic>` imports a time-of-day wallpaper set
+    (writers.writePython3Bin "wallpaper-dynamic" { flakeIgnore = [ "E501" ]; }
+      (builtins.replaceStrings [ ''"heif-dec"'' ''"magick"'' ]
+        [ ''"${libheif.bin}/bin/heif-dec"'' ''"${imagemagick}/bin/magick"'' ]
+        (builtins.readFile ./pkgs/wallpaper-dynamic.py)))
     # clipboard history + screen recording for the quickshell launcher / capture menu
     cliphist wf-recorder slurp grim
     wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme

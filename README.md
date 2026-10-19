@@ -3,7 +3,7 @@
 My NixOS setup. A small flake around one `configuration.nix`, no home-manager: dotfiles in [`dotfiles/`](dotfiles) are symlinked into `~/.config` so they stay live-editable.
 
 - **Compositor:** [niri](https://github.com/YaLTeR/niri), with greetd + tuigreet for login
-- **Shell:** a custom [Quickshell](https://quickshell.org) desktop in [`quickshell/`](quickshell): bar, wifi/bluetooth/audio/battery panels, launcher, notifications, OSD, lock screen, polkit dialog and wallpaper picker, all Catppuccin Mocha
+- **Shell:** a custom [Quickshell](https://quickshell.org) desktop in [`quickshell/`](quickshell): bar, wifi/bluetooth/audio/battery panels, launcher, notifications, OSD, lock screen, polkit dialog and wallpaper picker (dynamic wallpapers that follow the time of day or the sun; import one with `wallpaper-dynamic <dynamicwallpaper.club URL>`), all Catppuccin Mocha
 - **Apps:** ghostty + fish, Google Chrome, yazi, Thunar
 
 Design rules for the shell (motion, materials, layout) and the reasoning behind them: [`docs/design.md`](docs/design.md).
@@ -12,7 +12,7 @@ Design rules for the shell (motion, materials, layout) and the reasoning behind 
 
 ## Theming
 
-Colour presets are JSON files in [`themes/`](themes) (palette keys = Quickshell's `Theme.qml` tokens, plus `accent`, `barOpacity` (the glass opacity shared by the bar, panels and ghostty), `iconWeight`). The `theme` command (`pkgs/theme.nix`) renders them through [`themes/templates/`](themes/templates) into ghostty, niri borders, GTK3/4 and zathura, and writes the resolved preset to `~/.local/state/theme/current.json` last, which the shell watches.
+Colour presets are JSON files in [`themes/`](themes) (palette keys = Quickshell's `Theme.qml` tokens, plus `accent`, `barOpacity` (the glass opacity shared by the bar, panels and ghostty), `iconWeight` for menus (default bold) and `barIconWeight` for the bar (default fill)). The `theme` command (`pkgs/theme.nix`) renders them through [`themes/templates/`](themes/templates) into ghostty, niri borders and overview backdrop, GTK3/4 and zathura, and writes the resolved preset to `~/.local/state/theme/current.json` last, which the shell watches.
 
 ```
 theme list [--json]   # preset ids (or full objects)
