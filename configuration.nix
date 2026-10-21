@@ -209,6 +209,8 @@
     slack
     # browser (replaced Helium: its WebRTC dropped Twilio calls that stock Chrome kept)
     google-chrome
+    # remote desktop (unfree; outgoing connections work on Wayland, incoming control is flaky)
+    anydesk
     # wlsunset = night light (driven by quickshell), playerctl = media keys in niri;
     # the wallpaper is drawn by quickshell too (no swaybg)
     wlsunset playerctl

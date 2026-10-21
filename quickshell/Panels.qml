@@ -91,9 +91,9 @@ Variants {
 
             anchors.top: parent.top
             anchors.topMargin: 8
-            // Control center and calendar drop from the left (their buttons); the rest from the right.
+            // The control center drops from the left (its button); the rest from the right.
             // Under the button that opened it (centred, kept on screen), growing out of that button.
-            fromLeft: win.mainShown === "calendar" || win.mainShown === "control"
+            fromLeft: win.mainShown === "control"
             readonly property real cornerX: fromLeft ? Theme.gap : parent.width - width - Theme.gap
             x: UiState.anchorX < 0 ? cornerX : Math.max(Theme.gap, Math.min(parent.width - width - Theme.gap, UiState.anchorX - width / 2))
             originX: UiState.anchorX < 0 ? (fromLeft ? 0 : width) : Math.max(Theme.radius, Math.min(width - Theme.radius, UiState.anchorX - x))

@@ -86,7 +86,7 @@ PanelWindow {
     // The bar shows only what you need at a glance (icons and the time); the details live in
     // each button's tooltip and its panel.
 
-    // Left: control center + clock
+    // Left: control center
     Pill {
         anchors.left: parent.left
         anchors.leftMargin: bar.inset
@@ -101,25 +101,9 @@ PanelWindow {
             tip: "Control center"
             tipHint: [].concat(UiState.dnd ? ["Do not disturb on"] : [], NightLight.enabled ? ["Night light on"] : []).join(" · ")
         }
-
-        SystemClock {
-            id: clock
-            precision: SystemClock.Minutes
-        }
-
-        BarButton {
-
-            tooltip: tip
-
-            barScreen: bar.screen
-            text: Qt.formatDateTime(clock.date, "HH:mm")
-            panel: "calendar"
-            tip: Qt.formatDateTime(clock.date, "dddd d MMMM yyyy")
-            tipHint: "Week " + bar.isoWeek(clock.date)
-        }
     }
 
-    // Right: status + controls
+    // Right: status + controls + clock
     Pill {
         anchors.right: parent.right
         anchors.rightMargin: bar.inset
@@ -227,6 +211,22 @@ PanelWindow {
             fg: Battery.charging ? Theme.green : pct <= 10 ? Theme.red : pct <= 25 ? Theme.yellow : Theme.text
             panel: "battery"
             tip: Math.round(pct) + "% · " + Battery.status
+        }
+
+        SystemClock {
+            id: clock
+            precision: SystemClock.Minutes
+        }
+
+        BarButton {
+
+            tooltip: tip
+
+            barScreen: bar.screen
+            text: Qt.formatDateTime(clock.date, "HH:mm")
+            panel: "calendar"
+            tip: Qt.formatDateTime(clock.date, "dddd d MMMM yyyy")
+            tipHint: "Week " + bar.isoWeek(clock.date)
         }
     }
 }

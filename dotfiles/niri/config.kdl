@@ -197,11 +197,12 @@ layout {
 
     // You can also add a border. It's similar to the focus ring, but always visible.
     border {
+        // Disabled: the user mostly runs one full-width window at a time, so an
+        // active-window border was pointless. Colors below are dead but left in
+        // place (still overridden by the `theme` command's generated include).
+        off
+
         // The settings are the same as for the focus ring.
-        // If you enable the border, you probably want to disable the focus ring.
-        // Discreet 1px border, same as the quickshell panels (Theme.border / Theme.borderActive):
-        // focused = accent @ 40%, others = surface1 (the values below are overridden by the `theme`
-        // command via the generated include at the end of this file)
         width 1
         active-color "#89b4fa66"
         inactive-color "#313244"
