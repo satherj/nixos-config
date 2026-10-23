@@ -24,7 +24,9 @@ PanelWindow {
     // reserves space and takes input
     implicitHeight: Theme.barExtent + 48
     exclusionMode: ExclusionMode.Normal
-    exclusiveZone: Theme.barExtent
+    // Reserve only down to the pills' bottom edge: niri's gap then sits between pill and window,
+    // the same as between windows
+    exclusiveZone: Theme.barMargin + Theme.barHeight
     mask: Region {
         item: backdrop
     }
