@@ -30,8 +30,16 @@ PanelWindow {
     }
     color: "transparent"
     WlrLayershell.namespace: "quickshell-bar"
+    // Only the two pills are glass; the wallpaper shows through the rest of the band
     BackgroundEffect.blurRegion: Region {
-        item: Theme.reduceTransparency ? null : backdrop
+        Region {
+            item: Theme.reduceTransparency ? null : leftPill
+            radius: Theme.radius
+        }
+        Region {
+            item: Theme.reduceTransparency ? null : rightPill
+            radius: Theme.radius
+        }
     }
 
     readonly property var sink: Pipewire.defaultAudioSink
@@ -43,13 +51,11 @@ PanelWindow {
         objects: [bar.sink]
     }
 
-    // Full-width backdrop
-    Rectangle {
+    // Full-width band, kept clear: it only sets the input mask, the pills carry the material
+    Item {
         id: backdrop
         width: bar.width
         height: Theme.barExtent
-        // No divider line: the frosted material already separates the bar from what is below
-        color: Theme.barBg
     }
 
     BarTooltip {
@@ -61,7 +67,7 @@ PanelWindow {
 
     component Pill: Rectangle {
         default property alias content: row.data
-        color: "transparent"
+        color: Theme.barBg
         radius: Theme.radius
         implicitHeight: Theme.barHeight
         y: Theme.barMargin
@@ -88,6 +94,7 @@ PanelWindow {
 
     // Left: control center
     Pill {
+        id: leftPill
         anchors.left: parent.left
         anchors.leftMargin: bar.inset
 
@@ -105,6 +112,7 @@ PanelWindow {
 
     // Right: status + controls + clock
     Pill {
+        id: rightPill
         anchors.right: parent.right
         anchors.rightMargin: bar.inset
 
