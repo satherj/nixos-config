@@ -24,9 +24,8 @@ PanelWindow {
     // reserves space and takes input
     implicitHeight: Theme.barExtent + 48
     exclusionMode: ExclusionMode.Normal
-    // Reserve a little less than the pills' height: niri adds its 10px gap below the zone, so
-    // windows start 6px under the pills
-    exclusiveZone: Theme.barMargin + Theme.barHeight - 4
+    // Reserve down to the pills; niri's gap below the zone is the same Theme.gap as everywhere else
+    exclusiveZone: Theme.barExtent
     mask: Region {
         item: backdrop
     }
@@ -62,7 +61,7 @@ PanelWindow {
 
     BarTooltip {
         id: tip
-        y: Theme.barExtent + 4
+        y: Theme.barExtent + Theme.gap
         minX: bar.inset
         maxX: bar.width - bar.inset
     }

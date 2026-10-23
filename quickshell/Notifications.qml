@@ -49,7 +49,7 @@ Scope {
             bottom: true
             right: true
         }
-        margins.top: Theme.barExtent + 8
+        margins.top: Theme.barExtent + Theme.gap
         // Left padding leaves room for the cards' shadows
         readonly property int pad: 24
         implicitWidth: pad + 380 + Theme.gap

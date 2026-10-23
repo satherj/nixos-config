@@ -90,7 +90,7 @@ Variants {
             id: mainCard
 
             anchors.top: parent.top
-            anchors.topMargin: 8
+            anchors.topMargin: Theme.gap
             // The control center drops from the left (its button); the rest from the right.
             // Under the button that opened it (centred, kept on screen), growing out of that button.
             fromLeft: win.mainShown === "control"
@@ -107,9 +107,9 @@ Variants {
             id: sideCard
 
             anchors.top: parent.top
-            anchors.topMargin: 8
+            anchors.topMargin: Theme.gap
             fromLeft: mainCard.fromLeft
-            x: fromLeft ? mainCard.x + mainCard.width + 8 : mainCard.x - width - 8
+            x: fromLeft ? mainCard.x + mainCard.width + Theme.gap : mainCard.x - width - Theme.gap
             width: 340
             open: win.open && win.sideName !== ""
             content: win.component(win.sideShown)

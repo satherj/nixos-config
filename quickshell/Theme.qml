@@ -142,10 +142,12 @@ Singleton {
     readonly property string barIconWeight: ["thin", "light", "regular", "bold", "fill"].includes(preset.barIconWeight) ? preset.barIconWeight : "fill"
     readonly property int fontSize: 13
     readonly property int barHeight: 28
-    readonly property int barMargin: 3
-    readonly property int gap: 12
-    // Space the bar occupies from the top edge
-    readonly property int barExtent: barMargin * 2 + barHeight
+    // One spacing everywhere: screen edges, between windows (niri `gaps`, keep equal), and between
+    // the bar, panels, toasts and windows
+    readonly property int gap: 8
+    readonly property int barMargin: gap
+    // Down to the pills' bottom edge; niri adds its gap below this, so windows sit one gap under the pills
+    readonly property int barExtent: barMargin + barHeight
     readonly property int radius: 12
 
     // Materials (Apple's translucent layers): floating surfaces are frosted glass over a compositor

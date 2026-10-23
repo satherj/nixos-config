@@ -93,6 +93,9 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
   as frosted glass it separates itself, and a hard divider only adds noise.
 - **The bar is two floating pills, not a band** (2026-10-23): only the button groups are glass;
   the strip between them is clear so the wallpaper shows through and the bar reads lighter.
+- **One spacing everywhere** (`Theme.gap`, 8 px, equal to niri's `gaps`; 8 because at the laptop's 1.25 scale it is a whole 10 physical px, so half and full-width columns fill the screen exactly and no neighbour peeks in; 6 left a sliver): screen edges, between
+  windows, pill to screen edge, pill to window, bar to panels and toasts, panel to side panel.
+  Change both together.
 - **Window corners come from niri alone** (10 px, `clip-to-geometry`). Apps that draw their own
   rounded frame fight it (Chrome: turn on "Use system title bar and borders"). Translucent windows
   use `draw-border-with-background false`, or the inactive border colour fills in behind the glass.

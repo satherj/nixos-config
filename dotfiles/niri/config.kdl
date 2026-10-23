@@ -115,7 +115,9 @@ input {
 // https://niri-wm.github.io/niri/Configuration:-Layout
 layout {
     // Set gaps around windows in logical pixels.
-    gaps 10
+    // Keep equal to Theme.gap in quickshell/Theme.qml: one spacing between windows, screen edges and the bar.
+    // 8, not 6: at scale 1.25 it is a whole 10 px, so columns tile the screen exactly and neighbours do not peek in
+    gaps 8
 
     // When to center a column when changing focus, options are:
     // - "never", default behavior, focusing an off-screen column will keep at the left
