@@ -260,8 +260,8 @@
         echo "Signing out in 3s (Ctrl+C to stay)…"
         sleep 3
         niri msg action quit --skip-confirmation
-      elif pgrep -x quickshell >/dev/null; then
-        pkill -x quickshell
+      # qs kill instead of pkill: the process is named .quickshell-wrapped, so pkill -x never matched
+      elif qs kill -p /etc/quickshell >/dev/null 2>&1; then
         sleep 0.3
         qs -p /etc/quickshell -d >/dev/null
       fi
