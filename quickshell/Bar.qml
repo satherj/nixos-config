@@ -93,7 +93,7 @@ PanelWindow {
         BarButton {
             tooltip: tip
             barScreen: bar.screen
-            icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["command"])
+            icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["linux-logo"])
             fg: UiState.dnd || NightLight.enabled ? Theme.mauve : Theme.text
             panel: "control"
             tip: "Control center"

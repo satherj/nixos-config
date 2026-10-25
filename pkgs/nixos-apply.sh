@@ -39,9 +39,15 @@ spin() {
 }
 
 printf '\n'
-printf '   %s╲ ┃ ╱%s\n' "$blue" "$reset"
-printf '  %s━━ %s✻%s ━━%s   %snixos-apply%s\n' "$blue" "$mauve" "$blue" "$reset" "$bold" "$reset"
-printf '   %s╱ ┃ ╲%s    %s%s · %s%s\n' "$blue" "$reset" "$overlay" "$(hostname)" "$(date '+%a %R')" "$reset"
+# NixOS logo (fastfetch's nixos_old_small), two-tone
+printf '%s%s%s\n' "$blue" '  \\  \\ //' "$reset"
+printf '%s%s%s\n' "$blue" ' ==\\__\\/ //' "$reset"
+printf '%s%s%s   %snixos-apply%s\n' "$sky" '   //   \\//' "$reset" "$bold" "$reset"
+printf '%s%s%s    %s%s · %s%s\n' "$sky" '==//     //==' "$reset" "$overlay" "$(hostname)" "$(date '+%a %R')" "$reset"
+printf '%s%s%s\n' "$blue" ' //\\___//' "$reset"
+printf '%s%s%s\n' "$blue" '// /\\  \\==' "$reset"
+# shellcheck disable=SC1003
+printf '%s%s%s\n' "$blue" '  // \\  \\' "$reset"
 
 step "sync"
 before=$(git rev-parse HEAD)
@@ -72,8 +78,9 @@ if [[ -z ${same:-} ]]; then
   step "switch"
   sudo -v -p "    ${yellow}⚿${reset} sudo password: "
   # Already built above, so hand nixos-rebuild the result instead of evaluating again.
+  # --no-reexec: it would otherwise try to build a matching nixos-rebuild from <nixpkgs/nixos>, which needs NIX_PATH.
   # Drop its own "Done. The new configuration is …" line, we print our own.
-  nixos-rebuild switch --store-path "$new" --sudo 2>&1 | grep --line-buffered -v '^Done\.' | quiet
+  nixos-rebuild switch --store-path "$new" --sudo --no-reexec 2>&1 | grep --line-buffered -v '^Done\.' | quiet
   ok "switched to ${overlay}$(basename "$new" | cut -c1-12)…${reset}"
   # Tools can move between profiles on a switch (git went to home-manager), so drop bash's cached paths
   hash -r
