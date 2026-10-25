@@ -79,7 +79,7 @@
   # briefly dropped. resolved keeps per-link DNS and fallbacks stable.
   services.resolved = {
     enable = true;
-    fallbackDns = [ "1.1.1.1" "9.9.9.9" ];
+    settings.Resolve.FallbackDNS = [ "1.1.1.1" "9.9.9.9" ];
   };
   networking.networkmanager.dns = "systemd-resolved";
 
@@ -230,45 +230,13 @@
     # ffmpegthumbnailer gives it video thumbnails (images/PDFs are built in); yazi is in modules/home/cli.nix
     nautilus ffmpegthumbnailer
     fastfetch
-    # `nixos-apply`: rebuild from the ~/nixos-staging flake, push to GitHub, restart quickshell
-    # `nixos-apply -l` also signs you out afterwards, for changes that need a fresh session
-    (writeShellScriptBin "nixos-apply" ''
-      set -e
-      cd "$HOME"/nixos-staging
-      # The mini pushes to the same repo (darwin-apply), so start from its latest commits
-      git pull -q --rebase --autostash
-      # Flakes only see files git knows about, so pick up new ones before building
-      git add -A
-      # Builds as you, only activation runs through sudo (root can't read a user-owned git repo cleanly)
-      nixos-rebuild switch --flake .#nixos --sudo
-      # Tools can move between profiles on a switch (git went to home-manager), so drop bash's cached paths
-      hash -r
-      # Publish what was just deployed to github.com/satherj/nixos-config (public!).
-      # gitleaks scans the staged changes first; anything that looks like a secret blocks the sync.
-      (
-        if ! ${gitleaks}/bin/gitleaks git --pre-commit --staged --no-banner --log-level warn .; then
-          git reset -q
-          echo "⚠ gitleaks flagged something above, not syncing to GitHub"
-          exit 0
-        fi
-        git diff --cached --quiet || git commit -qm "nixos-apply $(date '+%F %R')"
-        # Retry the push (also sends any earlier unpushed commits) so a Wi-Fi/DNS blip doesn't lose the sync
-        for i in 1 2 3 4 5 6; do
-          git push -q && exit 0
-          [[ $i -lt 6 ]] && { echo "git push failed, retrying in 5s ($i/6)…"; sleep 5; }
-        done
-        exit 1
-      ) || echo "⚠ Config sync to GitHub failed (try git push in ~/nixos-staging)"
-      if [[ "$1" == "-l" || "$1" == "--logout" ]]; then
-        echo "Signing out in 3s (Ctrl+C to stay)…"
-        sleep 3
-        niri msg action quit --skip-confirmation
-      # qs kill instead of pkill: the process is named .quickshell-wrapped, so pkill -x never matched
-      elif qs kill -p /etc/quickshell >/dev/null 2>&1; then
-        sleep 0.3
-        qs -p /etc/quickshell -d >/dev/null
-      fi
-    '')
+    # `nixos-apply`: rebuild from the ~/nixos-staging flake with a live build tree (nom) and
+    # package diff (nvd), push to GitHub, restart quickshell. `-l` also signs you out afterwards.
+    (writeShellApplication {
+      name = "nixos-apply";
+      runtimeInputs = [ gitleaks nix-output-monitor nvd ];
+      text = builtins.readFile ./pkgs/nixos-apply.sh;
+    })
     # files & cloud: rclone mounts Proton Drive (rclone config -> "protondrive")
     rsync rclone
     # office: lightweight word processor + spreadsheet (docx/xlsx)
@@ -371,10 +339,10 @@
   home-manager.users.jonathans.programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
-    matchBlocks.mini = {
-      hostname = "mini";
-      user = "mac-mini";
-      serverAliveInterval = 30;
+    settings.mini = {
+      HostName = "mini";
+      User = "mac-mini";
+      ServerAliveInterval = 30;
     };
   };
 

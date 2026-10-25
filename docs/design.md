@@ -76,13 +76,13 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
 
 ## 2. Surfaces and depth
 
-- **One material:** floating surfaces (panels, launcher, OSD, polkit card, bar) are translucent
+- **One material:** floating surfaces (panels, launcher, OSD, polkit card) are translucent
   `Theme.material` over a real compositor blur (`BackgroundEffect.blurRegion`, niri 26.04's
   ext-background-effect). The blur region follows the card's on-screen size, including mid-animation,
   and is dropped the moment a surface starts closing: blur can't fade, so tying it to opacity > 0
   leaves a bare frosted rectangle behind the fading card.
   niri layer rules turn off "xray" for overlays so they blur the windows beneath, not just the wallpaper.
-- **One glass value per theme:** a preset's `barOpacity` sets the opacity of the bar, the panels
+- **One glass value per theme:** a preset's `barOpacity` sets the opacity of the panels
   and ghostty together (niri blurs behind ghostty via a window rule), so all glass matches.
 - **Exceptions:** toasts and tooltips stay solid. They stack or sit over arbitrary content, and
   small text must stay readable.
@@ -90,9 +90,9 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
   1.4, panels 1, toasts and OSD 0.6, tooltips 0.4). A modal task (polkit, launcher) dims the screen;
   a parallel one (panels) doesn't.
 - **One discreet 1 px border** (`Theme.border`), matching niri's window borders. The bar has none:
-  as frosted glass it separates itself, and a hard divider only adds noise.
-- **The bar is two floating pills, not a band** (2026-10-23): only the button groups are glass;
-  the strip between them is clear so the wallpaper shows through and the bar reads lighter.
+  it is bare icons, and a hard divider only adds noise.
+- **The bar is bare icons, not a band** (2026-10-23; pill glass removed 2026-10-25): the button
+  groups have no fill or blur, just icons and the time over the wallpaper, so the bar reads lightest.
 - **One spacing everywhere** (`Theme.gap`, 8 px, equal to niri's `gaps`; 8 because at the laptop's 1.25 scale it is a whole 10 physical px, so half and full-width columns fill the screen exactly and no neighbour peeks in; 6 left a sliver): screen edges, between
   windows, pill to screen edge, pill to window, bar to panels and toasts, panel to side panel.
   Change both together.

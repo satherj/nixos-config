@@ -31,17 +31,6 @@ PanelWindow {
     }
     color: "transparent"
     WlrLayershell.namespace: "quickshell-bar"
-    // Only the two pills are glass; the wallpaper shows through the rest of the band
-    BackgroundEffect.blurRegion: Region {
-        Region {
-            item: Theme.reduceTransparency ? null : leftPill
-            radius: Theme.radius
-        }
-        Region {
-            item: Theme.reduceTransparency ? null : rightPill
-            radius: Theme.radius
-        }
-    }
 
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var adapter: Bluetooth.defaultAdapter
@@ -52,7 +41,7 @@ PanelWindow {
         objects: [bar.sink]
     }
 
-    // Full-width band, kept clear: it only sets the input mask, the pills carry the material
+    // Full-width band, kept clear: it only sets the input mask
     Item {
         id: backdrop
         width: bar.width
@@ -68,7 +57,8 @@ PanelWindow {
 
     component Pill: Rectangle {
         default property alias content: row.data
-        color: Theme.barBg
+        // No fill or blur: just the icons over the wallpaper (per the user, 2026-10-25)
+        color: "transparent"
         radius: Theme.radius
         implicitHeight: Theme.barHeight
         y: Theme.barMargin
