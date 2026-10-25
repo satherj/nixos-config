@@ -367,6 +367,17 @@
   # fish config (mise, zoxide, greeting) lives in modules/home/cli.nix
   programs.fish.enable = true;
 
+  # `ssh mini`: the Mac mini dev server over Tailscale (MagicDNS)
+  home-manager.users.jonathans.programs.ssh = {
+    enable = true;
+    enableDefaultConfig = false;
+    matchBlocks.mini = {
+      hostname = "mini";
+      user = "mac-mini";
+      serverAliveInterval = 30;
+    };
+  };
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 

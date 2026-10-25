@@ -25,7 +25,8 @@
     enable = true;
     settings = {
       user.name = "Jonathan Säther";
-      user.email = "satherjonathan@gmail.com";
+      # GitHub's noreply address: this repo is public and commits carry the author email
+      user.email = "140653863+satherj@users.noreply.github.com";
       init.defaultBranch = "main";
       pull.rebase = false;
     };
