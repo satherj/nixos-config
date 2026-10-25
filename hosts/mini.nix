@@ -23,6 +23,8 @@
     openssh.authorizedKeys.keys = [
       # ThinkPad (carried over from the old mini's authorized_keys)
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHHGedIYaDmGzpkKl2Wy6bKGFyHBH09zcg4AujXYI5jE"
+      # ThinkPad, current ~/.ssh/id_ed25519
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKkAUlqGrJp8GBhDTXPyqz5ejkjG9YQ7J5q92XFe0drj"
     ];
   };
   programs.fish.enable = true;
