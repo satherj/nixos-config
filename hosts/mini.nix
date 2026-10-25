@@ -80,6 +80,22 @@
     };
   };
 
+  # herdr server, always up from login, so `herdr --remote mini` from the ThinkPad always finds it.
+  # Started through a fish login shell: launchd's bare environment would leave panes without the
+  # nix PATH, SHELL and mise. Logs: ~/.config/herdr/herdr-server.log. Versions come from nix, not `herdr update`.
+  launchd.user.agents.herdr = {
+    serviceConfig = {
+      Label = "org.herdr.server";
+      ProgramArguments = [ "/run/current-system/sw/bin/fish" "-l" "-c" "exec ${pkgs.herdr}/bin/herdr server" ];
+      EnvironmentVariables.SHELL = "/run/current-system/sw/bin/fish";
+      WorkingDirectory = "/Users/mac-mini";
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/Users/mac-mini/Library/Logs/herdr-launchd.log";
+      StandardErrorPath = "/Users/mac-mini/Library/Logs/herdr-launchd.log";
+    };
+  };
+
   # SSH with keys only
   services.openssh = {
     enable = true;
