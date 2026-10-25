@@ -241,6 +241,8 @@
       git add -A
       # Builds as you, only activation runs through sudo (root can't read a user-owned git repo cleanly)
       nixos-rebuild switch --flake .#nixos --sudo
+      # Tools can move between profiles on a switch (git went to home-manager), so drop bash's cached paths
+      hash -r
       # Publish what was just deployed to github.com/satherj/nixos-config (public!).
       # gitleaks scans the staged changes first; anything that looks like a secret blocks the sync.
       (
