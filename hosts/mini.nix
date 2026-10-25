@@ -55,6 +55,31 @@
   # `sudo tailscale up` once after the first switch, then disable key expiry for it in the admin console.
   services.tailscale.enable = true;
 
+  # cloudflared: https://tunnel.fondaro.com -> the dev API, for clients that can't be on Tailscale
+  # (Zapier, the Android debug build, Twilio). Only that hostname is routed, everything else gets a 404.
+  # The credentials JSON stays in ~/.cloudflared (chmod 600, never in this public repo); cert.pem is not
+  # needed to run a tunnel, only to create or route one (`cloudflared tunnel login` fetches it again).
+  environment.etc."cloudflared/config.yml".text = ''
+    tunnel: 996b297a-f9a0-4721-85f5-38990859e4a6
+    credentials-file: /Users/mac-mini/.cloudflared/996b297a-f9a0-4721-85f5-38990859e4a6.json
+    no-autoupdate: true
+    ingress:
+      - hostname: tunnel.fondaro.com
+        service: http://127.0.0.1:3001
+      - service: http_status:404
+  '';
+  # Runs as you (not root) from login; `launchctl kickstart -k gui/501/org.cloudflare.cloudflared` restarts it
+  launchd.user.agents.cloudflared = {
+    serviceConfig = {
+      Label = "org.cloudflare.cloudflared";
+      ProgramArguments = [ "${pkgs.cloudflared}/bin/cloudflared" "tunnel" "--config" "/etc/cloudflared/config.yml" "run" ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/Users/mac-mini/Library/Logs/cloudflared.log";
+      StandardErrorPath = "/Users/mac-mini/Library/Logs/cloudflared.log";
+    };
+  };
+
   # SSH with keys only
   services.openssh = {
     enable = true;
