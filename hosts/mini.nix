@@ -29,6 +29,8 @@
 
   environment.systemPackages = with pkgs; [
     git curl rsync tmux btop
+    # Claude Code plugins (security-guidance) need a real python3; /usr/bin/python3 is only the Xcode CLT stub
+    python3
     # xterm-ghostty terminfo, so SSH sessions from ghostty on the ThinkPad render properly
     ghostty-bin.terminfo
     (writeShellScriptBin "darwin-apply" ''

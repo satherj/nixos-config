@@ -11,8 +11,10 @@
     herdr
   ];
 
-  # Self-updating installs live here (Claude Code's native installer: ~/.local/bin/claude)
-  home.sessionPath = [ "$HOME/.local/bin" ];
+  # Self-updating installs live in ~/.local/bin (Claude Code's native installer: ~/.local/bin/claude).
+  # mise's shims make node/pnpm visible to non-interactive processes too (Claude Code plugin hooks, scripts),
+  # which the interactive `mise activate` hook never reaches
+  home.sessionPath = [ "$HOME/.local/bin" "$HOME/.local/share/mise/shims" ];
 
   programs.fish = {
     enable = true;
