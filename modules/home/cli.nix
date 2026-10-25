@@ -11,6 +11,9 @@
     herdr
   ];
 
+  # Self-updating installs live here (Claude Code's native installer: ~/.local/bin/claude)
+  home.sessionPath = [ "$HOME/.local/bin" ];
+
   programs.fish = {
     enable = true;
     interactiveShellInit = ''
