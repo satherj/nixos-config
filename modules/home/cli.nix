@@ -7,6 +7,8 @@
     # files: yazi (TUI file manager), lazygit
     yazi lazygit
     fzf ripgrep fd jq
+    # agent multiplexer: the server runs on the mini, the ThinkPad attaches with `herdr --remote`
+    herdr
   ];
 
   programs.fish = {
