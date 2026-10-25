@@ -82,7 +82,6 @@
     fallbackDns = [ "1.1.1.1" "9.9.9.9" ];
   };
   networking.networkmanager.dns = "systemd-resolved";
-  programs.zoxide.enable = true;  # `z <dir>` jumps to frecent directories
 
   fonts.packages = with pkgs; [
     maple-mono.NF
@@ -227,15 +226,17 @@
     # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders
     adw-gtk3
     (catppuccin-papirus-folders.override { flavor = "mocha"; accent = "blue"; })
-    # files: yazi (TUI) + nautilus (GUI; rename/progress/conflicts stay inside its window, themed via gtk-4.0/gtk.css)
-    # ffmpegthumbnailer gives it video thumbnails (images/PDFs are built in)
-    yazi lazygit nautilus ffmpegthumbnailer
+    # files: nautilus (GUI; rename/progress/conflicts stay inside its window, themed via gtk-4.0/gtk.css)
+    # ffmpegthumbnailer gives it video thumbnails (images/PDFs are built in); yazi is in modules/home/cli.nix
+    nautilus ffmpegthumbnailer
     fastfetch
     # `nixos-apply`: rebuild from the ~/nixos-staging flake, push to GitHub, restart quickshell
     # `nixos-apply -l` also signs you out afterwards, for changes that need a fresh session
     (writeShellScriptBin "nixos-apply" ''
       set -e
       cd "$HOME"/nixos-staging
+      # The mini pushes to the same repo (darwin-apply), so start from its latest commits
+      git pull -q --rebase --autostash
       # Flakes only see files git knows about, so pick up new ones before building
       git add -A
       # Builds as you, only activation runs through sudo (root can't read a user-owned git repo cleanly)
@@ -268,13 +269,12 @@
     '')
     # files & cloud: rclone mounts Proton Drive (rclone config -> "protondrive")
     rsync rclone
-    fzf
     # office: lightweight word processor + spreadsheet (docx/xlsx)
     abiword gnumeric
     # PDF viewer (mupdf backend); themed in dotfiles/zathura, default for .pdf via xdg.mime below
     (zathura.override { plugins = [ zathuraPkgs.zathura_pdf_mupdf ]; })
-    # dev tooling
-    mise git gh curl unzip
+    # dev tooling (git, gh, mise, fzf, lazygit, ... come from modules/home/cli.nix, shared with the mini)
+    curl unzip
     # zip handling: `unzip-here <file.zip>` extracts next to the archive into a folder named after it
     # (default app for .zip via xdg.mime below); Nautilus has its own right-click Compress/Extract
     (writeShellScriptBin "unzip-here" ''
@@ -362,13 +362,8 @@
     fi
   '';
 
-  programs.fish = {
-    enable = true;
-    interactiveShellInit = ''
-      ${pkgs.mise}/bin/mise activate fish | source
-      set -g fish_greeting
-    '';
-  };
+  # fish config (mise, zoxide, greeting) lives in modules/home/cli.nix
+  programs.fish.enable = true;
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
