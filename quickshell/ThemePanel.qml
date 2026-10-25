@@ -35,7 +35,7 @@ ColumnLayout {
 
     ScrollList {
         visible: root.shown.length > 0
-        maxHeight: 420
+        maxHeight: 480
 
         Grid {
             id: grid

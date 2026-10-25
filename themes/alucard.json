@@ -1,0 +1,33 @@
+{
+  "id": "alucard",
+  "name": "Alucard",
+  "variant": "light",
+  "colors": {
+    "base": "#fffbeb",
+    "mantle": "#f5f2df",
+    "crust": "#ecead8",
+    "surface0": "#e4e2d0",
+    "surface1": "#cfcfde",
+    "surface2": "#b8b6a8",
+    "overlay0": "#8c8770",
+    "subtext0": "#6c664b",
+    "text": "#1f1f1f",
+    "blue": "#644ac9",
+    "mauve": "#644ac9",
+    "green": "#14710a",
+    "yellow": "#846e15",
+    "peach": "#a34d14",
+    "red": "#cb3a2a",
+    "teal": "#036a96",
+    "pink": "#a3144d",
+    "lavender": "#7a63d6",
+    "sky": "#036a96",
+    "sapphire": "#2f7fa8",
+    "maroon": "#b03a3a",
+    "rosewater": "#1f1f1f",
+    "flamingo": "#a34d14"
+  },
+  "accent": "mauve",
+  "barOpacity": 0.85,
+  "iconWeight": "bold"
+}

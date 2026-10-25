@@ -1,0 +1,33 @@
+{
+  "id": "rose-pine",
+  "name": "Rosé Pine",
+  "variant": "dark",
+  "colors": {
+    "base": "#191724",
+    "mantle": "#16141f",
+    "crust": "#110f18",
+    "surface0": "#26233a",
+    "surface1": "#403d52",
+    "surface2": "#524f67",
+    "overlay0": "#6e6a86",
+    "subtext0": "#908caa",
+    "text": "#e0def4",
+    "blue": "#9ccfd8",
+    "mauve": "#c4a7e7",
+    "green": "#31748f",
+    "yellow": "#f6c177",
+    "peach": "#ea9a97",
+    "red": "#eb6f92",
+    "teal": "#ebbcba",
+    "pink": "#c4a7e7",
+    "lavender": "#c4a7e7",
+    "sky": "#9ccfd8",
+    "sapphire": "#31748f",
+    "maroon": "#eb6f92",
+    "rosewater": "#ebbcba",
+    "flamingo": "#ebbcba"
+  },
+  "accent": "rosewater",
+  "barOpacity": 0.85,
+  "iconWeight": "bold"
+}

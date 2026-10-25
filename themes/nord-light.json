@@ -1,0 +1,33 @@
+{
+  "id": "nord-light",
+  "name": "Nord Light",
+  "variant": "light",
+  "colors": {
+    "base": "#eceff4",
+    "mantle": "#e5e9f0",
+    "crust": "#d8dee9",
+    "surface0": "#d8dee9",
+    "surface1": "#c2cad8",
+    "surface2": "#aeb7c7",
+    "overlay0": "#8c96a8",
+    "subtext0": "#4c566a",
+    "text": "#2e3440",
+    "blue": "#5e81ac",
+    "mauve": "#8f6b9f",
+    "green": "#6f8f53",
+    "yellow": "#b8892f",
+    "peach": "#c06a4c",
+    "red": "#bf616a",
+    "teal": "#4c8f8e",
+    "pink": "#8f6b9f",
+    "lavender": "#8f6b9f",
+    "sky": "#3e8aa1",
+    "sapphire": "#5e81ac",
+    "maroon": "#a5434d",
+    "rosewater": "#2e3440",
+    "flamingo": "#c06a4c"
+  },
+  "accent": "sapphire",
+  "barOpacity": 0.85,
+  "iconWeight": "bold"
+}
