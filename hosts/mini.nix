@@ -96,6 +96,29 @@
     };
   };
 
+  # Postgres for the dev stacks: same major version as production (17), with the extensions the
+  # schema uses. `fondaro_golden` is a template database; each worktree gets its own clone.
+  # Localhost only, and trust auth: a single-user dev box nothing else can reach.
+  services.postgresql = {
+    enable = true;
+    package = pkgs.postgresql_17.withPackages (p: [ p.postgis p.pgvector ]);
+    # runs as the user (launchd agent), so the data lives in the home folder
+    dataDir = "/Users/mac-mini/.local/share/postgresql/17";
+    authentication = ''
+      local all all              trust
+      host  all all 127.0.0.1/32 trust
+      host  all all ::1/128      trust
+    '';
+    settings = {
+      max_connections = 200;
+      shared_buffers = "512MB";
+    };
+  };
+  launchd.user.agents.postgresql.serviceConfig = {
+    StandardOutPath = "/Users/mac-mini/Library/Logs/postgresql.log";
+    StandardErrorPath = "/Users/mac-mini/Library/Logs/postgresql.log";
+  };
+
   # SSH with keys only
   services.openssh = {
     enable = true;
