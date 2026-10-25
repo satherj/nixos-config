@@ -49,7 +49,7 @@ Singleton {
             name: "Theme",
             genericName: "Switch colour theme",
             icon: "preferences-desktop-theme",
-            keywords: ["theme", "colour", "color", "palette", "dark", "gruvbox", "catppuccin", "mocha", "midnight"],
+            keywords: ["theme", "colour", "color", "palette", "dark", "gruvbox", "catppuccin", "mocha", "midnight", "doom"],
             comment: "",
             execString: "",
             noDisplay: false,

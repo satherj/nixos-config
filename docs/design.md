@@ -142,6 +142,10 @@ size together, not size alone.
 ## 5. Colour and theming
 
 - Colours always come from `Theme` tokens (the active preset), never literals.
+- **The theme picker shows, not tells:** a Dark/Light switch (starting on the active preset's
+  variant) over a two-column grid of tiles, each a tiny editor window painted entirely in that
+  preset's own colours (traffic lights, a few code lines, its name in its own text colour). The
+  active tile is ringed in its own accent. No live preview on hover: a switch regenerates GTK themes.
 - Switching theme morphs every shell colour over 400 ms (a rare, deliberate action), and GTK apps
   recolour live: the `theme` command turns each preset into a small generated GTK theme
   (`~/.local/share/themes/theme-<id>-<hash>`), and the change of theme name is what makes running

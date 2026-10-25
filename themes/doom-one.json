@@ -1,0 +1,17 @@
+{
+  "id": "doom-one",
+  "name": "Doom One",
+  "variant": "dark",
+  "colors": {
+    "base": "#282c34", "mantle": "#21242b", "crust": "#1b2229",
+    "surface0": "#3f444a", "surface1": "#4b5158", "surface2": "#5b6268",
+    "overlay0": "#73797e", "subtext0": "#9ca0a4", "text": "#bbc2cf",
+    "blue": "#51afef", "mauve": "#c678dd", "green": "#98be65", "yellow": "#ecbe7b",
+    "peach": "#da8548", "red": "#ff6c6b", "teal": "#4db5bd", "pink": "#dcaeea",
+    "lavender": "#a9a1e1", "sky": "#46d9ff", "sapphire": "#5699af",
+    "maroon": "#e06c75", "rosewater": "#dfdfdf", "flamingo": "#e5a46e"
+  },
+  "accent": "blue",
+  "barOpacity": 0.85,
+  "iconWeight": "bold"
+}
