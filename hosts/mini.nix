@@ -31,6 +31,11 @@
     git curl rsync tmux btop
     # Claude Code plugins (security-guidance) need a real python3; /usr/bin/python3 is only the Xcode CLT stub
     python3
+    # dev stacks: `wt` (fondaro-mono/scripts/wt, always the main checkout's) drives process-compose per slot
+    process-compose
+    (writeShellScriptBin "wt" ''
+      exec "$HOME"/Developer/fondaro-mono/scripts/wt "$@"
+    '')
     # xterm-ghostty terminfo, so SSH sessions from ghostty on the ThinkPad render properly
     ghostty-bin.terminfo
     (writeShellScriptBin "darwin-apply" ''
