@@ -31,8 +31,9 @@
     git curl rsync tmux btop
     # Claude Code plugins (security-guidance) need a real python3; /usr/bin/python3 is only the Xcode CLT stub
     python3
-    # the Fondaro API runs on Kubernetes; its runbooks and scripts/prod-errors.sh drive it with the ~/.kube/config here
-    kubectl
+    # the Fondaro API runs on Kubernetes; its runbooks and scripts/prod-errors.sh drive it with the ~/.kube/config here.
+    # The cluster is DigitalOcean's: kubectl gets its credentials from doctl (logged in via ~/Library/Application Support/doctl)
+    kubectl doctl
     # dev stacks: `wt` (fondaro-mono/scripts/wt, always the main checkout's) drives process-compose per slot
     process-compose
     (writeShellScriptBin "wt" ''
