@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 
 Rectangle {
     id: root
@@ -8,7 +9,7 @@ Rectangle {
     // Several leading icons (overrides icon)
     property var icons: icon !== "" ? [icon] : []
     property string iconWeight: Theme.barIconWeight
-    property color fg: Theme.text
+    property color fg: Theme.barText
     property bool active: false
     // Bar panel this button opens on left click ("" = none); barScreen is the bar's screen
     property string panel: ""
@@ -31,7 +32,7 @@ Rectangle {
     implicitWidth: content.implicitWidth + (label.visible ? 20 : 12)
     implicitHeight: Theme.barHeight - 8
     radius: 8
-    color: active || panelOpen || area.containsMouse ? Theme.hover : Theme.clear
+    color: active || panelOpen || area.containsMouse ? Theme.barHover : Theme.barClear
     scale: area.pressed && !Theme.reduceMotion ? 0.97 : 1
 
     Behavior on color { ColorFade {} }
@@ -41,6 +42,16 @@ Rectangle {
         id: content
         anchors.centerIn: parent
         spacing: 5
+        // Soft shadow so the light glyphs read on bright wallpapers too
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: Theme.barShadow
+            shadowBlur: 0.6
+            shadowVerticalOffset: 1
+            shadowHorizontalOffset: 0
+            autoPaddingEnabled: true
+        }
 
         Repeater {
             model: root.icons

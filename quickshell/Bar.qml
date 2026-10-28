@@ -94,7 +94,7 @@ PanelWindow {
             tooltip: tip
             barScreen: bar.screen
             icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["linux-logo"])
-            fg: UiState.dnd || NightLight.enabled ? Theme.mauve : Theme.text
+            fg: UiState.dnd || NightLight.enabled ? Theme.onWall("mauve") : Theme.barText
             panel: "control"
             tip: "Control center"
             tipHint: [].concat(UiState.dnd ? ["Do not disturb on"] : [], NightLight.enabled ? ["Night light on"] : []).join(" · ")
@@ -115,7 +115,7 @@ PanelWindow {
             icon: "record"
             iconWeight: "fill"
             text: Capture.elapsed
-            fg: Theme.red
+            fg: Theme.onWall("red")
             tip: "Recording"
             tipHint: "Click to stop"
             onClicked: Capture.stop()
@@ -128,7 +128,7 @@ PanelWindow {
             visible: Niri.layouts.length > 1 && Niri.layoutIdx !== 0
             icon: "keyboard"
             text: (Niri.layoutName.match(/\(([^)]+)\)/)?.[1] ?? Niri.layoutName).toLowerCase()
-            fg: Theme.mauve
+            fg: Theme.onWall("mauve")
             tip: Niri.layoutName
             tipHint: "Click to switch layout"
             onClicked: Quickshell.execDetached(["niri", "msg", "action", "switch-layout", "next"])
@@ -141,7 +141,7 @@ PanelWindow {
             barScreen: bar.screen
             readonly property bool on: bar.adapter?.enabled ?? false
             icon: !on ? "bluetooth-slash" : bar.btConnected.length > 0 ? "bluetooth-connected" : "bluetooth"
-            fg: on ? Theme.text : Theme.overlay0
+            fg: on ? Theme.barText : Theme.barDim
             panel: "bluetooth"
             tip: !bar.adapter ? "No Bluetooth adapter"
                 : !on ? "Bluetooth off"
@@ -160,7 +160,7 @@ PanelWindow {
 
             barScreen: bar.screen
             icon: Net.icon
-            fg: Net.online ? Theme.text : Theme.overlay0
+            fg: Net.online ? Theme.barText : Theme.barDim
             panel: "wifi"
             tip: Net.wiredDevice ? "Wired connection"
                 : !Networking.wifiEnabled ? "Wi-Fi off"
@@ -181,7 +181,7 @@ PanelWindow {
             readonly property real vol: bar.sink?.audio?.volume ?? 0
             readonly property bool muted: bar.sink?.audio?.muted ?? false
             icon: muted ? "speaker-x" : vol <= 0.005 ? "speaker-none" : vol < 0.5 ? "speaker-low" : "speaker-high"
-            fg: muted ? Theme.overlay0 : Theme.text
+            fg: muted ? Theme.barDim : Theme.barText
             panel: "audio"
             tip: (muted ? `Muted (${Math.round(vol * 100)}%)` : `Volume ${Math.round(vol * 100)}%`) + (bar.sink?.description ? " · " + bar.sink.description : "")
             tipHint: muted ? "Scroll to adjust · right-click to unmute" : "Scroll to adjust · right-click to mute"
@@ -207,7 +207,7 @@ PanelWindow {
             icon: Battery.icon
             // Running low is the one time the number matters at a glance
             text: low ? Math.round(pct) + "%" : ""
-            fg: Battery.charging ? Theme.green : pct <= 10 ? Theme.red : pct <= 25 ? Theme.yellow : Theme.text
+            fg: Battery.charging ? Theme.onWall("green") : pct <= 10 ? Theme.onWall("red") : pct <= 25 ? Theme.onWall("yellow") : Theme.barText
             panel: "battery"
             tip: Math.round(pct) + "% · " + Battery.status
         }

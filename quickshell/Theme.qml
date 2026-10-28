@@ -168,6 +168,18 @@ Singleton {
     // `hover` vs `clear` (same colour, alpha 0); "transparent" is transparent *black* and dips grey.
     readonly property color hover: Qt.alpha(text, 0.12)
     readonly property color clear: Qt.alpha(text, 0)
+    // The bar is bare icons over the wallpaper, not over a theme surface, so it ignores the
+    // theme variant: always light glyphs (dark themes' own text, Mocha's pastels on light themes)
+    // lifted off any wallpaper by a soft shadow
+    readonly property bool light: preset.variant === "light"
+    function onWall(name: string): color {
+        return light ? fallback[name] : root[name];
+    }
+    readonly property color barText: light ? fallback.text : text
+    readonly property color barDim: Qt.alpha(barText, 0.55)
+    readonly property color barHover: Qt.alpha(barText, 0.16)
+    readonly property color barClear: Qt.alpha(barText, 0)
+    readonly property color barShadow: Qt.rgba(0, 0, 0, 0.6)
 
     // Motion (Emil Kowalski's animation rules): strong custom curves, UI stays under 300ms,
     // only opacity/scale/translate animate. QS_REDUCE_MOTION=1 keeps fades, drops movement.

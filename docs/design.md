@@ -93,6 +93,9 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
   it is bare icons, and a hard divider only adds noise.
 - **The bar is bare icons, not a band** (2026-10-23; pill glass removed 2026-10-25): the button
   groups have no fill or blur, just icons and the time over the wallpaper, so the bar reads lightest.
+  Because they sit on the wallpaper, not a theme surface, bar glyphs are **always light** whatever
+  the theme variant (`Theme.barText`/`barDim`/`barHover`, accents via `Theme.onWall(name)`, Mocha
+  pastels on light themes) with a soft `MultiEffect` shadow (`Theme.barShadow`) for bright wallpapers.
 - **One spacing everywhere** (`Theme.gap`, 8 px, equal to niri's `gaps`; 8 because at the laptop's 1.25 scale it is a whole 10 physical px, so half and full-width columns fill the screen exactly and no neighbour peeks in; 6 left a sliver): screen edges, between
   windows, pill to screen edge, pill to window, bar to panels and toasts, panel to side panel.
   Change both together.
