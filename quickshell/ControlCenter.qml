@@ -150,7 +150,7 @@ ColumnLayout {
     }
 
     PanelHeader {
-        icon: "command"
+        icon: "dots-three-outline"
         title: "Control center"
 
         Row {
