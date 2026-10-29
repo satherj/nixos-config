@@ -25,6 +25,12 @@ notify_path=/run/current-system/sw/bin/xfer-notify
 tilde='~' # a literal ~, for the patterns below
 default_dir="$tilde/Transfer"
 
+# Fish reads \' and \\ inside single quotes as escapes, bash doesn't, so no quoting is right for both.
+# Refuse a backslash in anything that goes into a remote shell command.
+nobs() {
+  [[ $1 != *\\* ]] || die "backslash in a name or path is not supported: $1"
+}
+
 # Single-quote for the remote shell (bash on the ThinkPad, fish on the mini: both read '\'' as a quote)
 shq() {
   printf "'%s'" "${1//\'/\'\\\'\'}"
@@ -114,6 +120,10 @@ cmd_send() {
     [[ -e $src ]] || die "no such file or folder: $src"
   done
 
+  nobs "$to"
+  for src in "${srcs[@]}"; do
+    nobs "$(basename -- "${src%/}")"
+  done
   rdir=$(rpath "$to")
   rhome=$(remote_home)
   rabsdir=$(rabs "$rdir" "$rhome")
@@ -159,8 +169,10 @@ cmd_get() {
   if ((latest)); then
     [[ ${#remotes[@]} -eq 1 ]] || die "--latest takes one folder"
     rp=$(rpath "${remotes[0]}")
+    nobs "$rp"
     name=$(rssh "command ls -1tp -- $(shq "$rp") | grep -v '/\$' | head -n 1") || die "cannot list ${remotes[0]} on $peer"
     [[ -n $name ]] || die "no files in ${remotes[0]} on $peer"
+    nobs "$name"
     remotes=("$rp/$name")
   fi
 
@@ -171,6 +183,7 @@ cmd_get() {
 
   for r in "${remotes[@]}"; do
     rp=$(rpath "$r")
+    nobs "$rp"
     rc=0
     rssh "test -d $(shq "$rp")" || rc=$?
     case "$rc" in
@@ -196,6 +209,7 @@ cmd_get() {
 cmd_ls() {
   local dir=${1:-$default_dir}
   [[ $# -le 1 ]] || die "ls takes one folder"
+  nobs "$dir"
   rssh "command ls -1tp -- $(shq "$(rpath "$dir")")" || die "cannot list $dir on $peer"
 }
 
