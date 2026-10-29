@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   imports =
@@ -144,6 +144,7 @@
     "L /home/jonathans/.config/ghostty - - - - /home/jonathans/nixos-staging/dotfiles/ghostty"
     "L /home/jonathans/.config/gtk-3.0/bookmarks - - - - /home/jonathans/nixos-staging/dotfiles/gtk-3.0/bookmarks"
     "L /home/jonathans/.config/zathura - - - - /home/jonathans/nixos-staging/dotfiles/zathura"
+    "L /home/jonathans/.config/mpv - - - - /home/jonathans/nixos-staging/dotfiles/mpv"
   ];
 
   # Proton Drive: mounted at ~/ProtonDrive via rclone (remote "protondrive", set up with `rclone config`)
@@ -274,6 +275,9 @@
     abiword gnumeric
     # PDF viewer (mupdf backend); themed in dotfiles/zathura, default for .pdf via xdg.mime below
     (zathura.override { plugins = [ zathuraPkgs.zathura_pdf_mupdf ]; })
+    # video player: mpv with the uosc UI + thumbfast seek previews + mpris (playerctl/media keys);
+    # config in dotfiles/mpv, colours from the `theme` command, default for video via xdg.mime below
+    (mpv.override { scripts = with mpvScripts; [ uosc thumbfast mpris ]; })
     # dev tooling (git, gh, mise, fzf, lazygit, ... come from modules/home/cli.nix, shared with the mini)
     curl unzip
     # zip handling: `unzip-here <file.zip>` extracts next to the archive into a folder named after it
@@ -323,7 +327,10 @@
     "x-scheme-handler/unknown" = "google-chrome.desktop";
     "application/zip" = "unzip-here.desktop";
     "application/x-zip-compressed" = "unzip-here.desktop";
-  };
+  } // lib.genAttrs [
+    "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
+    "video/mpeg" "video/ogg" "video/x-flv" "video/3gpp" "video/x-m4v" "video/mp2t"
+  ] (_: "mpv.desktop");
   services.gvfs.enable = true;
 
   # Chrome has no forced theme: pick Appearance > Theme > "GTK" once and it follows the GTK

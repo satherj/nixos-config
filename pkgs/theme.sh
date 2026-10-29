@@ -152,7 +152,10 @@ apply_preset() { # $1 = id, $2 = force reload (0/1)
                           ansi0: (if .variant == "light" then .colors.subtext0 else .colors.surface1 end),
                           ansi8: (if .variant == "light" then .colors.overlay0 else .colors.surface2 end),
                           ansi7: (if .variant == "light" then .colors.surface2 else .colors.subtext0 end),
-                          ansi15: (if .variant == "light" then .colors.surface1 else .colors.text end)}' <<<"$preset")
+                          ansi15: (if .variant == "light" then .colors.surface1 else .colors.text end)}
+              # bare_<name>: every colour without the "#" (mpv/uosc colour lists)
+              | . + with_entries(select(.value | type == "string" and test("^#[0-9a-fA-F]{6}$"))
+                                 | .key |= "bare_" + . | .value |= ltrimstr("#"))' <<<"$preset")
   # The generated GTK theme replaces adw-gtk3 as the theme name (see write_gtk_theme)
   local css gtk_name
   css=$(render gtk.css "$map")
@@ -163,6 +166,7 @@ apply_preset() { # $1 = id, $2 = force reload (0/1)
   render ghostty.conf "$map" | write_file "$state_dir/ghostty.conf" && changed=1
   render niri.kdl "$map" | write_file "$state_dir/niri.kdl" && changed=1
   render zathura.conf "$map" | write_file "$state_dir/zathura.conf" && changed=1
+  render mpv.conf "$map" | write_file "$state_dir/mpv.conf" && changed=1
   render colors.env "$map" | write_file "$state_dir/colors.env" && changed=1
   # GTK3 colours now live in the theme above; the user css is left as an empty stub, because
   # anything here is loaded once at startup and would pin running apps to stale colours

@@ -283,7 +283,8 @@ spawn-at-startup "qs" "-p" "/etc/quickshell"
 // Clipboard history for the launcher (Super+Alt+Space)
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
-spawn-at-startup "swayidle" "-w" "timeout" "600" "qs ipc -p /etc/quickshell call lock lock" "timeout" "900" "niri msg action power-off-monitors" "before-sleep" "qs ipc -p /etc/quickshell call lock lock && sleep 1"
+// Idle lock is skipped in clamshell (lid closed = docked desk use); locking before sleep always happens
+spawn-at-startup "swayidle" "-w" "timeout" "600" "grep -q closed /proc/acpi/button/lid/LID/state || qs ipc -p /etc/quickshell call lock lock" "timeout" "900" "niri msg action power-off-monitors" "before-sleep" "qs ipc -p /etc/quickshell call lock lock && sleep 1"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
 // spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
