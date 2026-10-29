@@ -39,6 +39,8 @@
     (writeShellScriptBin "wt" ''
       exec "$HOME"/Developer/fondaro-mono/scripts/wt "$@"
     '')
+    # `xfer`: send/get files to or from the ThinkPad (pkgs/xfer.sh), see the `thinkpad` ssh alias below
+    (callPackage ../pkgs/xfer.nix { peer = "thinkpad"; })
     # xterm-ghostty terminfo, so SSH sessions from ghostty on the ThinkPad render properly
     ghostty-bin.terminfo
     (writeShellScriptBin "darwin-apply" ''
@@ -143,6 +145,19 @@
   launchd.user.agents.postgresql.serviceConfig = {
     StandardOutPath = "/Users/mac-mini/Library/Logs/postgresql.log";
     StandardErrorPath = "/Users/mac-mini/Library/Logs/postgresql.log";
+  };
+
+  # `ssh thinkpad`: the ThinkPad over Tailscale (MagicDNS), for `xfer`. accept-new so a first connection
+  # doesn't stop an agent at a host-key prompt.
+  home-manager.users.mac-mini.programs.ssh = {
+    enable = true;
+    enableDefaultConfig = false;
+    settings.thinkpad = {
+      HostName = "nixos";
+      User = "jonathans";
+      ServerAliveInterval = 30;
+      StrictHostKeyChecking = "accept-new";
+    };
   };
 
   # SSH with keys only

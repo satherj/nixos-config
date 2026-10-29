@@ -16,6 +16,9 @@
   # which the interactive `mise activate` hook never reaches
   home.sessionPath = [ "$HOME/.local/bin" "$HOME/.local/share/mise/shims" ];
 
+  # The `xfer` skill, so agents on both machines know about it (a symlink into the nix store)
+  home.file.".claude/skills/xfer/SKILL.md".source = ../../dotfiles/claude/xfer/SKILL.md;
+
   programs.fish = {
     enable = true;
     interactiveShellInit = ''

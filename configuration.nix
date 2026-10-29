@@ -212,6 +212,10 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users."jonathans" = {
     isNormalUser = true;
+    openssh.authorizedKeys.keys = [
+      # Mac mini
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKvGoVcBLbdDohkyKpItuCQx9Na94bV+eSlDB0H6fzQ"
+    ];
     description = "Jonathan Sather";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
@@ -268,6 +272,13 @@
       name = "nixos-apply";
       runtimeInputs = [ gitleaks nix-output-monitor nvd ];
       text = builtins.readFile ./pkgs/nixos-apply.sh;
+    })
+    # `xfer`: send/get files to or from the mini (pkgs/xfer.sh); `xfer-notify` is what the mini's `xfer send` calls here
+    (callPackage ./pkgs/xfer.nix { peer = "mini"; })
+    (writeShellApplication {
+      name = "xfer-notify";
+      runtimeInputs = [ libnotify ];
+      text = builtins.readFile ./pkgs/xfer-notify.sh;
     })
     # files & cloud: rclone mounts Proton Drive (rclone config -> "protondrive")
     rsync rclone
@@ -404,8 +415,18 @@
 
   # List services that you want to enable:
 
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  # sshd, reachable over Tailscale only (port 22 is closed on wifi), keys only. The mini's `xfer` uses it.
+  services.openssh = {
+    enable = true;
+    openFirewall = false;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+      AllowUsers = [ "jonathans" ];
+    };
+  };
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
