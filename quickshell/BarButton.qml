@@ -91,11 +91,6 @@ Rectangle {
                 root.openPanel();
             root.clicked(m);
         }
-        // Once one bar panel is open, sliding along the bar opens the others without clicking
-        onEntered: {
-            if (root.panel !== "" && UiState.panel !== "" && UiState.screen === root.barScreen && !root.panelOpen)
-                root.openPanel();
-        }
         onWheel: w => root.scrolled(w)
     }
 }
