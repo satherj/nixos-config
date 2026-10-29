@@ -110,7 +110,8 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
 - **The bar shows only what you need at a glance:** icons and the time. Percentages, network
   names, the full date and the hidden right-click actions live in **tooltips** (`BarTooltip`) and
   in the panels. The exceptions are states that matter at a glance: low battery shows its percentage,
-  recording shows its timer, and a non-default keyboard layout shows its code.
+  recording shows its timer (click saves, right-click opens the capture menu with Discard), and a
+  non-default keyboard layout shows its code.
 - **Icon weight:** bar icons are Phosphor **fill** (`Theme.barIconWeight`): solid shapes read at a
   glance over any wallpaper. Everything inside panels, menus and the launcher is **bold**
   (`Theme.iconWeight`), which matches the weight of the text next to it.

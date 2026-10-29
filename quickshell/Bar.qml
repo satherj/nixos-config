@@ -107,18 +107,25 @@ PanelWindow {
         anchors.right: parent.right
         anchors.rightMargin: bar.inset
 
-        // Recording in progress: the timer stays visible (it's the point), click to stop
+        // Recording in progress: the timer stays visible (it's the point). Click saves; right-click
+        // opens the capture menu with Discard. While a region/window is still being picked: click cancels
         BarButton {
+            id: recButton
             tooltip: tip
             barScreen: bar.screen
-            visible: Capture.recording
+            visible: Capture.active
             icon: "record"
             iconWeight: "fill"
-            text: Capture.elapsed
+            text: Capture.recording ? Capture.elapsed : ""
             fg: Theme.onWall("red")
-            tip: "Recording"
-            tipHint: "Click to stop"
-            onClicked: Capture.stop()
+            tip: Capture.recording ? "Recording" : "Waiting for selection"
+            tipHint: Capture.recording ? "Click to stop and save · right-click for more" : "Click to cancel"
+            onClicked: m => {
+                if (m.button === Qt.RightButton)
+                    UiState.toggle("capture", bar.screen, false, recButton.mapToItem(null, recButton.width / 2, 0).x);
+                else
+                    Capture.stop();
+            }
         }
 
         // Shown only off the default layout, so the short code is the state itself

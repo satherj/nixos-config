@@ -43,6 +43,8 @@ Singleton {
         [/call launcher keybinds/, "Keyboard shortcuts"],
         [/call lock lock/, "Lock screen"],
         [/call panel toggle capture/, "Screenshot & recording menu"],
+        [/call recording toggle/, "Start / stop recording"],
+        [/call recording discard/, "Discard recording"],
         [/set-volume .*\+/, "Volume up"],
         [/set-volume .*-/, "Volume down"],
         [/set-mute @DEFAULT_AUDIO_SINK@/, "Mute audio"],

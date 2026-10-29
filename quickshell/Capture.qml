@@ -6,7 +6,8 @@ import Quickshell.Services.Pipewire
 
 // Screenshots and screen recording. Region screenshots use our own picker (ScreenshotOverlay.qml:
 // frozen screen, drag a region, or switch to picking a window / the whole screen) and grim; window
-// and screen shots use niri's own tools. Recording: wf-recorder, slurp for regions.
+// and screen shots use niri's own tools. Recording: wf-recorder (screen; slurp for regions),
+// gpu-screen-recorder for single windows.
 // After every screenshot the file path replaces the image on the clipboard, handy for pasting
 // into a terminal; the image itself stays in clipboard history.
 Singleton {
@@ -117,38 +118,90 @@ Singleton {
     }
 
     // --- Recording ---
-    readonly property bool recording: rec.running
+    // mode: "screen" | "region" (slurp, wf-recorder) | "window" (portal window picker, gpu-screen-recorder;
+    // niri doesn't expose where tiled windows sit, and the portal stream follows the window anyway)
+    // active = a recording is set up or running (region/window still being picked counts);
+    // recording = frames are landing in the file. The timer only counts once they do.
+    readonly property bool active: rec.running
+    property bool recording: false
+    property bool discarding: false
     property int seconds: 0
     property string file: ""
     readonly property string elapsed: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
 
-    function record(region) {
+    function record(mode) {
         if (rec.running)
             return;
         UiState.close(true);
         file = `${recordingsDir}/Recording ${Qt.formatDateTime(new Date(), "yyyy-MM-dd HH-mm-ss")}.mp4`;
-        const output = Niri.workspaces.find(w => w.is_focused)?.output ?? "";
         const sink = Pipewire.defaultAudioSink?.name ?? "";
-        const audio = recordAudio && sink ? ` --audio="${sink}.monitor"` : "";
-        // Exit 2 = region selection cancelled
-        const target = region ? `g=$(slurp -d -b 11111b66 -c 89b4fa -w 2) || exit 2; set -- -g "$g"` : output ? `set -- -o "${output}"` : "set --";
-        rec.command = ["sh", "-c", `mkdir -p "${recordingsDir}"; sleep 0.25; ${target}; exec wf-recorder "$@"${audio} -f "${file}"`];
+        let run;
+        if (mode === "window") {
+            const audio = recordAudio ? " -a default_output" : "";
+            run = `exec gpu-screen-recorder -w portal -f 60 -c mp4 -fallback-cpu-encoding yes${audio} -o "${file}"`;
+        } else {
+            const output = Niri.workspaces.find(w => w.is_focused)?.output ?? "";
+            const audio = recordAudio && sink ? ` --audio="${sink}.monitor"` : "";
+            // Exit 2 = region selection cancelled
+            const target = mode === "region" ? `g=$(slurp -d -b 11111b66 -c 89b4fa -w 2) || exit 2; set -- -g "$g"` : output ? `set -- -o "${output}"` : "set --";
+            run = `${target}; exec wf-recorder "$@"${audio} -f "${file}"`;
+        }
+        rec.command = ["sh", "-c", `mkdir -p "${recordingsDir}"; sleep 0.25; ${run}`];
         seconds = 0;
+        recording = false;
+        discarding = false;
         rec.running = true;
     }
+    // Save. Before frames flow (still picking) this cancels instead. Signals go by PID: the
+    // recorder is exec'd, so it is the process itself; SIGINT makes it finish the file. Before that
+    // the process is still sh (picking with slurp, or the startup sleep), which ignores SIGINT here.
     function stop() {
-        Quickshell.execDetached(["pkill", "-INT", "-x", "wf-recorder"]);
+        if (!rec.running)
+            return;
+        const sig = recording ? "INT" : "TERM";
+        Quickshell.execDetached(["sh", "-c", `pkill -$1 -P "$2"; kill -$1 "$2"`, "sh", sig, String(rec.processId)]);
+    }
+    function discard() {
+        if (!rec.running)
+            return;
+        discarding = true;
+        stop();
+    }
+    function toggle() {
+        rec.running ? stop() : record("screen");
     }
 
     Process {
         id: rec
         onExited: code => {
-            if (code === 2)
-                Osd.show("record", "Recording cancelled");
-            else if (code === 0)
+            const wasRecording = root.recording;
+            root.recording = false;
+            if (root.discarding || !wasRecording)
+                Quickshell.execDetached(["rm", "-f", root.file]);
+            if (root.discarding)
+                Osd.show("trash", "Recording discarded");
+            else if (!wasRecording)
+                Osd.show("record", code === 2 || code === 130 || code === 0 ? "Recording cancelled" : "Recording failed");
+            else if (code === 0 || code === 130)
                 Osd.show("video-camera", "Recording saved to ~/Videos/Recordings");
             else
                 Osd.show("record", "Recording failed");
+            root.discarding = false;
+        }
+    }
+    // Recording counts as started once the file has data
+    Timer {
+        running: rec.running && !root.recording
+        interval: 250
+        repeat: true
+        onTriggered: if (!probe.running) probe.running = true
+    }
+    Process {
+        id: probe
+        command: ["test", "-s", root.file]
+        onExited: code => {
+            if (code === 0 && rec.running)
+                root.recording = true;
         }
     }
     Timer {
@@ -166,8 +219,13 @@ Singleton {
         action("Screenshot region", "Select an area", "applets-screenshooter", ["screenshot", "capture", "snip", "print"], () => root.screenshot("region")),
         action("Screenshot a window", "Click the window to capture", "applets-screenshooter", ["screenshot", "capture", "print", "window"], () => root.screenshot("pick")),
         action("Screenshot focused window", "The focused window", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("window")),
-        action("Screenshot screen", "The whole screen", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("screen")),
-        action(recording ? "Stop recording" : "Record screen", recording ? "Save the recording (" + elapsed + ")" : "Record the whole screen", "media-record", ["record", "video", "screencast", "capture", "stop"], () => recording ? root.stop() : root.record(false)),
-        action("Record region", "Select an area to record", "media-record", ["record", "video", "screencast", "capture"], () => root.record(true))
-    ]
+        action("Screenshot screen", "The whole screen", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("screen"))
+    ].concat(active ? [
+        action("Stop recording", "Save the recording" + (recording ? " (" + elapsed + ")" : ""), "media-playback-stop", ["record", "video", "screencast", "stop", "save"], () => root.stop()),
+        action("Discard recording", "Stop and delete the recording", "user-trash", ["record", "video", "screencast", "cancel", "discard", "delete"], () => root.discard())
+    ] : [
+        action("Record screen", "Record the whole screen", "media-record", ["record", "video", "screencast", "capture"], () => root.record("screen")),
+        action("Record window", "Pick one window to record", "media-record", ["record", "video", "screencast", "capture", "window", "pane"], () => root.record("window")),
+        action("Record region", "Select an area to record", "media-record", ["record", "video", "screencast", "capture"], () => root.record("region"))
+    ])
 }

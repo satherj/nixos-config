@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
-// Screenshot & recording menu (Super+Shift+S). Number keys pick an option.
+// Screenshot & recording menu (Super+Shift+S). Number keys pick an option. While recording, the
+// recording section is Stop & save plus a Discard button.
 ColumnLayout {
     id: root
 
@@ -13,8 +14,13 @@ ColumnLayout {
         ["selection", "Region", "PrtSc", () => Capture.screenshot("region")],
         ["app-window", "Window", "Alt+PrtSc", () => Capture.screenshot("pick")],
         ["monitor", "Screen", "Ctrl+PrtSc", () => Capture.screenshot("screen")],
-        ["record", Capture.recording ? "Stop recording · " + Capture.elapsed : "Record screen", "", () => Capture.recording ? Capture.stop() : Capture.record(false)],
-        ["crosshair", "Record region", "", () => Capture.record(true)]
+        ...(Capture.active ? [
+            ["stop", Capture.recording ? "Stop & save · " + Capture.elapsed : "Cancel recording", "", () => Capture.stop()]
+        ] : [
+            ["record", "Record screen", "", () => Capture.record("screen")],
+            ["app-window", "Record window", "", () => Capture.record("window")],
+            ["crosshair", "Record region", "", () => Capture.record("region")]
+        ])
     ]
 
     Keys.onPressed: e => {
@@ -65,8 +71,15 @@ ColumnLayout {
             implicitHeight: 38
             icon: modelData[0]
             title: modelData[1]
-            highlighted: index === 0 && Capture.recording
+            highlighted: Capture.recording
             onClicked: modelData[3]()
+            // Discard sits beside Stop: same row, but armed by a first click so a slip keeps the take
+            ConfirmButton {
+                visible: Capture.recording
+                icon: "trash"
+                confirmText: "Discard?"
+                onConfirmed: Capture.discard()
+            }
             StyledText { text: index + 4; color: Theme.surface2; font.pixelSize: 11 }
         }
     }

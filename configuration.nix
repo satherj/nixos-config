@@ -251,6 +251,7 @@
         (builtins.readFile ./pkgs/wallpaper-dynamic.py)))
     # clipboard history + screen recording for the quickshell launcher / capture menu
     cliphist wf-recorder slurp grim
+    gpu-screen-recorder  # single-window recording (portal window picker; wf-recorder can only do screens/regions)
     wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme
     apple-cursor  # cursors: "macOS" (black, white outline) and "macOS-White"
     # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders

@@ -642,6 +642,8 @@ binds {
     Print hotkey-overlay-title="Screenshot" { spawn-sh "[ -z \"$(qs ipc -p /etc/quickshell call screenshot region 2>&1)\" ] || niri msg action screenshot"; }
     Ctrl+Print { screenshot-screen; }
     Alt+Print hotkey-overlay-title="Screenshot a window" { spawn-sh "[ -z \"$(qs ipc -p /etc/quickshell call screenshot window 2>&1)\" ] || niri msg action screenshot-window"; }
+    Shift+Print hotkey-overlay-title="Start / stop recording" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "recording" "toggle"; }
+    Ctrl+Shift+Print hotkey-overlay-title="Discard recording" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "recording" "discard"; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here

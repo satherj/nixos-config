@@ -78,6 +78,31 @@ ShellRoot {
         }
     }
 
+    // `qs ipc -p /etc/quickshell call recording toggle|stop|discard|screen|window|region`
+    // (Shift+PrtSc toggles: stop and save, or start recording the screen)
+    IpcHandler {
+        target: "recording"
+
+        function toggle(): void {
+            Capture.toggle();
+        }
+        function stop(): void {
+            Capture.stop();
+        }
+        function discard(): void {
+            Capture.discard();
+        }
+        function screen(): void {
+            Capture.record("screen");
+        }
+        function window(): void {
+            Capture.record("window");
+        }
+        function region(): void {
+            Capture.record("region");
+        }
+    }
+
     // `qs ipc -p /etc/quickshell call nightlight toggle`
     IpcHandler {
         target: "nightlight"
