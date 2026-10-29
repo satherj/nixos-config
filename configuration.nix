@@ -108,6 +108,20 @@
     pulse.enable = true;
     # If you want to use JACK applications, uncomment this
     # jack.enable = true;
+
+    # Prefer the external Logitech Brio (via the LG monitor's USB-C hub) over
+    # the built-in camera whenever it's plugged in.
+    wireplumber.extraConfig."51-prefer-brio" = {
+      "monitor.v4l2.rules" = [
+        {
+          matches = [ { "node.description" = "~Brio.*"; } ];
+          actions.update-props = {
+            "priority.session" = 2000;
+            "priority.driver" = 2000;
+          };
+        }
+      ];
+    };
   };
 
   # Bluetooth (quickshell panel; bluetui = TUI behind its "More settings…")
@@ -158,6 +172,20 @@
       ExecStop = "/run/wrappers/bin/fusermount3 -uz %h/ProtonDrive";
       Restart = "on-failure";
       RestartSec = 15;
+    };
+  };
+
+  # Bluetooth pairing agent: without one bluez rejects pairing requests ("No agent available"),
+  # so a device that lost its bond (e.g. the Pebble) loops connect/disconnect forever.
+  # NoInputNoOutput = auto-accept "just works" pairing; nothing in the shell prompts for passkeys.
+  systemd.user.services.bt-agent = {
+    description = "Bluetooth pairing agent";
+    wantedBy = [ "default.target" ];
+    after = [ "dbus.socket" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.bluez-tools}/bin/bt-agent --capability=NoInputNoOutput";
+      Restart = "on-failure";
+      RestartSec = 5;
     };
   };
 
