@@ -277,7 +277,7 @@
     (callPackage ./pkgs/xfer.nix { peer = "mini"; })
     (writeShellApplication {
       name = "xfer-notify";
-      runtimeInputs = [ libnotify ];
+      runtimeInputs = [ libnotify glib jq coreutils ];
       text = builtins.readFile ./pkgs/xfer-notify.sh;
     })
     # files & cloud: rclone mounts Proton Drive (rclone config -> "protondrive")
