@@ -116,9 +116,19 @@ cmd_send() {
     esac
   done
   ((${#srcs[@]})) || die "send what? (xfer --help)"
+  # Absolute, so a name with a colon or leading dash is never read by rsync as a host or option, and . and .. have a name
+  local abs=()
   for src in "${srcs[@]}"; do
+    src=${src%/}
     [[ -e $src ]] || die "no such file or folder: $src"
+    if [[ -d $src ]]; then
+      src=$(cd -- "$src" && pwd)
+    elif [[ $src != /* ]]; then
+      src=$PWD/$src
+    fi
+    abs+=("$src")
   done
+  srcs=("${abs[@]}")
 
   nobs "$to"
   for src in "${srcs[@]}"; do
@@ -170,7 +180,8 @@ cmd_get() {
     [[ ${#remotes[@]} -eq 1 ]] || die "--latest takes one folder"
     rp=$(rpath "${remotes[0]}")
     nobs "$rp"
-    name=$(rssh "command ls -1tp -- $(shq "$rp") | grep -v '/\$' | head -n 1") || die "cannot list ${remotes[0]} on $peer"
+    name=$(rssh "command ls -1tp -- $(shq "$rp")") || die "cannot list ${remotes[0]} on $peer"
+    name=$(grep -v '/$' <<<"$name" | head -n 1 || true)
     [[ -n $name ]] || die "no files in ${remotes[0]} on $peer"
     nobs "$name"
     remotes=("$rp/$name")
