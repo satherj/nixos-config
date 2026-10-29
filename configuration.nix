@@ -210,6 +210,8 @@
     google-chrome
     # remote desktop (unfree; outgoing connections work on Wayland, incoming control is flaky)
     anydesk
+    # VNC client for the mini's macOS Screen Sharing (over Tailscale: vnc://mini); speaks Apple's auth
+    remmina
     # wlsunset = night light (driven by quickshell), playerctl = media keys in niri;
     # the wallpaper is drawn by quickshell too (no swaybg)
     wlsunset playerctl
