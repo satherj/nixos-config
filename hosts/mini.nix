@@ -106,6 +106,22 @@
     };
   };
 
+  # Nightly triage at 06:00 (the mini's clock is Europe/Madrid): /triage reads the last 24 h of production
+  # errors, Grafana alerts and failed Jobs, and files deduplicated inbox items in ~/work/fondaro.
+  # Through a fish login shell, so PATH has nix, mise and ~/.local/bin/claude. Run log:
+  # ~/work/fondaro/logs/triage.log. Runbook: fondaro-mono docs/runbooks/errors.md, "Nightly triage".
+  launchd.user.agents.triage-nightly = {
+    serviceConfig = {
+      Label = "com.fondaro.triage-nightly";
+      ProgramArguments = [ "/run/current-system/sw/bin/fish" "-l" "-c" "exec /Users/mac-mini/Developer/fondaro-mono/scripts/triage-nightly" ];
+      EnvironmentVariables.SHELL = "/run/current-system/sw/bin/fish";
+      WorkingDirectory = "/Users/mac-mini/Developer/fondaro-mono";
+      StartCalendarInterval = [ { Hour = 6; Minute = 0; } ];
+      StandardOutPath = "/Users/mac-mini/work/fondaro/logs/triage-launchd.log";
+      StandardErrorPath = "/Users/mac-mini/work/fondaro/logs/triage-launchd.log";
+    };
+  };
+
   # Postgres for the dev stacks: same major version as production (17), with the extensions the
   # schema uses. `fondaro_golden` is a template database; each worktree gets its own clone.
   # Localhost only, and trust auth: a single-user dev box nothing else can reach.
