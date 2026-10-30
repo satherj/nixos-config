@@ -256,6 +256,11 @@
         (builtins.readFile ./pkgs/wallpaper-dynamic.py)))
     # clipboard history + screen recording for the quickshell launcher / capture menu
     cliphist wf-recorder slurp grim
+    # screenshot thumbnail: loupe opens it, satty annotates it, gio trashes it
+    loupe satty glib
+    # "Copy text" capture mode (OCR); English, Swedish and Spanish only, not all ~120 languages
+    (tesseract.override { enableLanguages = [ "eng" "swe" "spa" ]; })
+    wtype  # types the emoji picked in the launcher into the focused window
     gpu-screen-recorder  # single-window recording (portal window picker; wf-recorder can only do screens/regions)
     wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme
     apple-cursor  # cursors: "macOS" (black, white outline) and "macOS-White"

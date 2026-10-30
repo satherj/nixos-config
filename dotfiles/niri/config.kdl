@@ -384,6 +384,7 @@ binds {
     // shows a list of important hotkeys.
     Mod+Shift+Slash hotkey-overlay-title="Keyboard shortcuts" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "keybinds"; }
     Mod+Alt+Space hotkey-overlay-title="Clipboard history" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "clipboard"; }
+    Mod+Ctrl+Space hotkey-overlay-title="Emoji" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "emoji"; }
     Mod+Shift+S hotkey-overlay-title="Screenshot & recording menu" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "panel" "toggle" "capture"; }
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.

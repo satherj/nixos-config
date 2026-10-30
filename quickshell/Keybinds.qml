@@ -41,6 +41,7 @@ Singleton {
         [/call screenshot window/, "Screenshot a window"],
         [/call launcher clipboard/, "Clipboard history"],
         [/call launcher keybinds/, "Keyboard shortcuts"],
+        [/call launcher emoji/, "Emoji"],
         [/call lock lock/, "Lock screen"],
         [/call panel toggle capture/, "Screenshot & recording menu"],
         [/call recording toggle/, "Start / stop recording"],

@@ -44,11 +44,18 @@ Singleton {
     property bool picking: false
     property var pickScreen: null
 
-    // kind: "region" (picker), "pick" (click a window), "window" (focused window), "screen"
+    // Region picker in "copy text" mode: the selection goes through OCR instead of to a file
+    property bool pickText: false
+
+    // kind: "region" (picker), "text" (picker, OCR to the clipboard), "pick" (click a window),
+    // "window" (focused window), "screen"
     function screenshot(kind) {
         UiState.close(true);
         picking = false;
-        if (kind === "region") {
+        pickText = kind === "text";
+        // Never capture the previous shot's thumbnail
+        thumb = "";
+        if (kind === "region" || kind === "text") {
             const out = Niri.workspaces.find(w => w.is_focused)?.output ?? "";
             pickScreen = Quickshell.screens.find(s => s.name === out) ?? UiState.screen ?? Quickshell.screens[0];
             picking = true;
@@ -64,16 +71,65 @@ Singleton {
     // Region in global logical coordinates, from the picker
     function captureRegion(x, y, w, h) {
         picking = false;
+        const geom = `${Math.round(x)},${Math.round(y)} ${Math.round(w)}x${Math.round(h)}`;
+        // A beat for the picker to unmap; the picker showed a frozen copy of this same screen
+        if (pickText) {
+            // Upscaled 2x in grey: tesseract reads small UI text far better that way
+            ocr.command = ["sh", "-c", `sleep 0.08; grim -g "$1" - | magick - -colorspace gray -resize 200% png:- | tesseract stdin stdout -l eng+swe+spa 2>/dev/null`, "sh", geom];
+            ocr.running = true;
+            return;
+        }
         const file = `${screenshotsDir}/Screenshot from ${Qt.formatDateTime(new Date(), "yyyy-MM-dd HH-mm-ss")}.png`;
         grim.file = file;
-        // A beat for the picker to unmap; the picker showed a frozen copy of this same screen
-        grim.command = ["sh", "-c", `mkdir -p "$1"; sleep 0.08; grim -g "${Math.round(x)},${Math.round(y)} ${Math.round(w)}x${Math.round(h)}" "$2" && wl-copy --type image/png < "$2"`, "sh", screenshotsDir, file];
+        grim.command = ["sh", "-c", `mkdir -p "$1"; sleep 0.08; grim -g "$3" "$2" && wl-copy --type image/png < "$2"`, "sh", screenshotsDir, file, geom];
         grim.running = true;
     }
     Process {
         id: grim
         property string file
         onExited: code => code === 0 ? root.saved(file) : Osd.show("camera", "Screenshot failed")
+    }
+    Process {
+        id: ocr
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // Tidy tesseract's page breaks, trailing spaces and runs of blank lines
+                const t = text.replace(/\f/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+                if (t === "") {
+                    Osd.show("text-t", "No text found");
+                    return;
+                }
+                Quickshell.execDetached(["wl-copy", t]);
+                const words = t.split(/\s+/).length;
+                Osd.show("text-t", `Copied ${words} word${words === 1 ? "" : "s"}`);
+            }
+        }
+        onExited: code => {
+            if (code !== 0)
+                Osd.show("text-t", "Text recognition failed");
+        }
+    }
+    // Colour picker: click anywhere, the hex code lands on the clipboard
+    function pickColor() {
+        UiState.close(true);
+        colorPicker.running = true;
+    }
+    Process {
+        id: colorPicker
+        command: ["sh", "-c", "sleep 0.15; exec niri msg --json pick-color"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let rgb = null;
+                try {
+                    rgb = JSON.parse(text)?.rgb;
+                } catch (e) {}
+                if (!rgb)
+                    return;
+                const hex = "#" + rgb.map(c => Math.round(c * 255).toString(16).padStart(2, "0")).join("");
+                Quickshell.execDetached(["wl-copy", hex]);
+                Osd.show("eyedropper", "Copied " + hex);
+            }
+        }
     }
     Process {
         id: picker
@@ -93,6 +149,9 @@ Singleton {
     // A screenshot landed on disk (and its image on the clipboard)
     function saved(path) {
         root.lastScreenshot = path;
+        const out = Niri.workspaces.find(w => w.is_focused)?.output ?? "";
+        root.thumbScreen = Quickshell.screens.find(s => s.name === out) ?? Quickshell.screens[0];
+        root.thumb = path;
         if (root.copyPath)
             pathCopy.restart();
         else
@@ -100,6 +159,9 @@ Singleton {
     }
 
     property string lastScreenshot: ""
+    // Floating thumbnail of the latest shot (ScreenshotThumb.qml), "" when dismissed
+    property string thumb: ""
+    property var thumbScreen: null
     Connections {
         target: Niri
         function onScreenshotCaptured(path) {
@@ -217,6 +279,8 @@ Singleton {
     }
     readonly property var actions: [
         action("Screenshot region", "Select an area", "applets-screenshooter", ["screenshot", "capture", "snip", "print"], () => root.screenshot("region")),
+        action("Pick colour", "Click anywhere to copy its hex code", "color-select", ["color", "colour", "picker", "eyedropper", "hex"], () => root.pickColor()),
+        action("Copy text from screen","Select an area to read (OCR)", "edit-copy", ["ocr", "text", "copy", "read", "scan", "recognize", "screenshot"], () => root.screenshot("text")),
         action("Screenshot a window", "Click the window to capture", "applets-screenshooter", ["screenshot", "capture", "print", "window"], () => root.screenshot("pick")),
         action("Screenshot focused window", "The focused window", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("window")),
         action("Screenshot screen", "The whole screen", "applets-screenshooter", ["screenshot", "capture", "print"], () => root.screenshot("screen"))

@@ -63,7 +63,7 @@ ShellRoot {
         }
     }
 
-    // `qs ipc -p /etc/quickshell call screenshot region|window|screen` (PrtSc / Alt+PrtSc)
+    // `qs ipc -p /etc/quickshell call screenshot region|window|screen|text` (PrtSc / Alt+PrtSc; text = OCR)
     IpcHandler {
         target: "screenshot"
 
@@ -75,6 +75,9 @@ ShellRoot {
         }
         function screen(): void {
             Capture.screenshot("screen");
+        }
+        function text(): void {
+            Capture.screenshot("text");
         }
     }
 
@@ -126,6 +129,7 @@ ShellRoot {
     Notifications {}
     PolkitDialog {}
     ScreenshotOverlay {}
+    ScreenshotThumb {}
 
     // Touch the Lock singleton at startup so PAM and the session lock are ready before the first lock
     Component.onCompleted: {

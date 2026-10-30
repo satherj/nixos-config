@@ -5,7 +5,8 @@ import Quickshell.Wayland
 
 // Region screenshot picker (Print). The screen freezes and dims; drag to select and the shot is
 // taken on release, with the selection shown undimmed plus its size. The toolbar (or W / Enter)
-// switches to clicking a window or capturing the whole screen. Esc cancels.
+// switches to clicking a window or capturing the whole screen; Text (or T) copies the text in the
+// selection instead (OCR, see Capture.qml). Esc cancels.
 // Opened from the keyboard, so it appears instantly; only the selection follows the pointer.
 Variants {
     model: Quickshell.screens
@@ -59,6 +60,8 @@ Variants {
                     Capture.picking = false;
                 else if (e.key === Qt.Key_W)
                     Capture.screenshot("pick");
+                else if (e.key === Qt.Key_T)
+                    Capture.pickText = !Capture.pickText;
                 else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter || e.key === Qt.Key_S)
                     Capture.screenshot("screen");
                 else
@@ -187,7 +190,14 @@ Variants {
                     Mode {
                         icon: "selection"
                         text: "Region"
-                        current: true
+                        current: !Capture.pickText
+                        onClicked: Capture.pickText = false
+                    }
+                    Mode {
+                        icon: "text-t"
+                        text: "Text"
+                        current: Capture.pickText
+                        onClicked: Capture.pickText = true
                     }
                     Mode {
                         icon: "app-window"
@@ -208,7 +218,7 @@ Variants {
                     }
                     StyledText {
                         Layout.rightMargin: 10
-                        text: "Drag to capture   W window   ⏎ screen   Esc cancel"
+                        text: Capture.pickText ? "Drag over text to copy it   T image   Esc cancel" : "Drag to capture   T text   W window   ⏎ screen   Esc cancel"
                         font.pixelSize: 11
                         color: Theme.overlay0
                     }

@@ -89,6 +89,9 @@ Singleton {
         function onDndChanged() {
             root.show(UiState.dnd ? "bell-slash" : "bell", UiState.dnd ? "Do not disturb on" : "Do not disturb off");
         }
+        function onKeepAwakeChanged() {
+            root.show("coffee", UiState.keepAwake ? "Keeping awake" : "Keep awake off");
+        }
     }
 
     // --- Power ---

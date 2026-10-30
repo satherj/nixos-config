@@ -208,13 +208,22 @@ ColumnLayout {
             onToggled: UiState.dnd = !UiState.dnd
         }
         Tile {
+            icon: "coffee"
+            title: "Keep awake"
+            subtitle: UiState.keepAwake ? "no lock or blanking" : "off"
+            on: UiState.keepAwake
+            onToggled: UiState.keepAwake = !UiState.keepAwake
+        }
+        Tile {
             icon: "monitor"
             title: "Displays"
             subtitle: Displays.multiple ? Displays.outputs.length + " monitors" : "scale · layout"
             on: false
             onToggled: UiState.toggleBeside("displays", UiState.screen, "control")
         }
+        // Seven tiles: the last one takes the whole row, like the wallpaper card below it
         Tile {
+            Layout.columnSpan: 2
             icon: "palette"
             title: "Theme"
             subtitle: Themes.model.find(p => p.id === Themes.currentId)?.name ?? ""

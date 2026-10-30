@@ -15,6 +15,8 @@ Singleton {
     readonly property var screen: current.screen
     // Do not disturb: non-critical notifications are dropped instead of shown
     property bool dnd: false
+    // Keep awake: the bars hold a Wayland idle inhibitor, so swayidle neither locks nor blanks
+    property bool keepAwake: false
     // The last open/close came from the keyboard (keybind, launcher, Esc): panels skip their
     // animation then, since keyboard actions repeat all day and must feel immediate
     property bool instant: false

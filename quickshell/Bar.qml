@@ -41,6 +41,11 @@ PanelWindow {
         objects: [bar.sink]
     }
 
+    IdleInhibitor {
+        window: bar
+        enabled: UiState.keepAwake
+    }
+
     // Full-width band, kept clear: it only sets the input mask
     Item {
         id: backdrop
@@ -93,11 +98,11 @@ PanelWindow {
         BarButton {
             tooltip: tip
             barScreen: bar.screen
-            icons: [].concat(UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["dots-three-outline"])
-            fg: UiState.dnd || NightLight.enabled ? Theme.onWall("mauve") : Theme.barText
+            icons: [].concat(UiState.keepAwake ? ["coffee"] : [], UiState.dnd ? ["bell-slash"] : [], NightLight.enabled ? ["moon"] : [], ["dots-three-outline"])
+            fg: UiState.keepAwake || UiState.dnd || NightLight.enabled ? Theme.onWall("mauve") : Theme.barText
             panel: "control"
             tip: "Control center"
-            tipHint: [].concat(UiState.dnd ? ["Do not disturb on"] : [], NightLight.enabled ? ["Night light on"] : []).join(" · ")
+            tipHint: [].concat(UiState.keepAwake ? ["Keeping awake"] : [], UiState.dnd ? ["Do not disturb on"] : [], NightLight.enabled ? ["Night light on"] : []).join(" · ")
         }
     }
 

@@ -14,6 +14,7 @@ ColumnLayout {
         ["selection", "Region", "PrtSc", () => Capture.screenshot("region")],
         ["app-window", "Window", "Alt+PrtSc", () => Capture.screenshot("pick")],
         ["monitor", "Screen", "Ctrl+PrtSc", () => Capture.screenshot("screen")],
+        ["text-t", "Copy text (OCR)", "", () => Capture.screenshot("text")],
         ...(Capture.active ? [
             ["stop", Capture.recording ? "Stop & save · " + Capture.elapsed : "Cancel recording", "", () => Capture.stop()]
         ] : [
@@ -47,7 +48,7 @@ ColumnLayout {
 
     Section { text: "SCREENSHOT" }
     Repeater {
-        model: root.options.slice(0, 3)
+        model: root.options.slice(0, 4)
         ListRow {
             required property var modelData
             required property int index
@@ -63,7 +64,7 @@ ColumnLayout {
 
     Section { text: "RECORDING" }
     Repeater {
-        model: root.options.slice(3)
+        model: root.options.slice(4)
         ListRow {
             required property var modelData
             required property int index
@@ -80,7 +81,7 @@ ColumnLayout {
                 confirmText: "Discard?"
                 onConfirmed: Capture.discard()
             }
-            StyledText { text: index + 4; color: Theme.surface2; font.pixelSize: 11 }
+            StyledText { text: index + 5; color: Theme.surface2; font.pixelSize: 11 }
         }
     }
 

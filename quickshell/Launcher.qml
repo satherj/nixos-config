@@ -4,9 +4,15 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
+import "Calc.js" as Calc
+import "Convert.js" as Convert
+import "Emoji.js" as Emoji
 
-// Launcher with three modes sharing one search box and list:
-//   apps      (Super+Space)      apps + power/wallpaper/capture actions
+// Launcher with four modes sharing one search box and list:
+//   apps      (Super+Space)      apps, actions and on/off toggles; a sum ("2+2") or unit
+//                                conversion ("5 km in mi") on top, Enter copies it; files from
+//                                fd below; a web search last. ":word" searches emoji.
+//   emoji     (Super+Ctrl+Space) Enter types the emoji into the focused window (and copies it)
 //   clipboard (Super+Alt+Space)  cliphist history; Enter copies, Shift+Del removes
 //   keybinds  (Super+?)          every niri shortcut, searchable; Enter runs it
 // Opened from the keyboard many times a day, so per the animation rules the card itself opens
@@ -44,6 +50,9 @@ Scope {
         function keybinds(): void {
             root.show("keybinds");
         }
+        function emoji(): void {
+            root.show("emoji");
+        }
         function hide(): void {
             root.open = false;
         }
@@ -52,7 +61,8 @@ Scope {
     readonly property var modes: ({
         apps: { glyph: "magnifying-glass", placeholder: "Search apps and actions…", hint: "" },
         clipboard: { glyph: "clipboard-text", placeholder: "Search clipboard history…", hint: "⏎ copy   Shift+Del remove   Backspace back to apps" },
-        keybinds: { glyph: "keyboard", placeholder: "Search keyboard shortcuts…", hint: "⏎ run it   Backspace back to apps" }
+        keybinds: { glyph: "keyboard", placeholder: "Search keyboard shortcuts…", hint: "⏎ run it   Backspace back to apps" },
+        emoji: { glyph: "smiley", placeholder: "Search emoji…", hint: "⏎ type it (also copied)   Backspace back to apps" }
     })
 
     function score(entry, q) {
@@ -82,7 +92,8 @@ Scope {
     }
     readonly property var modeActions: [
         modeAction("Clipboard history", "Super+Alt+Space", "edit-paste", ["clipboard", "paste", "copy", "history"], "clipboard"),
-        modeAction("Keyboard shortcuts", "Super+?", "preferences-desktop-keyboard-shortcuts", ["keybinds", "keys", "shortcuts", "hotkeys", "help"], "keybinds")
+        modeAction("Keyboard shortcuts", "Super+?", "preferences-desktop-keyboard-shortcuts", ["keybinds", "keys", "shortcuts", "hotkeys", "help"], "keybinds"),
+        modeAction("Emoji", "Super+Ctrl+Space", "face-smile", ["emoji", "emoticon", "smiley", "symbols"], "emoji")
     ]
 
     // Every mode produces the same row shape:
@@ -111,14 +122,84 @@ Scope {
                 })
                 .map(e => ({ glyph: "keyboard", title: e.title, subtitle: e.category, combos: e.combos, run: e.run }));
         }
+        // ":smile" in apps mode is a shortcut into emoji search
+        if (mode === "emoji" || q.startsWith(":")) {
+            const words = (mode === "emoji" ? q : q.slice(1)).split(/\s+/).filter(w => w);
+            return Emoji.list
+                .filter(e => words.every(w => e[1].includes(w) || e[2].includes(w)))
+                .slice(0, 200)
+                .map(e => ({ emoji: e[0], title: e[1], run: () => root.typeEmoji(e[0]) }));
+        }
+        // Top row: a unit conversion ("5 km in mi") or a sum ("2+2"); Enter copies the number
+        const raw = search.text.trim();
+        const conv = Convert.convert(raw);
+        const answer = conv ? null : Calc.evaluate(q);
+        const top = conv ? [{ glyph: "arrows-left-right", title: conv.title, subtitle: conv.subtitle, run: () => Quickshell.execDetached(["wl-copy", conv.copy]) }]
+            : answer !== null ? [{ glyph: "equals", title: answer, subtitle: "⏎ copy", run: () => Quickshell.execDetached(["wl-copy", answer]) }] : [];
         // Actions only show up once you start typing
         const apps = Array.from(DesktopEntries.applications.values).filter(e => !e.noDisplay);
-        return (q === "" ? apps : apps.concat(modeActions, Displays.actions, Themes.actions, Capture.actions, Power.actions, Wallpaper.actions))
+        const matches = (q === "" ? apps : apps.concat(modeActions, Toggles.actions, Displays.actions, Themes.actions, Capture.actions, Power.actions, Wallpaper.actions))
             .map(e => ({ entry: e, score: score(e, q) }))
             .filter(r => r.score > 0)
             .sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name))
             .slice(0, 50)
-            .map(r => ({ icon: r.entry.icon, title: r.entry.name, subtitle: r.entry.genericName ?? "", keepOpen: r.entry.keepOpen ?? false, run: () => r.entry.execute() }));
+            .map(r => ({ icon: r.entry.icon, glyph: r.entry.glyph, title: r.entry.name, subtitle: r.entry.genericName ?? "", keepOpen: r.entry.keepOpen ?? false, run: () => r.entry.execute() }));
+        // Files from fd (below), then a web search as the last resort
+        const files = q.length >= 3 && fileSearch.query === raw ? root.files : [];
+        const web = q === "" ? [] : [{ glyph: "globe", title: `Search the web for “${raw}”`, subtitle: "Google", run: () => Quickshell.execDetached(["xdg-open", "https://www.google.com/search?q=" + encodeURIComponent(raw)]) }];
+        return top.concat(matches, files, web);
+    }
+
+    // Emoji: typed into the window that had focus (once the launcher has let go of the keyboard),
+    // and copied too, for places wtype can't reach
+    function typeEmoji(e) {
+        Quickshell.execDetached(["wl-copy", e]);
+        Quickshell.execDetached(["sh", "-c", 'sleep 0.15; exec wtype "$1"', "sh", e]);
+    }
+
+    // File search: fd over $HOME (skips hidden and gitignored files), shortly after typing stops
+    property var files: []
+    readonly property string fileQuery: open && mode === "apps" && !search.text.trim().startsWith(":") && search.text.trim().length >= 3 ? search.text.trim() : ""
+    onFileQueryChanged: fileDebounce.restart()
+    Timer {
+        id: fileDebounce
+        interval: 120
+        onTriggered: {
+            if (fileSearch.running)
+                fileSearch.running = false;   // onRunningChanged starts the new search
+            else
+                fileSearch.start();
+        }
+    }
+    Process {
+        id: fileSearch
+        property string query: ""
+        function start() {
+            if (root.fileQuery === "")
+                return;
+            query = root.fileQuery;
+            command = ["fd", "--fixed-strings", "--ignore-case", "--max-results", "8", "--", query, Quickshell.env("HOME")];
+            running = true;
+        }
+        onRunningChanged: if (!running && query !== root.fileQuery) start()
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (fileSearch.query !== root.fileQuery)
+                    return;
+                const home = Quickshell.env("HOME");
+                root.files = text.split("\n").filter(l => l).map(p => {
+                    const dir = p.endsWith("/");
+                    const path = dir ? p.slice(0, -1) : p;
+                    const cut = path.lastIndexOf("/");
+                    return {
+                        glyph: dir ? "folder" : "file",
+                        title: path.slice(cut + 1),
+                        subtitle: path.slice(0, cut).replace(home, "~"),
+                        run: () => Quickshell.execDetached(["xdg-open", path])
+                    };
+                });
+            }
+        }
     }
 
     function launch(item) {
@@ -324,8 +405,16 @@ Scope {
                                     source: item.modelData.image ? Wallpaper.url(item.modelData.image) : ""
                                 }
                             }
+                            Text {
+                                visible: !!item.modelData.emoji
+                                Layout.preferredWidth: 26
+                                horizontalAlignment: Text.AlignHCenter
+                                text: item.modelData.emoji ?? ""
+                                font.family: "Noto Color Emoji"
+                                font.pixelSize: 20
+                            }
                             Icon {
-                                visible: !item.modelData.icon && !item.modelData.image
+                                visible: !item.modelData.icon && !item.modelData.image && !item.modelData.emoji
                                 Layout.preferredWidth: 26
                                 name: item.modelData.glyph ?? ""
                                 size: 18
