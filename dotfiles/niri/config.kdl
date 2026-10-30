@@ -199,12 +199,9 @@ layout {
 
     // You can also add a border. It's similar to the focus ring, but always visible.
     border {
-        // Disabled: the user mostly runs one full-width window at a time, so an
-        // active-window border was pointless. Colors below are dead but left in
-        // place (still overridden by the `theme` command's generated include).
-        off
-
-        // The settings are the same as for the focus ring.
+        // One clean 1px line, matching the quickshell panels: accent @40% on the
+        // focused window, surface1 elsewhere. Colors here are fallbacks; the
+        // `theme` command's generated include overrides them.
         width 1
         active-color "#89b4fa66"
         inactive-color "#313244"
@@ -367,6 +364,11 @@ window-rule {
 /-window-rule {
     geometry-corner-radius 12
     clip-to-geometry true
+}
+
+// Borders are a 1px ring only; never fill behind translucent windows with the border colour
+window-rule {
+    draw-border-with-background false
 }
 
 binds {

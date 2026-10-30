@@ -100,8 +100,11 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
   windows, pill to screen edge, pill to window, bar to panels and toasts, panel to side panel.
   Change both together.
 - **Window corners come from niri alone** (10 px, `clip-to-geometry`). Apps that draw their own
-  rounded frame fight it (Chrome: turn on "Use system title bar and borders"). Translucent windows
-  use `draw-border-with-background false`, or the inactive border colour fills in behind the glass.
+  rounded frame fight it (Chrome: turn on "Use system title bar and borders").
+- **Window focus border** (back on 2026-10-30): niri `border`, 1 px, accent @40 % on the focused
+  window and `surface1` elsewhere, same as `Theme.border`/`borderActive`; no focus ring, no glow.
+  A global rule sets `draw-border-with-background false`, or the inactive colour fills in behind
+  translucent windows.
 - **niri sets the cursor theme** (`cursor {}`); shapes the shell asks for (crosshair, hand) need it.
 - Scroll lists fade at the edge where content continues (`ScrollList`), instead of a hard cut.
 
