@@ -109,6 +109,22 @@
     };
   };
 
+  # Nightly security scan at 04:00, so even Sunday's 90 minute sweep ends before triage at 06:00:
+  # /security reads the code merged since the last good scan (the whole tree on Sunday) and files the
+  # findings two verifiers confirm in ~/work/fondaro. Reads code only. Run log:
+  # ~/work/fondaro/logs/security.log. Runbook: fondaro-mono docs/runbooks/security-scan.md.
+  launchd.user.agents.security-nightly = {
+    serviceConfig = {
+      Label = "com.fondaro.security-nightly";
+      ProgramArguments = [ "/run/current-system/sw/bin/fish" "-l" "-c" "exec /Users/mac-mini/Developer/fondaro-mono/scripts/security-nightly" ];
+      EnvironmentVariables.SHELL = "/run/current-system/sw/bin/fish";
+      WorkingDirectory = "/Users/mac-mini/Developer/fondaro-mono";
+      StartCalendarInterval = [ { Hour = 4; Minute = 0; } ];
+      StandardOutPath = "/Users/mac-mini/work/fondaro/logs/security-launchd.log";
+      StandardErrorPath = "/Users/mac-mini/work/fondaro/logs/security-launchd.log";
+    };
+  };
+
   # Nightly triage at 06:00 (the mini's clock is Europe/Madrid): /triage reads the last 24 h of production
   # errors, Grafana alerts and failed Jobs, and files deduplicated inbox items in ~/work/fondaro.
   # Through a fish login shell, so PATH has nix, mise and ~/.local/bin/claude. Run log:
