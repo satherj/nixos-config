@@ -29,8 +29,9 @@
 
   environment.systemPackages = with pkgs; [
     git curl rsync tmux btop
-    # Claude Code plugins (security-guidance) need a real python3; /usr/bin/python3 is only the Xcode CLT stub
-    python3
+    # Claude Code plugins (security-guidance) need a real python3; /usr/bin/python3 is only the Xcode CLT stub.
+    # Pillow too, since agents reach for it first when handling images
+    (python3.withPackages (ps: [ ps.pillow ]))
     # the Fondaro API runs on Kubernetes; its runbooks and scripts/prod-errors.sh drive it with the ~/.kube/config here.
     # The cluster is DigitalOcean's: kubectl gets its credentials from doctl (logged in via ~/Library/Application Support/doctl)
     kubectl doctl

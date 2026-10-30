@@ -9,6 +9,9 @@
     fzf ripgrep fd jq
     # agent multiplexer: the server runs on the mini, the ThinkPad attaches with `herdr --remote`
     herdr
+    # images: magick (and montage for contact sheets), vips/vipsthumbnail for fast batch resizes, exiftool to read
+    # dates and strip GPS before publishing, HEIC from iPhones, ffmpeg for video, PNG squeezers, czkawka_cli for near-duplicates
+    imagemagick vips exiftool libheif ffmpeg-headless oxipng pngquant czkawka
   ];
 
   # Self-updating installs live in ~/.local/bin (Claude Code's native installer: ~/.local/bin/claude).
