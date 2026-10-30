@@ -113,7 +113,14 @@ if [[ ${1:-} == "-l" || ${1:-} == "--logout" ]]; then
 # qs kill instead of pkill: the process is named .quickshell-wrapped, so pkill -x never matched
 elif qs kill -p /etc/quickshell >/dev/null 2>&1; then
   step "shell"
-  spin "restarting quickshell" sh -c 'sleep 0.3; qs -p /etc/quickshell -d >/dev/null 2>&1'
+  # A helper process sometimes aborts while the old shell exits; the crash handler then relaunches
+  # it about a second later, and launching ours too left two bars. Sweep for ~2.5s, then start one.
+  spin "restarting quickshell" sh -c '
+    for _ in 1 2 3 4 5 6; do
+      sleep 0.4
+      qs kill -p /etc/quickshell >/dev/null 2>&1
+    done
+    qs -p /etc/quickshell -d >/dev/null 2>&1'
 fi
 
 byes=("fresh snow on the system" "all flakes in place" "reproducibly yours" "the store is happy")
