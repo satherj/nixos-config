@@ -23,6 +23,8 @@
     openssh.authorizedKeys.keys = [
       # ThinkPad
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKkAUlqGrJp8GBhDTXPyqz5ejkjG9YQ7J5q92XFe0drj"
+      # Phone (the Moshi app, over Tailscale; the private key lives in the app)
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIB9JiSBtm1/k+Re9yO6P5sZrVbiwuZn5Q3PU6SePVEm moshi"
     ];
   };
   programs.fish.enable = true;
