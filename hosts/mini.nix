@@ -42,6 +42,9 @@
     '')
     # `xfer`: send/get files to or from the ThinkPad (pkgs/xfer.sh), see the `thinkpad` ssh alias below
     (callPackage ../pkgs/xfer.nix { peer = "thinkpad"; })
+    # mosh-server for `mosh mini` from the ThinkPad (sessions survive sleep, wifi hops, roaming). Only reachable
+    # over Tailscale in practice: the macOS application firewall is off, but the mini has no public address
+    mosh
     # xterm-ghostty terminfo, so SSH sessions from ghostty on the ThinkPad render properly
     ghostty-bin.terminfo
     (writeShellScriptBin "darwin-apply" ''

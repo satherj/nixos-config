@@ -433,6 +433,14 @@
   };
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
 
+  # mosh (`mosh mini`, and `mosh thinkpad` from the mini). Like sshd, its UDP ports are open on Tailscale only:
+  # each session takes one port from 60000-61000 after logging in over ssh
+  programs.mosh = {
+    enable = true;
+    openFirewall = false;
+  };
+  networking.firewall.interfaces.tailscale0.allowedUDPPortRanges = [ { from = 60000; to = 61000; } ];
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
