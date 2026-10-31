@@ -23,8 +23,6 @@
     openssh.authorizedKeys.keys = [
       # ThinkPad
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKkAUlqGrJp8GBhDTXPyqz5ejkjG9YQ7J5q92XFe0drj"
-      # Phone (the Moshi app, over Tailscale; the private key lives in the app)
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIB9JiSBtm1/k+Re9yO6P5sZrVbiwuZn5Q3PU6SePVEm moshi"
     ];
   };
   programs.fish.enable = true;
@@ -44,9 +42,6 @@
     '')
     # `xfer`: send/get files to or from the ThinkPad (pkgs/xfer.sh), see the `thinkpad` ssh alias below
     (callPackage ../pkgs/xfer.nix { peer = "thinkpad"; })
-    # mosh-server for `mosh mini` from the ThinkPad (sessions survive sleep, wifi hops, roaming). Only reachable
-    # over Tailscale in practice: the macOS application firewall is off, but the mini has no public address
-    mosh
     # xterm-ghostty terminfo, so SSH sessions from ghostty on the ThinkPad render properly
     ghostty-bin.terminfo
     (writeShellScriptBin "darwin-apply" ''
