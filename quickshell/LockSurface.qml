@@ -38,7 +38,12 @@ Item {
         asynchronous: true
         sourceSize.width: Math.max(1, root.width / 3)
         sourceSize.height: Math.max(1, root.height / 3)
-        source: Wallpaper.url(Wallpaper.image)
+        source: Wallpaper.themed ? "" : Wallpaper.url(Wallpaper.image)
+    }
+    // The theme wallpaper is already soft and flat: shown as is, no blur
+    ThemeBackdrop {
+        anchors.fill: parent
+        visible: Wallpaper.themed
     }
     // Fades in once decoded, so locking eases from dark into the picture instead of flashing
     MultiEffect {

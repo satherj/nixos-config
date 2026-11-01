@@ -3,9 +3,10 @@
 layout {
     // behind windows wherever the wallpaper isn't drawn yet
     background-color "{{crust}}"
+    // The ring is on (1px, focused window only) and adds to the border: the active pane is 2px
     focus-ring {
         active-color "{{accent}}66"
-        inactive-color "{{surface1}}"
+        inactive-color "{{surface1}}00"
         urgent-color "{{red}}"
     }
     border {

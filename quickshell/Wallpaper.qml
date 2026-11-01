@@ -8,6 +8,7 @@ import Quickshell.Io
 // "unsorted"). Quickshell draws the wallpaper itself (WallpaperWindow) so every change crossfades.
 // A folder with a dynamic.json (made by `wallpaper-dynamic` from a macOS .heic) is one dynamic
 // wallpaper: its frames follow the clock (h24) or the sun's position (solar) over the day.
+// One built-in entry, "theme", is no image at all: the active theme's own colours (ThemeBackdrop).
 Singleton {
     id: root
 
@@ -19,11 +20,16 @@ Singleton {
     readonly property var categories: ["all"].concat([...new Set(images.map(i => i.category))].sort())
 
     readonly property string current: settings.current
+    // The built-in theme-colour wallpaper (always listed first, in its own category)
+    readonly property string themePath: "theme"
+    readonly property var themeEntry: ({ path: themePath, name: "Theme colours", category: "theme", preview: "", theme: true })
+    readonly property bool themed: current === themePath
     readonly property bool shuffle: settings.shuffle
     readonly property int interval: settings.interval   // minutes
     readonly property string shuffleCategory: settings.shuffleCategory
 
     // What's actually on screen: the current file, or the current frame of a dynamic set
+    // (themePath for the theme wallpaper, which WallpaperImage draws itself)
     readonly property string image: imageFor(current)
     // Picking fades quickly; a dynamic set moving on to its next frame fades slowly
     property int fadeDuration: 1200
@@ -47,6 +53,8 @@ Singleton {
     }
 
     function imageFor(path) {
+        if (path === themePath)
+            return path;
         const entry = images.find(i => i.path === path);
         const set = entry?.dynamic;
         if (set)
@@ -55,6 +63,8 @@ Singleton {
         return entry || /\.(jpe?g|png|webp)$/i.test(path) ? path : "";
     }
     function describe(entry) {
+        if (entry?.theme)
+            return "follows the theme, light or dark";
         return !entry?.dynamic ? "" : entry.dynamic.mode === "solar" ? "follows the sun" : "changes through the day";
     }
     // h24: each entry starts at a fraction of the local day and lasts until the next one
@@ -89,7 +99,8 @@ Singleton {
         return { alt: alt / rad, az: ((az / rad) + 360) % 360 };
     }
     function random(cat) {
-        const pool = inCategory(cat ?? shuffleCategory).filter(i => i.path !== current);
+        // Shuffle is for pictures; the theme wallpaper is only ever picked on purpose
+        const pool = inCategory(cat ?? shuffleCategory).filter(i => i.path !== current && !i.theme);
         if (pool.length > 0)
             set(pool[Math.floor(Math.random() * pool.length)].path);
     }
@@ -116,6 +127,7 @@ Singleton {
     }
     readonly property var actions: [
         action("Wallpapers", "Browse and pick a wallpaper", "preferences-desktop-wallpaper", ["wallpaper", "background", "picker", "theme"], () => root.openPicker()),
+        action("Theme wallpaper", "Use the theme's colours as the wallpaper", "preferences-desktop-color", ["wallpaper", "background", "theme", "colour", "color", "solid", "plain"], () => root.set(root.themePath)),
         action("Random wallpaper", "Switch to a random wallpaper", "preferences-desktop-theme", ["wallpaper", "background", "random", "shuffle", "next"], () => root.random())
     ]
 
@@ -193,10 +205,10 @@ Singleton {
                     const shown = set.mode === "h24" ? root.h24Frame(set, new Date().setHours(13, 0, 0, 0)) : set.solar.reduce((a, b) => b.alt > a.alt ? b : a).i;
                     return Object.assign(entry(set.dir, set.name ?? set.dir.slice(set.dir.lastIndexOf("/") + 1)), { preview: set.dir + "/" + set.frames[shown], dynamic: set });
                 });
-                root.images = dynamic.concat(files).sort((a, b) => a.path.localeCompare(b.path));
+                root.images = [root.themeEntry].concat(dynamic.concat(files).sort((a, b) => a.path.localeCompare(b.path)));
                 if (root.images.length > 0 && !root.images.some(i => i.path === root.current))
                     root.set(root.images.some(i => i.path === root.fallback) ? root.fallback : root.images[0].path);
-                thumbs.command = ["sh", "-c", root.thumbScript, "sh", root.thumbDir].concat(root.images.reduce((args, i) => args.concat([i.path, i.preview]), []));
+                thumbs.command = ["sh", "-c", root.thumbScript, "sh", root.thumbDir].concat(root.images.filter(i => !i.theme).reduce((args, i) => args.concat([i.path, i.preview]), []));
                 thumbs.running = true;
             }
         }

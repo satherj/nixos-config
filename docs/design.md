@@ -96,13 +96,18 @@ motion means gentler, not none). `QS_REDUCE_TRANSPARENCY=1` makes every frosted 
   Because they sit on the wallpaper, not a theme surface, bar glyphs are **always light** whatever
   the theme variant (`Theme.barText`/`barDim`/`barHover`, accents via `Theme.onWall(name)`, Mocha
   pastels on light themes) with a soft `MultiEffect` shadow (`Theme.barShadow`) for bright wallpapers.
+  The exception is the **theme wallpaper** (`Wallpaper.themed`, drawn by `ThemeBackdrop`: base→crust
+  with faint accent/mauve glows, morphing with theme switches). It *is* a theme surface, so there
+  the bar uses the theme's own text colours and no shadow.
 - **One spacing everywhere** (`Theme.gap`, 8 px, equal to niri's `gaps`; 8 because at the laptop's 1.25 scale it is a whole 10 physical px, so half and full-width columns fill the screen exactly and no neighbour peeks in; 6 left a sliver): screen edges, between
   windows, pill to screen edge, pill to window, bar to panels and toasts, panel to side panel.
   Change both together.
 - **Window corners come from niri alone** (10 px, `clip-to-geometry`). Apps that draw their own
   rounded frame fight it (Chrome: turn on "Use system title bar and borders").
 - **Window focus border** (back on 2026-10-30): niri `border`, 1 px, accent @40 % on the focused
-  window and `surface1` elsewhere, same as `Theme.border`/`borderActive`; no focus ring, no glow.
+  window and `surface1` elsewhere, same as `Theme.border`/`borderActive`; no glow. Since
+  2026-11-01 the active pane is 2 px: a 1 px `focus-ring` in the same colour sits just outside the
+  border (the ring lives in the gap and never resizes windows; border width is shared by all windows).
   A global rule sets `draw-border-with-background false`, or the inactive colour fills in behind
   translucent windows.
 - **niri sets the cursor theme** (`cursor {}`); shapes the shell asks for (crosshair, hand) need it.

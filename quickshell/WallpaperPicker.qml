@@ -211,8 +211,13 @@ Scope {
                             cache: false
                             sourceSize.width: 480
                             sourceSize.height: 270
-                            source: Wallpaper.thumbsReady >= 0 ? Wallpaper.url(Wallpaper.thumb(card.modelData.path)) : ""
+                            source: card.modelData.theme ? "" : Wallpaper.thumbsReady >= 0 ? Wallpaper.url(Wallpaper.thumb(card.modelData.path)) : ""
                             onStatusChanged: if (status === Image.Error) source = Wallpaper.url(card.modelData.preview)
+                        }
+                        // The theme wallpaper has no file: draw it live (it follows theme switches)
+                        ThemeBackdrop {
+                            anchors.fill: parent
+                            visible: card.modelData.theme ?? false
                         }
 
                         Rectangle {

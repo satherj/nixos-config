@@ -270,7 +270,14 @@ ColumnLayout {
                     asynchronous: true
                     sourceSize.width: 144
                     sourceSize.height: 80
-                    source: Wallpaper.url(Wallpaper.thumb(Wallpaper.current))
+                    source: Wallpaper.themed ? "" : Wallpaper.url(Wallpaper.thumb(Wallpaper.current))
+                }
+                ThemeBackdrop {
+                    anchors.fill: parent
+                    radius: parent.radius
+                    border.color: Theme.border
+                    border.width: Theme.borderWidth
+                    visible: Wallpaper.themed
                 }
             }
             ColumnLayout {
