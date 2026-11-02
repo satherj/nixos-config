@@ -12,6 +12,8 @@ Design rules for the shell (motion, materials, layout) and the reasoning behind 
 
 `xfer` (`pkgs/xfer.sh`, on both machines) sends files to or fetches them from the other machine over Tailscale SSH and rsync, by default through `~/Transfer`; the ThinkPad's sshd listens on the tailnet only.
 
+Taildrop (iPhone share sheet → Tailscale → thinkpad) lands in the same `~/Transfer`: the `taildrop-receive` user service pulls files out of tailscaled's inbox and shows the `xfer-notify` notification.
+
 ## Theming
 
 Colour presets are JSON files in [`themes/`](themes) (palette keys = Quickshell's `Theme.qml` tokens, plus `accent`, `barOpacity` (the glass opacity shared by the bar, panels and ghostty), `iconWeight` for menus (default bold) and `barIconWeight` for the bar (default fill)). The `theme` command (`pkgs/theme.nix`) renders them through [`themes/templates/`](themes/templates) into ghostty, niri borders and overview backdrop, GTK3/4, zathura and mpv (uosc), and writes the resolved preset to `~/.local/state/theme/current.json` last, which the shell watches.

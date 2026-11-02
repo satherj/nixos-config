@@ -4,6 +4,14 @@
 
 { config, lib, pkgs, ... }:
 
+let
+  # Desktop notification for a file that just landed (from the mini's `xfer send`, or Taildrop)
+  xfer-notify = pkgs.writeShellApplication {
+    name = "xfer-notify";
+    runtimeInputs = with pkgs; [ libnotify glib jq coreutils ];
+    text = builtins.readFile ./pkgs/xfer-notify.sh;
+  };
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -74,6 +82,24 @@
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   services.tailscale.enable = true;
+  # Operator lets the user run `tailscale file get` (and up/down/set) without sudo, for taildrop-receive below
+  services.tailscale.extraSetFlags = [ "--operator=jonathans" ];
+
+  # Taildrop inbox -> ~/Transfer: files sent from the iPhone (share sheet -> Tailscale -> thinkpad)
+  # land there with a notification, like the mini's `xfer send`.
+  systemd.user.services.taildrop-receive = {
+    description = "Move received Taildrop files into ~/Transfer";
+    wantedBy = [ "default.target" ];
+    serviceConfig = {
+      ExecStart = lib.getExe (pkgs.writeShellApplication {
+        name = "taildrop-receive";
+        runtimeInputs = [ config.services.tailscale.package xfer-notify pkgs.findutils pkgs.coreutils ];
+        text = builtins.readFile ./pkgs/taildrop-receive.sh;
+      });
+      Restart = "always";
+      RestartSec = 10;
+    };
+  };
   # Without resolved, tailscaled is the only entry in resolv.conf and returns
   # SERVFAIL ("no upstream resolvers set") whenever wifi flaps and NM's DNS is
   # briefly dropped. resolved keeps per-link DNS and fallbacks stable.
@@ -280,11 +306,7 @@
     })
     # `xfer`: send/get files to or from the mini (pkgs/xfer.sh); `xfer-notify` is what the mini's `xfer send` calls here
     (callPackage ./pkgs/xfer.nix { peer = "mini"; })
-    (writeShellApplication {
-      name = "xfer-notify";
-      runtimeInputs = [ libnotify glib jq coreutils ];
-      text = builtins.readFile ./pkgs/xfer-notify.sh;
-    })
+    xfer-notify
     # Android emulator on the mini: `mini-droid` tunnels to its adb server and opens scrcpy (pkgs/mini-droid.sh)
     scrcpy android-tools
     (writeShellApplication {

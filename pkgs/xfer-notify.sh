@@ -28,7 +28,7 @@ uri=$(jq -rn --arg p "$target" '"file://" + ($p | @uri | gsub("%2F"; "/"))')
 # notify-send waits for the click while it has an action, so wait in the background and let the mini's ssh
 # return now. An hour is long enough to still be useful; after that the click does nothing.
 (
-  clicked=$(timeout 1h notify-send -i document-send -A default="Show in Files" "From the mini" "$what → ${dir/#"$HOME"/\~}" || true)
+  clicked=$(timeout 1h notify-send -i document-send -A default="Show in Files" "${XFER_FROM:-From the mini}" "$what → ${dir/#"$HOME"/\~}" || true)
   if [ "$clicked" = default ]; then
     gdbus call --session --dest org.freedesktop.FileManager1 --object-path /org/freedesktop/FileManager1 \
       --method "org.freedesktop.FileManager1.$method" "['$uri']" ""
