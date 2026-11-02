@@ -141,6 +141,23 @@
     };
   };
 
+  # Weekly product triage, Mondays at 07:00 (the mini's clock is Europe/Madrid), after the 06:00 triage:
+  # /product-triage reads last week's product usage against the four before it (pnpm prod:usage) and
+  # files deduplicated product findings in ~/work/fondaro. Reads production only. Run log:
+  # ~/work/fondaro/logs/product-triage.log. Runbook: fondaro-mono docs/runbooks/product-usage.md,
+  # "Weekly product triage".
+  launchd.user.agents.product-triage-weekly = {
+    serviceConfig = {
+      Label = "com.fondaro.product-triage-weekly";
+      ProgramArguments = [ "/run/current-system/sw/bin/fish" "-l" "-c" "exec /Users/mac-mini/Developer/fondaro-mono/scripts/product-triage-weekly" ];
+      EnvironmentVariables.SHELL = "/run/current-system/sw/bin/fish";
+      WorkingDirectory = "/Users/mac-mini/Developer/fondaro-mono";
+      StartCalendarInterval = [ { Weekday = 1; Hour = 7; Minute = 0; } ];
+      StandardOutPath = "/Users/mac-mini/work/fondaro/logs/product-triage-launchd.log";
+      StandardErrorPath = "/Users/mac-mini/work/fondaro/logs/product-triage-launchd.log";
+    };
+  };
+
   # Weekly Xcode and Android cache cleanup, Sundays at 05:00: stale DerivedData, old DeviceSupport, unusable
   # simulator runtimes, unreferenced Gradle wrapper dists. Default tier only (never --deep). One summary line
   # per run in ~/work/fondaro/logs/dev-clean/<date>.log. Docs: fondaro-mono docs/engineering/dev-setup.md,
