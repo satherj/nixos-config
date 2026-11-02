@@ -141,6 +141,22 @@
     };
   };
 
+  # Weekly Xcode and Android cache cleanup, Sundays at 05:00: stale DerivedData, old DeviceSupport, unusable
+  # simulator runtimes, unreferenced Gradle wrapper dists. Default tier only (never --deep). One summary line
+  # per run in ~/work/fondaro/logs/dev-clean/<date>.log. Docs: fondaro-mono docs/engineering/dev-setup.md,
+  # "Cleaning Xcode and Android caches".
+  launchd.user.agents.dev-clean = {
+    serviceConfig = {
+      Label = "com.fondaro.dev-clean";
+      ProgramArguments = [ "/run/current-system/sw/bin/fish" "-l" "-c" "mkdir -p /Users/mac-mini/work/fondaro/logs/dev-clean; exec /Users/mac-mini/Developer/fondaro-mono/scripts/dev-clean --quiet >> /Users/mac-mini/work/fondaro/logs/dev-clean/(date +%F).log 2>&1" ];
+      EnvironmentVariables.SHELL = "/run/current-system/sw/bin/fish";
+      WorkingDirectory = "/Users/mac-mini/Developer/fondaro-mono";
+      StartCalendarInterval = [ { Weekday = 0; Hour = 5; Minute = 0; } ];
+      StandardOutPath = "/Users/mac-mini/work/fondaro/logs/dev-clean-launchd.log";
+      StandardErrorPath = "/Users/mac-mini/work/fondaro/logs/dev-clean-launchd.log";
+    };
+  };
+
   # Postgres for the dev stacks: same major version as production (17), with the extensions the
   # schema uses. `fondaro_golden` is a template database; each worktree gets its own clone.
   # Localhost only, and trust auth: a single-user dev box nothing else can reach.
