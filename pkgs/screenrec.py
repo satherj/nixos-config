@@ -38,6 +38,11 @@ INPUT_SOCKET = "/run/screenrec-input.sock"
 STATE = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "screenrec"
 PORTAL_CANCELLED = 60  # gpu-screen-recorder's exit code when the portal dialog is dismissed
 FORMAT = "screen-track"
+# A frame's timestamp is when gpu-screen-recorder takes it, about a frame after niri sent it (and the
+# cursor metadata with it). Measured on the LG at 60 Hz by matching the cursor drawn into the video
+# against the track: the picture shows where the track was 22 ms earlier. Cursor samples are moved
+# that much later so they line up with the picture; clicks keep their input times.
+CURSOR_DELAY = 0.022
 VERSION = 1
 
 
@@ -156,7 +161,7 @@ def merge(video, cursor_log, input_log, meta):
             return
         sx, sy = (x - crop[0], y - crop[1]) if crop else (x, y)
         s = None if hidden or shape in (None, "empty") else shape
-        samples.append([round(t - t0, 4), sx, sy, s])
+        samples.append([round(t - t0 + CURSOR_DELAY, 4), sx, sy, s])
 
     for e in lines:
         t = e.get("t")
@@ -247,6 +252,7 @@ def merge(video, cursor_log, input_log, meta):
 
     if not samples:
         warnings.append("no cursor positions were logged (is niri sending cursor metadata?)")
+    meta["recorder"]["cursor_delay"] = CURSOR_DELAY
     return {
         "format": FORMAT,
         "version": VERSION,
