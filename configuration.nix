@@ -285,6 +285,13 @@
       runtimeInputs = [ libnotify glib jq coreutils ];
       text = builtins.readFile ./pkgs/xfer-notify.sh;
     })
+    # Android emulator on the mini: `mini-droid` tunnels to its adb server and opens scrcpy (pkgs/mini-droid.sh)
+    scrcpy android-tools
+    (writeShellApplication {
+      name = "mini-droid";
+      runtimeInputs = [ openssh android-tools scrcpy coreutils gnugrep ];
+      text = builtins.readFile ./pkgs/mini-droid.sh;
+    })
     # files & cloud: rclone mounts Proton Drive (rclone config -> "protondrive")
     rsync rclone
     # office: lightweight word processor + spreadsheet (docx/xlsx)
