@@ -213,6 +213,10 @@ def merge(video, cursor_log, input_log, meta):
     clicks, scrolls, keys = [], [], []
     down = {}
     events = read_jsonl(input_log) if input_log else []
+    hello = next((e for e in events if "hello" in e), None)
+    if input_log and hello is not None and not hello.get("devices"):
+        why = "; ".join(f"{k}: {v}" for k, v in (hello.get("failed") or {}).items())[:300]
+        warnings.append("the input service opened no devices, so no clicks or shortcuts" + (f" ({why})" if why else ""))
     for e in events:
         if "t" not in e:
             continue

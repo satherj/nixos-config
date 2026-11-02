@@ -16,6 +16,7 @@ one, two or three fingers down and up within TAP_TIME without moving more than T
 """
 
 import fcntl
+import glob
 import json
 import os
 import selectors
@@ -129,16 +130,20 @@ class Devices:
         self.open = {}      # path -> InputDevice
         self.pads = {}      # fd -> Touchpad
         self.held = {}      # (fd, code) -> modifier name
+        self.failed = {}    # path -> why it couldn't be opened
 
     def scan(self):
-        for path in evdev.list_devices():
+        # Not evdev.list_devices(): it only lists devices it could also write, and this service may only read
+        for path in sorted(glob.glob("/dev/input/event*")):
             if path in self.open:
                 continue
             try:
                 dev = evdev.InputDevice(path)
                 keys = set(dev.capabilities().get(e.EV_KEY, []))
-            except OSError:
+            except OSError as err:
+                self.failed[path] = err.strerror or str(err)
                 continue
+            self.failed.pop(path, None)
             pointer = e.BTN_LEFT in keys or e.BTN_TOUCH in keys
             keyboard = e.KEY_A in keys and e.KEY_LEFTCTRL in keys
             if not (pointer or keyboard):
@@ -202,7 +207,8 @@ def main():
     sel.register(sys.stdin.fileno(), selectors.EVENT_READ, data="peer")
     devices = Devices(sel)
     devices.scan()
-    out.send({"hello": "screenrec-input", "devices": sorted(d.name for d in devices.open.values())})
+    out.send({"hello": "screenrec-input", "devices": sorted(d.name for d in devices.open.values()),
+              "failed": devices.failed})
     next_scan = time.monotonic() + RESCAN
     try:
         while True:
