@@ -187,7 +187,64 @@ in
         '';
       });
     })
+    # gpu-screen-recorder asks niri for the cursor as screencast metadata and logs it (position, image,
+    # the video's time origin) when GSR_CURSOR_TRACK is set: the cursor half of screenrec's track
+    (final: prev: {
+      gpu-screen-recorder = prev.gpu-screen-recorder.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ./patches/gpu-screen-recorder-cursor-track.patch ];
+      });
+    })
   ];
+
+  # Clicks and shortcuts for screenrec's track (pkgs/screenrec-input.py). Socket-activated per
+  # recording, so input devices are only read while screenrec is connected; it runs as a dynamic user
+  # in the input group and only sends clicks, wheel notches and Ctrl/Alt/Super shortcuts, never typing.
+  systemd.sockets.screenrec-input = {
+    description = "Clicks and shortcuts for screen recordings (screenrec)";
+    wantedBy = [ "sockets.target" ];
+    socketConfig = {
+      ListenStream = "/run/screenrec-input.sock";
+      Accept = true;
+      SocketUser = "jonathans";
+      SocketMode = "0600";
+      MaxConnections = 4;
+    };
+  };
+  systemd.services."screenrec-input@" = {
+    description = "Clicks and shortcuts for one screen recording";
+    serviceConfig = {
+      ExecStart = pkgs.writers.writePython3 "screenrec-input" {
+        libraries = [ pkgs.python3Packages.evdev ];
+        flakeIgnore = [ "E501" "W503" ];
+      } (builtins.readFile ./pkgs/screenrec-input.py);
+      StandardInput = "socket";
+      StandardOutput = "socket";
+      StandardError = "journal";
+      DynamicUser = true;
+      SupplementaryGroups = [ "input" ];
+      # Input devices (major "input") read-only, and hotplugged ones too; nothing else
+      DevicePolicy = "closed";
+      DeviceAllow = [ "char-input r" ];
+      PrivateNetwork = true;
+      RestrictAddressFamilies = [ "AF_UNIX" ];
+      CapabilityBoundingSet = "";
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      ProtectProc = "invisible";
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectKernelLogs = true;
+      ProtectControlGroups = true;
+      ProtectClock = true;
+      ProtectHostname = true;
+      RestrictNamespaces = true;
+      RestrictRealtime = true;
+      LockPersonality = true;
+      SystemCallArchitectures = "native";
+    };
+  };
   systemd.user.services.rclone-protondrive = {
     description = "Mount Proton Drive (rclone)";
     wantedBy = [ "default.target" ];
@@ -287,7 +344,14 @@ in
     # "Copy text" capture mode (OCR); English, Swedish and Spanish only, not all ~120 languages
     (tesseract.override { enableLanguages = [ "eng" "swe" "spa" ]; })
     wtype  # types the emoji picked in the launcher into the focused window
-    gpu-screen-recorder  # single-window recording (portal window picker; wf-recorder can only do screens/regions)
+    # screen and window recording: `screenrec` (pkgs/screenrec.py) runs gpu-screen-recorder (patched, see
+    # the overlay) and writes a cursor/click track beside the video for Fondaro studio's zooms; the
+    # clicks come from screenrec-input (above). wf-recorder above still does regions.
+    gpu-screen-recorder
+    (writers.writePython3Bin "screenrec" { flakeIgnore = [ "E501" "W503" ]; }
+      (builtins.replaceStrings [ ''GSR = "gpu-screen-recorder"'' ]
+        [ ''GSR = "${gpu-screen-recorder}/bin/gpu-screen-recorder"'' ]
+        (builtins.readFile ./pkgs/screenrec.py)))
     wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme
     apple-cursor  # cursors: "macOS" (black, white outline) and "macOS-White"
     # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders

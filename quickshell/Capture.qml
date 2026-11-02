@@ -6,8 +6,9 @@ import Quickshell.Services.Pipewire
 
 // Screenshots and screen recording. Region screenshots use our own picker (ScreenshotOverlay.qml:
 // frozen screen, drag a region, or switch to picking a window / the whole screen) and grim; window
-// and screen shots use niri's own tools. Recording: wf-recorder (screen; slurp for regions),
-// gpu-screen-recorder for single windows.
+// and screen shots use niri's own tools. Recording: screenrec (pkgs/screenrec.py) for screens and
+// windows, which runs a patched gpu-screen-recorder and writes a .track.json of the cursor, clicks and
+// shortcuts beside the video, for zooms and cursor effects in post; wf-recorder + slurp for regions.
 // After every screenshot the file path replaces the image on the clipboard, handy for pasting
 // into a terminal; the image itself stays in clipboard history.
 Singleton {
@@ -18,11 +19,26 @@ Singleton {
 
     readonly property bool copyPath: settings.copyPath
     readonly property bool recordAudio: settings.recordAudio
+    // The microphone too, so post can line the recording up with a camera by sound
+    readonly property bool recordMic: settings.recordMic
+    // Cursor/click track beside screen and window recordings (screenrec)
+    readonly property bool trackInput: settings.trackInput
+    // Draw the cursor into the video as well; off leaves it to post, which draws it from the track
+    readonly property bool cursorInVideo: settings.cursorInVideo
     function setCopyPath(on) {
         settings.copyPath = on;
     }
     function setRecordAudio(on) {
         settings.recordAudio = on;
+    }
+    function setRecordMic(on) {
+        settings.recordMic = on;
+    }
+    function setTrackInput(on) {
+        settings.trackInput = on;
+    }
+    function setCursorInVideo(on) {
+        settings.cursorInVideo = on;
     }
 
     FileView {
@@ -36,6 +52,9 @@ Singleton {
             id: settings
             property bool copyPath: true
             property bool recordAudio: false
+            property bool recordMic: false
+            property bool trackInput: true
+            property bool cursorInVideo: true
         }
     }
 
@@ -180,8 +199,9 @@ Singleton {
     }
 
     // --- Recording ---
-    // mode: "screen" | "region" (slurp, wf-recorder) | "window" (portal window picker, gpu-screen-recorder;
-    // niri doesn't expose where tiled windows sit, and the portal stream follows the window anyway)
+    // mode: "screen" | "window" (screenrec: the portal picks the screen, remembered after the first
+    // time, or the window; niri doesn't expose where tiled windows sit, and the stream follows the
+    // window anyway) | "region" (slurp, wf-recorder; no track)
     // active = a recording is set up or running (region/window still being picked counts);
     // recording = frames are landing in the file. The timer only counts once they do.
     readonly property bool active: rec.running
@@ -189,6 +209,8 @@ Singleton {
     property bool discarding: false
     property int seconds: 0
     property string file: ""
+    // "screenrec" or "wf-recorder": they stop differently (see send())
+    property string tool: ""
     readonly property string elapsed: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
 
     function record(mode) {
@@ -196,19 +218,28 @@ Singleton {
             return;
         UiState.close(true);
         file = `${recordingsDir}/Recording ${Qt.formatDateTime(new Date(), "yyyy-MM-dd HH-mm-ss")}.mp4`;
-        const sink = Pipewire.defaultAudioSink?.name ?? "";
-        let run;
-        if (mode === "window") {
-            const audio = recordAudio ? " -a default_output" : "";
-            run = `exec gpu-screen-recorder -w portal -f 60 -c mp4 -fallback-cpu-encoding yes${audio} -o "${file}"`;
-        } else {
-            const output = Niri.workspaces.find(w => w.is_focused)?.output ?? "";
+        if (mode === "region") {
+            tool = "wf-recorder";
+            const sink = Pipewire.defaultAudioSink?.name ?? "";
             const audio = recordAudio && sink ? ` --audio="${sink}.monitor"` : "";
             // Exit 2 = region selection cancelled
-            const target = mode === "region" ? `g=$(slurp -d -b 11111b66 -c 89b4fa -w 2) || exit 2; set -- -g "$g"` : output ? `set -- -o "${output}"` : "set --";
-            run = `${target}; exec wf-recorder "$@"${audio} -f "${file}"`;
+            rec.command = ["sh", "-c", `mkdir -p "${recordingsDir}"; sleep 0.25; g=$(slurp -d -b 11111b66 -c 89b4fa -w 2) || exit 2; exec wf-recorder -g "$g"${audio} -f "${file}"`];
+        } else {
+            tool = "screenrec";
+            const args = [file];
+            if (mode === "window")
+                args.push("--window");
+            if (!trackInput)
+                args.push("--no-track");
+            else if (cursorInVideo)
+                args.push("--cursor");
+            if (recordMic)
+                args.push("--mic");
+            if (recordAudio)
+                args.push("--system-audio");
+            // Exit 2 = the portal dialog was dismissed
+            rec.command = ["sh", "-c", `mkdir -p "$1"; sleep 0.25; shift; exec screenrec "$@"`, "sh", recordingsDir, ...args];
         }
-        rec.command = ["sh", "-c", `mkdir -p "${recordingsDir}"; sleep 0.25; ${run}`];
         seconds = 0;
         recording = false;
         discarding = false;
@@ -220,14 +251,19 @@ Singleton {
     function stop() {
         if (!rec.running)
             return;
-        const sig = recording ? "INT" : "TERM";
-        Quickshell.execDetached(["sh", "-c", `pkill -$1 -P "$2"; kill -$1 "$2"`, "sh", sig, String(rec.processId)]);
+        send(recording ? "INT" : "TERM");
     }
     function discard() {
         if (!rec.running)
             return;
         discarding = true;
-        stop();
+        // screenrec takes SIGTERM as discard: it stops gpu-screen-recorder and drops video and track
+        send(tool === "screenrec" || !recording ? "TERM" : "INT");
+    }
+    // screenrec signals its own gpu-screen-recorder; wf-recorder's sh parent may have children (slurp)
+    function send(sig) {
+        const script = tool === "screenrec" ? `kill -$1 "$2"` : `pkill -$1 -P "$2"; kill -$1 "$2"`;
+        Quickshell.execDetached(["sh", "-c", script, "sh", sig, String(rec.processId)]);
     }
     function toggle() {
         rec.running ? stop() : record("screen");
@@ -238,8 +274,10 @@ Singleton {
         onExited: code => {
             const wasRecording = root.recording;
             root.recording = false;
-            if (root.discarding || !wasRecording)
-                Quickshell.execDetached(["rm", "-f", root.file]);
+            if (root.discarding || !wasRecording) {
+                const base = root.file.replace(/\.mp4$/, "");
+                Quickshell.execDetached(["rm", "-f", root.file, base + ".track.json", base + ".cursor.jsonl", base + ".input.jsonl"]);
+            }
             if (root.discarding)
                 Osd.show("trash", "Recording discarded");
             else if (!wasRecording)

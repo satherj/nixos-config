@@ -1,0 +1,341 @@
+diff --git a/include/utils.h b/include/utils.h
+index d2c3b7d..5729924 100644
+--- a/include/utils.h
++++ b/include/utils.h
+@@ -31,6 +31,15 @@ typedef struct {
+ } get_monitor_by_name_userdata;
+ 
+ double clock_get_monotonic_seconds(void);
++
++/*
++    Cursor track (Fondaro patch, for screenrec). When the environment variable GSR_CURSOR_TRACK names a
++    file, portal capture asks the compositor for the cursor as stream metadata (drawn into the video
++    only with -cursor yes) and appends JSON lines about it, the stream and the video's time origin to
++    that file. Times are CLOCK_MONOTONIC seconds, the clock evdev input events can be set to.
++*/
++bool gsr_cursor_track_enabled(void);
++void gsr_cursor_track_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+ bool generate_random_characters(char *buffer, int buffer_size, const char *alphabet, size_t alphabet_size);
+ bool generate_random_characters_standard_alphabet(char *buffer, int buffer_size);
+ 
+diff --git a/src/capture/portal.c b/src/capture/portal.c
+index c6f058d..5896324 100644
+--- a/src/capture/portal.c
++++ b/src/capture/portal.c
+@@ -201,7 +201,7 @@ static int gsr_capture_portal_setup_dbus(gsr_capture_portal *self, int *pipewire
+     }
+ 
+     fprintf(stderr, "gsr info: gsr_capture_portal_setup_dbus: SelectSources\n");
+-    response_status = gsr_dbus_screencast_select_sources(&self->dbus, self->session_handle, GSR_PORTAL_CAPTURE_TYPE_ALL, self->params.record_cursor ? GSR_PORTAL_CURSOR_MODE_EMBEDDED : GSR_PORTAL_CURSOR_MODE_HIDDEN);
++    response_status = gsr_dbus_screencast_select_sources(&self->dbus, self->session_handle, GSR_PORTAL_CAPTURE_TYPE_ALL, (gsr_cursor_track_enabled() ? GSR_PORTAL_CURSOR_MODE_METADATA : 0) | (self->params.record_cursor ? GSR_PORTAL_CURSOR_MODE_EMBEDDED : GSR_PORTAL_CURSOR_MODE_HIDDEN));
+     if(response_status != 0) {
+         fprintf(stderr, "gsr error: gsr_capture_portal_setup_dbus: SelectSources failed\n");
+         return response_status;
+diff --git a/src/dbus.c b/src/dbus.c
+index 8ba58bc..14f2ee3 100644
+--- a/src/dbus.c
++++ b/src/dbus.c
+@@ -8,6 +8,9 @@
+ #include <errno.h>
+ #include <assert.h>
+ 
++/* Cursor track (Fondaro patch), from utils.c; utils.h itself clashes with this file's static helpers */
++void gsr_cursor_track_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
++
+ /* TODO: Make non-blocking when GPU Screen Recorder is turned into a library */
+ /* TODO: Make sure responses matches the requests */
+ 
+@@ -651,7 +654,14 @@ int gsr_dbus_screencast_select_sources(gsr_dbus *self, const char *session_handl
+     gsr_dbus_desktop_portal_get_property(self, "org.freedesktop.portal.ScreenCast", "AvailableCursorModes", &available_cursor_modes);
+     if(available_cursor_modes == 0)
+         fprintf(stderr, "gsr error: gsr_dbus_screencast_select_sources: no cursors modes are available\n");
++    const uint32_t wanted_cursor_modes = cursor_mode;
+     cursor_mode = unset_unsupported_cursor_modes(cursor_mode, available_cursor_modes);
++    if(cursor_mode & GSR_PORTAL_CURSOR_MODE_METADATA) {
++        cursor_mode = GSR_PORTAL_CURSOR_MODE_METADATA;
++    } else if(wanted_cursor_modes & GSR_PORTAL_CURSOR_MODE_METADATA) {
++        fprintf(stderr, "gsr warning: the portal doesn't offer the cursor as metadata, so the cursor track stays empty\n");
++        gsr_cursor_track_printf("{\"warning\":\"the portal does not offer the metadata cursor mode\"}");
++    }
+ 
+     char handle_token[64];
+     gsr_dbus_portal_get_unique_handle_token(self, handle_token, sizeof(handle_token));
+diff --git a/src/encoder/encoder.c b/src/encoder/encoder.c
+index 9ce7d19..9389ea4 100644
+--- a/src/encoder/encoder.c
++++ b/src/encoder/encoder.c
+@@ -141,8 +141,13 @@ void gsr_encoder_receive_packets(gsr_encoder *self, AVCodecContext *codec_contex
+                     recording_destination->first_frame_ts_written = true;
+                 }
+ 
+-                if(recording_destination->first_pts == -1)
++                if(recording_destination->first_pts == -1) {
+                     recording_destination->first_pts = pts - recording_destination->start_pts;
++                    if(codec_context->codec_type == AVMEDIA_TYPE_VIDEO) {
++                        gsr_cursor_track_printf("{\"t\":%.6f,\"video_start\":{\"pts\":%" PRId64 ",\"time_base\":[%d,%d]}}",
++                            clock_get_monotonic_seconds(), pts, codec_context->time_base.num, codec_context->time_base.den);
++                    }
++                }
+ 
+                 av_packet->pts = pts - recording_destination->start_pts - recording_destination->first_pts;
+                 av_packet->dts = av_packet->pts;
+diff --git a/src/main.cpp b/src/main.cpp
+index c2a5516..8b13f96 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -4098,6 +4098,8 @@ int main(int argc, char **argv) {
+     std::mutex audio_filter_mutex;
+ 
+     const double record_start_time = clock_get_monotonic_seconds();
++    gsr_cursor_track_printf("{\"record_start\":%.6f,\"framerate_mode\":\"%s\"}", record_start_time,
++        arg_parser.framerate_mode == GSR_FRAMERATE_MODE_CONSTANT ? "cfr" : (arg_parser.framerate_mode == GSR_FRAMERATE_MODE_VARIABLE ? "vfr" : "content"));
+ 
+     const size_t audio_buffer_size = audio_max_frame_size * 4 * 2; // max 4 bytes/sample, 2 channels
+     uint8_t *empty_audio = (uint8_t*)malloc(audio_buffer_size);
+diff --git a/src/pipewire_video.c b/src/pipewire_video.c
+index 077e733..17dfa23 100644
+--- a/src/pipewire_video.c
++++ b/src/pipewire_video.c
+@@ -9,6 +9,9 @@
+ #include <drm_fourcc.h>
+ 
+ #include <fcntl.h>
++#include <inttypes.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <unistd.h>
+ 
+ /* This code is partially based on xr-video-player pipewire implementation which is based on obs-studio's pipewire implementation */
+@@ -107,6 +110,163 @@ static bool is_cursor_format_supported(const enum spa_video_format format) {
+     return false;
+ }
+ 
++/* --- Cursor track (Fondaro patch, see gsr_cursor_track_enabled in utils.h) ---
++   One line per change: the hotspot position in stream pixels, the cursor shape (its pixels as RGBA in
++   base64 the first time a shape is seen, by a hash after that), hidden/shown, and the crop. Called from
++   the PipeWire thread for every dequeued buffer, so no position is lost when gsr skips a frame. */
++
++static void cursor_track_base64(const uint8_t *data, size_t size, char *out) {
++    static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
++    size_t o = 0;
++    for(size_t i = 0; i < size; i += 3) {
++        const uint32_t b0 = data[i];
++        const uint32_t b1 = i + 1 < size ? data[i + 1] : 0;
++        const uint32_t b2 = i + 2 < size ? data[i + 2] : 0;
++        const uint32_t v = (b0 << 16) | (b1 << 8) | b2;
++        out[o++] = alphabet[(v >> 18) & 63];
++        out[o++] = alphabet[(v >> 12) & 63];
++        out[o++] = i + 1 < size ? alphabet[(v >> 6) & 63] : '=';
++        out[o++] = i + 2 < size ? alphabet[v & 63] : '=';
++    }
++    out[o] = '\0';
++}
++
++/* Byte order of each 4-byte pixel as indices of r, g, b, a (-1: opaque). False if unsupported. */
++static bool cursor_track_layout(uint32_t format, int idx[4]) {
++    switch(format) {
++        case SPA_VIDEO_FORMAT_RGBA: idx[0] = 0; idx[1] = 1; idx[2] = 2; idx[3] = 3;  return true;
++        case SPA_VIDEO_FORMAT_BGRA: idx[0] = 2; idx[1] = 1; idx[2] = 0; idx[3] = 3;  return true;
++        case SPA_VIDEO_FORMAT_ARGB: idx[0] = 1; idx[1] = 2; idx[2] = 3; idx[3] = 0;  return true;
++        case SPA_VIDEO_FORMAT_ABGR: idx[0] = 3; idx[1] = 2; idx[2] = 1; idx[3] = 0;  return true;
++        case SPA_VIDEO_FORMAT_RGBx: idx[0] = 0; idx[1] = 1; idx[2] = 2; idx[3] = -1; return true;
++        case SPA_VIDEO_FORMAT_BGRx: idx[0] = 2; idx[1] = 1; idx[2] = 0; idx[3] = -1; return true;
++        default: return false;
++    }
++}
++
++static void cursor_track_shape(double t, const struct spa_meta_cursor *cursor, const struct spa_meta_bitmap *bitmap) {
++    static uint64_t seen[512];
++    static size_t num_seen = 0;
++    static uint64_t current = 0;
++    static bool current_valid = false;
++    static bool warned_format = false;
++
++    const uint32_t w = bitmap->size.width, h = bitmap->size.height;
++    if(w == 0 || h == 0) {
++        /* An empty sprite: the cursor is there but draws nothing (e.g. hidden while typing) */
++        if(!current_valid || current != 0) {
++            gsr_cursor_track_printf("{\"t\":%.6f,\"shape\":\"empty\"}", t);
++            current = 0;
++            current_valid = true;
++        }
++        return;
++    }
++
++    int idx[4];
++    if(w > 1024 || h > 1024 || bitmap->offset < sizeof(*bitmap) || !cursor_track_layout(bitmap->format, idx)) {
++        if(!warned_format) {
++            gsr_cursor_track_printf("{\"warning\":\"unsupported cursor bitmap: %ux%u format %u\"}", w, h, bitmap->format);
++            warned_format = true;
++        }
++        return;
++    }
++
++    const int32_t stride = bitmap->stride > 0 ? bitmap->stride : (int32_t)(w * 4);
++    const uint8_t *src = SPA_MEMBER(bitmap, bitmap->offset, const uint8_t);
++    const size_t rgba_size = (size_t)w * h * 4;
++    uint8_t *rgba = malloc(rgba_size);
++    if(!rgba)
++        return;
++    for(uint32_t y = 0; y < h; ++y) {
++        const uint8_t *row = src + (size_t)y * stride;
++        for(uint32_t x = 0; x < w; ++x) {
++            const uint8_t *px = row + x * 4;
++            uint8_t *out = rgba + ((size_t)y * w + x) * 4;
++            out[0] = px[idx[0]];
++            out[1] = px[idx[1]];
++            out[2] = px[idx[2]];
++            out[3] = idx[3] >= 0 ? px[idx[3]] : 255;
++        }
++    }
++
++    /* FNV-1a over the size, hotspot and pixels */
++    uint64_t hash = 1469598103934665603ULL;
++    const int32_t header[4] = { (int32_t)w, (int32_t)h, cursor->hotspot.x, cursor->hotspot.y };
++    for(size_t i = 0; i < sizeof(header); ++i) { hash ^= ((const uint8_t*)header)[i]; hash *= 1099511628211ULL; }
++    for(size_t i = 0; i < rgba_size; ++i) { hash ^= rgba[i]; hash *= 1099511628211ULL; }
++    if(hash == 0)
++        hash = 1;
++
++    bool known = false;
++    for(size_t i = 0; i < num_seen; ++i) {
++        if(seen[i] == hash) {
++            known = true;
++            break;
++        }
++    }
++
++    if(!known) {
++        char *b64 = malloc(((rgba_size + 2) / 3) * 4 + 1);
++        if(b64) {
++            cursor_track_base64(rgba, rgba_size, b64);
++            gsr_cursor_track_printf("{\"t\":%.6f,\"shape\":\"%016" PRIx64 "\",\"w\":%u,\"h\":%u,\"hotspot\":[%d,%d],\"rgba\":\"%s\"}",
++                t, hash, w, h, cursor->hotspot.x, cursor->hotspot.y, b64);
++            free(b64);
++            if(num_seen < sizeof(seen) / sizeof(seen[0]))
++                seen[num_seen++] = hash;
++        }
++    } else if(!current_valid || hash != current) {
++        gsr_cursor_track_printf("{\"t\":%.6f,\"shape\":\"%016" PRIx64 "\"}", t, hash);
++    }
++    current = hash;
++    current_valid = true;
++    free(rgba);
++}
++
++static void cursor_track_buffer(struct spa_buffer *buffer) {
++    static bool known = false;
++    static bool visible = false;
++    static int32_t last_x = 0, last_y = 0;
++    static struct spa_region last_crop;
++    static bool crop_known = false;
++
++    const double t = clock_get_monotonic_seconds();
++
++    const struct spa_meta_region *crop = spa_buffer_find_meta_data(buffer, SPA_META_VideoCrop, sizeof(*crop));
++    const bool crop_valid = crop && spa_meta_region_is_valid(crop);
++    if(crop_valid && (!crop_known || memcmp(&crop->region, &last_crop, sizeof(last_crop)) != 0)) {
++        gsr_cursor_track_printf("{\"t\":%.6f,\"crop\":[%d,%d,%u,%u]}", t,
++            crop->region.position.x, crop->region.position.y, crop->region.size.width, crop->region.size.height);
++        last_crop = crop->region;
++        crop_known = true;
++    }
++
++    const struct spa_meta_cursor *cursor = spa_buffer_find_meta_data(buffer, SPA_META_Cursor, sizeof(*cursor));
++    if(!cursor)
++        return;
++
++    if(!spa_meta_cursor_is_valid(cursor)) {
++        /* No cursor on this stream right now (on another output, or off the window) */
++        if(!known || visible)
++            gsr_cursor_track_printf("{\"t\":%.6f,\"hidden\":true}", t);
++        known = true;
++        visible = false;
++        return;
++    }
++
++    if(cursor->bitmap_offset >= sizeof(*cursor)) {
++        const struct spa_meta_bitmap *bitmap = SPA_MEMBER(cursor, cursor->bitmap_offset, struct spa_meta_bitmap);
++        cursor_track_shape(t, cursor, bitmap);
++    }
++
++    if(!known || !visible || cursor->position.x != last_x || cursor->position.y != last_y)
++        gsr_cursor_track_printf("{\"t\":%.6f,\"x\":%d,\"y\":%d}", t, cursor->position.x, cursor->position.y);
++    known = true;
++    visible = true;
++    last_x = cursor->position.x;
++    last_y = cursor->position.y;
++}
++
+ static const struct pw_core_events core_events = {
+     PW_VERSION_CORE_EVENTS,
+     .info = on_core_info_cb,
+@@ -123,6 +283,8 @@ static void on_process_cb(void *user_data) {
+         struct pw_buffer *aux = pw_stream_dequeue_buffer(self->stream);
+         if(!aux)
+             break;
++        if(gsr_cursor_track_enabled())
++            cursor_track_buffer(aux->buffer);
+         if(pw_buf)
+             pw_stream_queue_buffer(self->stream, pw_buf);
+         pw_buf = aux;
+@@ -286,6 +448,7 @@ static void on_param_changed_cb(void *user_data, uint32_t id, const struct spa_p
+     }
+ 
+     fprintf(stderr, "gsr info: pipewire:    Size: %dx%d\n", self->format.info.raw.size.width, self->format.info.raw.size.height);
++    gsr_cursor_track_printf("{\"t\":%.6f,\"size\":[%u,%u]}", clock_get_monotonic_seconds(), self->format.info.raw.size.width, self->format.info.raw.size.height);
+     fprintf(stderr, "gsr info: pipewire:    Framerate: %d/%d\n", self->format.info.raw.framerate.num, self->format.info.raw.framerate.denom);
+ 
+     uint8_t params_buffer[2048];
+diff --git a/src/utils.c b/src/utils.c
+index abe8354..b68001d 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -12,6 +12,8 @@
+ #include <sys/random.h>
+ #include <errno.h>
+ #include <assert.h>
++#include <stdarg.h>
++#include <pthread.h>
+ 
+ #include <xf86drmMode.h>
+ #include <xf86drm.h>
+@@ -22,6 +24,38 @@
+ 
+ #define DRM_NUM_BUF_ATTRS 4
+ 
++static pthread_once_t cursor_track_once = PTHREAD_ONCE_INIT;
++static pthread_mutex_t cursor_track_mutex = PTHREAD_MUTEX_INITIALIZER;
++static FILE *cursor_track_file = NULL;
++
++static void cursor_track_open(void) {
++    const char *path = getenv("GSR_CURSOR_TRACK");
++    if(!path || path[0] == '\0')
++        return;
++    cursor_track_file = fopen(path, "we");
++    if(!cursor_track_file)
++        fprintf(stderr, "gsr error: cursor track: failed to open %s: %s\n", path, strerror(errno));
++}
++
++bool gsr_cursor_track_enabled(void) {
++    pthread_once(&cursor_track_once, cursor_track_open);
++    return cursor_track_file != NULL;
++}
++
++void gsr_cursor_track_printf(const char *fmt, ...) {
++    if(!gsr_cursor_track_enabled())
++        return;
++    pthread_mutex_lock(&cursor_track_mutex);
++    va_list args;
++    va_start(args, fmt);
++    vfprintf(cursor_track_file, fmt, args);
++    va_end(args);
++    fputc('\n', cursor_track_file);
++    /* Line by line, so a crash keeps everything up to it */
++    fflush(cursor_track_file);
++    pthread_mutex_unlock(&cursor_track_mutex);
++}
++
+ double clock_get_monotonic_seconds(void) {
+     struct timespec ts;
+     ts.tv_sec = 0;

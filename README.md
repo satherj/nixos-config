@@ -14,6 +14,15 @@ Design rules for the shell (motion, materials, layout) and the reasoning behind 
 
 Taildrop (iPhone share sheet → Tailscale → thinkpad) lands in the same `~/Transfer`: the `taildrop-receive` user service pulls files out of tailscaled's inbox and shows the `xfer-notify` notification.
 
+## Screen recording
+
+Super+Shift+S (or Shift+PrtSc for the whole screen) records with `screenrec` (`pkgs/screenrec.py`), which writes `~/Videos/Recordings/Recording <date>.mp4` and, beside it, `Recording <date>.track.json`: the cursor (position and image, from niri's screencast cursor metadata), clicks (taps included), wheel scrolls and Ctrl/Alt/Super shortcuts, all on the video's timeline. Fondaro studio reads the track to suggest zooms and to draw a smoothed cursor and click rings (fondaro-studio `docs/screen-track.md`).
+
+- **The pieces:** gpu-screen-recorder with `patches/gpu-screen-recorder-cursor-track.patch` (asks the portal for the metadata cursor mode and logs it, with the monotonic time of the video's first frame, when `GSR_CURSOR_TRACK` is set), and `screenrec-input` (`pkgs/screenrec-input.py`), a socket-activated service that reads the input devices only while a recording is connected. Typing is never sent: only shortcuts made with Ctrl, Alt or Super.
+- **Capture menu switches:** *Track cursor & clicks* (default on), *Cursor in video* (default on; turn it off for recordings that go through studio, which then draws the cursor itself), *Record microphone* (lets studio sync the recording to a camera by sound) and *Record system sound*.
+- **First screen recording:** the portal asks which screen; the choice is remembered in `~/.local/state/screenrec/screen.token`. Delete that file to pick again.
+- Region recordings still use wf-recorder and have no track. If the track can't be built, `screenrec` keeps the raw `.cursor.jsonl` / `.input.jsonl` logs and `screenrec merge <video.mp4>` rebuilds it.
+
 ## Theming
 
 Colour presets are JSON files in [`themes/`](themes) (palette keys = Quickshell's `Theme.qml` tokens, plus `accent`, `barOpacity` (the glass opacity shared by the bar, panels and ghostty), `iconWeight` for menus (default bold) and `barIconWeight` for the bar (default fill)). The `theme` command (`pkgs/theme.nix`) renders them through [`themes/templates/`](themes/templates) into ghostty, niri borders and overview backdrop, GTK3/4, zathura and mpv (uosc), and writes the resolved preset to `~/.local/state/theme/current.json` last, which the shell watches.

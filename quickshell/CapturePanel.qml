@@ -104,18 +104,46 @@ ColumnLayout {
             onToggled: Capture.setCopyPath(!Capture.copyPath)
         }
     }
-    RowLayout {
+    component Setting: RowLayout {
+        property alias text: label.text
+        property alias checked: toggle.checked
+        signal toggled
         Layout.fillWidth: true
         StyledText {
+            id: label
             Layout.fillWidth: true
-            text: "Record system sound"
             color: Theme.subtext0
             font.pixelSize: 12
         }
         Toggle {
-            checked: Capture.recordAudio
-            onToggled: Capture.setRecordAudio(!Capture.recordAudio)
+            id: toggle
+            onToggled: parent.toggled()
         }
+    }
+
+    Setting {
+        text: "Record system sound"
+        checked: Capture.recordAudio
+        onToggled: Capture.setRecordAudio(!Capture.recordAudio)
+    }
+    // The mic lets post line a screen recording up with a camera by sound
+    Setting {
+        text: "Record microphone"
+        checked: Capture.recordMic
+        onToggled: Capture.setRecordMic(!Capture.recordMic)
+    }
+    // screenrec's .track.json (cursor, clicks, shortcuts) for zooms and cursor effects in post
+    Setting {
+        text: "Track cursor & clicks"
+        checked: Capture.trackInput
+        onToggled: Capture.setTrackInput(!Capture.trackInput)
+    }
+    // Off: the video has no cursor and post draws it from the track
+    Setting {
+        visible: Capture.trackInput
+        text: "Cursor in video"
+        checked: Capture.cursorInVideo
+        onToggled: Capture.setCursorInVideo(!Capture.cursorInVideo)
     }
 
     RowLayout {
