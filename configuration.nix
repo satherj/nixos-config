@@ -316,7 +316,13 @@ in
   # Lets mise-downloaded prebuilt binaries (node, etc.) run on NixOS
   programs.nix-ld.enable = true;
 
+  # 32-bit GL/Vulkan drivers for Wine/Proton (Battle.net via Lutris)
+  hardware.graphics.enable = true;
+  hardware.graphics.enable32Bit = true;
+
   environment.systemPackages = with pkgs; [
+    # Battle.net / WoW: Lutris (wraps Wine) has an install script for the Battle.net launcher
+    lutris
     # niri essentials; quickshell is the bar, launcher and notification daemon (see below)
     # swaylock stays only as an emergency fallback if the quickshell lock screen ever breaks
     ghostty quickshell swaylock swayidle xwayland-satellite wl-mirror
