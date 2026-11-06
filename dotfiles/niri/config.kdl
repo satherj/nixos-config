@@ -329,6 +329,13 @@ animations {
 // Find more information on the wiki:
 // https://niri-wm.github.io/niri/Configuration:-Window-Rules
 
+// GeForce NOW web app: open fullscreen at the compositor level. Not Chrome's --start-fullscreen,
+// which breaks Esc capture; the page's own fullscreen request is what enables Keyboard Lock.
+window-rule {
+    match app-id=r#"^chrome-play\.geforcenow\.com"#
+    open-fullscreen true
+}
+
 // Work around WezTerm's initial configure bug
 // by setting an empty default-column-width.
 window-rule {

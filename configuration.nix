@@ -424,7 +424,7 @@ in
     # (flags are ignored when joining an already-running Chrome); sign in once on first launch.
     (writeShellScriptBin "geforcenow" ''
       exec google-chrome-stable --user-data-dir="$HOME/.config/geforcenow-chrome" \
-        --app=https://play.geforcenow.com --start-fullscreen \
+        --app=https://play.geforcenow.com \
         --enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL \
         --ignore-gpu-blocklist "$@"
     '')
