@@ -329,11 +329,12 @@ animations {
 // Find more information on the wiki:
 // https://niri-wm.github.io/niri/Configuration:-Window-Rules
 
-// GeForce NOW web app: open fullscreen at the compositor level. Not Chrome's --start-fullscreen,
-// which breaks Esc capture; the page's own fullscreen request is what enables Keyboard Lock.
+// GeForce NOW web app: open maximized. Compositor/Chrome-level fullscreen (open-fullscreen,
+// --start-fullscreen) makes Chrome keep Esc for itself; only the page's own fullscreen request
+// enables Keyboard Lock so Esc reaches the game. Click the stream's fullscreen button once.
 window-rule {
     match app-id=r#"^chrome-play\.geforcenow\.com"#
-    open-fullscreen true
+    open-maximized true
 }
 
 // Work around WezTerm's initial configure bug
@@ -743,6 +744,11 @@ gestures {
     hot-corners {
         off
     }
+}
+
+// Lid closed: send the laptop panel's workspaces to the connected external monitor (see lid-close-move)
+switch-events {
+    lid-close { spawn "lid-close-move"; }
 }
 
 include "outputs.kdl"

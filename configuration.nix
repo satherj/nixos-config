@@ -420,11 +420,31 @@ in
       mimeTypes = [ "application/zip" "application/x-zip-compressed" ];
       noDisplay = true;
     })
+    # Lid closed (niri switch-events): move every workspace off the laptop panel onto the first
+    # other connected output. No-op when the laptop is the only display.
+    (writeShellScriptBin "lid-close-move" ''
+      jq=${jq}/bin/jq
+      panel=$(niri msg -j outputs | $jq -r 'keys[] | select(startswith("eDP"))' | head -n1)
+      target=$(niri msg -j outputs | $jq -r --arg p "$panel" 'keys[] | select(. != $p)' | head -n1)
+      [ -n "$panel" ] && [ -n "$target" ] || exit 0
+      # --reference numbers are per-output indexes, so move the focused workspace instead:
+      # focus the panel, move one workspace that has windows (empty ones have no active window), repeat.
+      for _ in 1 2 3 4 5 6 7 8 9 10; do
+        ws=$(niri msg -j workspaces | $jq -r --arg p "$panel" \
+          '[.[] | select(.output == $p and .active_window_id != null)] | sort_by(.idx) | .[0].idx // empty')
+        [ -n "$ws" ] || break
+        niri msg action focus-monitor "$panel"
+        niri msg action focus-workspace "$ws"
+        niri msg action move-workspace-to-monitor "$target"
+      done
+    '')
     # GeForce NOW as a fullscreen Chrome web app. Own profile so the VA-API decode flags apply
     # (flags are ignored when joining an already-running Chrome); sign in once on first launch.
     (writeShellScriptBin "geforcenow" ''
       exec google-chrome-stable --user-data-dir="$HOME/.config/geforcenow-chrome" \
-        --app=https://play.geforcenow.com \
+        --kiosk --app=https://play.geforcenow.com \
+        --disable-infobars --no-first-run --no-default-browser-check \
+        --disable-features=Translate,MediaRouter \
         --enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL \
         --ignore-gpu-blocklist "$@"
     '')
