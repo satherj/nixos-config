@@ -393,6 +393,7 @@ binds {
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
     Mod+Shift+Return hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable"; }
+    Mod+Shift+G hotkey-overlay-title="GeForce NOW" { spawn "geforcenow"; }
     Mod+D hotkey-overlay-title="Run an Application" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "toggle"; }
     Mod+Space hotkey-overlay-title="Run an Application" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "toggle"; }
     Mod+E hotkey-overlay-title="Open Files: nautilus" { spawn "nautilus" "--new-window"; }
@@ -678,6 +679,16 @@ binds {
 window-rule {
     geometry-corner-radius 10
     clip-to-geometry true
+}
+
+// Battle.net (Wine) opens a tiny untitled floating helper window (tray/notification host).
+// Make it invisible and keep it out of the way, in the bottom-right corner, never focused.
+window-rule {
+    match app-id=r#"^steam_app_default$"# title=r#"^$"#
+    open-floating true
+    open-focused false
+    opacity 0.0
+    default-floating-position x=0 y=0 relative-to="bottom-right"
 }
 
 // Bar click-popups (quickshell "More settings…"): small floating terminals under the bar, top-right

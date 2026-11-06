@@ -420,6 +420,21 @@ in
       mimeTypes = [ "application/zip" "application/x-zip-compressed" ];
       noDisplay = true;
     })
+    # GeForce NOW as a fullscreen Chrome web app. Own profile so the VA-API decode flags apply
+    # (flags are ignored when joining an already-running Chrome); sign in once on first launch.
+    (writeShellScriptBin "geforcenow" ''
+      exec google-chrome-stable --user-data-dir="$HOME/.config/geforcenow-chrome" \
+        --app=https://play.geforcenow.com --start-fullscreen \
+        --enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL \
+        --ignore-gpu-blocklist "$@"
+    '')
+    (makeDesktopItem {
+      name = "geforcenow";
+      desktopName = "GeForce NOW";
+      exec = "geforcenow";
+      icon = "applications-games";
+      categories = [ "Game" ];
+    })
   ];
 
   # Quickshell desktop shell (bar, wifi/bluetooth/battery panels, launcher, notifications).
