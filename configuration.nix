@@ -316,13 +316,11 @@ in
   # Lets mise-downloaded prebuilt binaries (node, etc.) run on NixOS
   programs.nix-ld.enable = true;
 
-  # 32-bit GL/Vulkan drivers for Wine/Proton (Battle.net via Lutris)
+  # 32-bit GL/Vulkan drivers for Wine/Proton
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
 
   environment.systemPackages = with pkgs; [
-    # Battle.net / WoW: Lutris (wraps Wine) has an install script for the Battle.net launcher
-    lutris
     # niri essentials; quickshell is the bar, launcher and notification daemon (see below)
     # swaylock stays only as an emergency fallback if the quickshell lock screen ever breaks
     ghostty quickshell swaylock swayidle xwayland-satellite wl-mirror
@@ -442,7 +440,7 @@ in
     # (flags are ignored when joining an already-running Chrome); sign in once on first launch.
     (writeShellScriptBin "geforcenow" ''
       exec google-chrome-stable --user-data-dir="$HOME/.config/geforcenow-chrome" \
-        --kiosk --app=https://play.geforcenow.com \
+        --app=https://play.geforcenow.com \
         --disable-infobars --no-first-run --no-default-browser-check \
         --disable-features=Translate,MediaRouter \
         --enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL \
