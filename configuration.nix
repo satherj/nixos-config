@@ -356,7 +356,7 @@ in
       (builtins.replaceStrings [ ''GSR = "gpu-screen-recorder"'' ]
         [ ''GSR = "${gpu-screen-recorder}/bin/gpu-screen-recorder"'' ]
         (builtins.readFile ./pkgs/screenrec.py)))
-    wl-clipboard brightnessctl wiremix bluetui adwaita-icon-theme
+    wl-clipboard wl-clip-persist brightnessctl wiremix bluetui adwaita-icon-theme
     apple-cursor  # cursors: "macOS" (black, white outline) and "macOS-White"
     # adw-gtk3 (recoloured per theme preset via gtk.css) for GTK3 apps + Papirus icons with Catppuccin folders
     adw-gtk3

@@ -278,6 +278,8 @@ layout {
 spawn-at-startup "theme" "apply"
 spawn-at-startup "qs" "-p" "/etc/quickshell"
 // Wallpaper is drawn by quickshell (Super+Space -> "wallpapers" to pick one)
+// Keep clipboard contents alive after the app/pane that copied them closes (Wayland drops them otherwise)
+spawn-at-startup "wl-clip-persist" "--clipboard" "regular"
 // Clipboard history for the launcher (Super+Alt+Space)
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
