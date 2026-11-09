@@ -3,6 +3,32 @@
 # Auto-login itself is set once in System Settings > Users & Groups (it needs the password).
 { pkgs, ... }:
 
+let
+  # Proton Drive (File Provider) evicts files to cloud-only placeholders. macOS only fetches one for a
+  # process whose dataless-materialization iopolicy is ON, and the system default is OFF, so anything
+  # launchd starts gets "Resource deadlock avoided" on them while Finder and Terminal.app work. This
+  # turns it ON and execs the command; children inherit it. It still downloads only what is read:
+  # listing a folder fetches names, opening a file fetches that file. `sysctl vfs.nspace.prevent_materialization`
+  # in a pane prints 0 when it's in effect.
+  materialize-on-demand = pkgs.writeCBin "materialize-on-demand" ''
+    #include <stdio.h>
+    #include <sys/resource.h>
+    #include <unistd.h>
+
+    int main(int argc, char **argv) {
+      if (argc < 2) {
+        fprintf(stderr, "usage: materialize-on-demand <command> [args...]\n");
+        return 2;
+      }
+      if (setiopolicy_np(IOPOL_TYPE_VFS_MATERIALIZE_DATALESS_FILES, IOPOL_SCOPE_PROCESS,
+                         IOPOL_MATERIALIZE_DATALESS_FILES_ON) != 0)
+        perror("materialize-on-demand: setiopolicy_np");
+      execvp(argv[1], argv + 1);
+      perror("materialize-on-demand: exec");
+      return 127;
+    }
+  '';
+in
 {
   nixpkgs.hostPlatform = "aarch64-darwin";
   nixpkgs.config.allowUnfree = true;
@@ -79,6 +105,11 @@
     ingress:
       - hostname: tunnel.fondaro.com
         service: http://127.0.0.1:3001
+      # Meta's WhatsApp webhook -> the eve program slot's ask member (slot 1, `eve start` on the tailnet
+      # address). Only the webhook path; the rest of the member stays off the internet.
+      - hostname: agent-staging.fondaro.com
+        path: ^/eve/v1/whatsapp$
+        service: http://100.115.201.48:3102
       - service: http_status:404
   '';
   # Runs as you (not root) from login; `launchctl kickstart -k gui/501/org.cloudflare.cloudflared` restarts it
@@ -96,10 +127,11 @@
   # herdr server, always up from login, so `herdr --remote mini` from the ThinkPad always finds it.
   # Started through a fish login shell: launchd's bare environment would leave panes without the
   # nix PATH, SHELL and mise. Logs: ~/.config/herdr/herdr-server.log. Versions come from nix, not `herdr update`.
+  # Through materialize-on-demand (top of this file), so panes can open Proton Drive's cloud-only files.
   launchd.user.agents.herdr = {
     serviceConfig = {
       Label = "org.herdr.server";
-      ProgramArguments = [ "/run/current-system/sw/bin/fish" "-l" "-c" "exec ${pkgs.herdr}/bin/herdr server" ];
+      ProgramArguments = [ "${materialize-on-demand}/bin/materialize-on-demand" "/run/current-system/sw/bin/fish" "-l" "-c" "exec ${pkgs.herdr}/bin/herdr server" ];
       EnvironmentVariables.SHELL = "/run/current-system/sw/bin/fish";
       WorkingDirectory = "/Users/mac-mini";
       RunAtLoad = true;
