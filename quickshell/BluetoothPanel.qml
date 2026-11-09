@@ -9,7 +9,14 @@ ColumnLayout {
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property bool on: adapter?.enabled ?? false
     // Paired devices first, then anything nearby that has a real name
-    readonly property var devices: adapter ? Array.from(adapter.devices.values).filter(d => d.paired || d.deviceName).sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired) || a.name.localeCompare(b.name)) : []
+    readonly property var all: adapter ? Array.from(adapter.devices.values) : []
+    // Some devices (e.g. Logitech Pebble) get a new address every time they're reset, which leaves
+    // dead bonds behind. A paired-but-idle device whose name matches a fresh unpaired one nearby is
+    // such a leftover: hide it, and forget it when the new one is paired.
+    function staleTwins(dev) {
+        return root.all.filter(d => d !== dev && d.paired && !d.connected && d.name === dev.name);
+    }
+    readonly property var devices: adapter ? root.all.filter(d => (d.paired || d.deviceName) && !(d.paired && !d.connected && root.all.some(o => !o.paired && o.deviceName && o.name === d.name))).sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired) || a.name.localeCompare(b.name)) : []
 
     spacing: 12
 
@@ -95,7 +102,8 @@ ColumnLayout {
                     : modelData.state === BluetoothDeviceState.Connecting ? "Connecting…"
                     : modelData.state === BluetoothDeviceState.Disconnecting ? "Disconnecting…"
                     : modelData.connected ? "Connected" + (modelData.batteryAvailable ? ` · ${Math.round(modelData.battery * 100)}%` : "")
-                    : modelData.paired ? "Paired" : ""
+                    : modelData.paired ? "Paired"
+                    : root.staleTwins(modelData).length > 0 ? "Ready to pair · replaces old pairing" : ""
 
                 onClicked: {
                     if (modelData.connected) {
@@ -105,6 +113,7 @@ ColumnLayout {
                         modelData.trusted = true;
                         modelData.connect();
                     } else {
+                        root.staleTwins(modelData).forEach(d => d.forget());
                         modelData.trusted = true;
                         modelData.pair();
                     }

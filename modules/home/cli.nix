@@ -12,6 +12,9 @@
     # images: magick (and montage for contact sheets), vips/vipsthumbnail for fast batch resizes, exiftool to read
     # dates and strip GPS before publishing, HEIC from iPhones, ffmpeg for video, PNG squeezers, czkawka_cli for near-duplicates
     imagemagick vips exiftool libheif ffmpeg-headless oxipng pngquant czkawka
+    # YouTube uploads from the shell (Chrome's uploader keeps erroring). Needs OAuth creds:
+    # ~/.config/youtubeuploader/client_secrets.json (Google Cloud, YouTube Data API v3, Desktop app client)
+    youtubeuploader
   ];
 
   # Self-updating installs live in ~/.local/bin (Claude Code's native installer: ~/.local/bin/claude).
