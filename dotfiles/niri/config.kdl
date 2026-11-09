@@ -280,6 +280,9 @@ spawn-at-startup "qs" "-p" "/etc/quickshell"
 // Wallpaper is drawn by quickshell (Super+Space -> "wallpapers" to pick one)
 // Keep clipboard contents alive after the app/pane that copied them closes (Wayland drops them otherwise)
 spawn-at-startup "wl-clip-persist" "--clipboard" "regular"
+// Some copy sources (terminal selections) end the text with a NUL byte, which breaks pasting into
+// YouTube titles and the like. Strip NULs from every text copy (the re-copy has none, so no loop).
+spawn-at-startup "wl-paste" "--type" "text" "--watch" "sh" "-c" r#"f=$(mktemp); cat >"$f"; tr -d '\000' <"$f" | cmp -s - "$f" || tr -d '\000' <"$f" | wl-copy; rm -f "$f""#
 // Clipboard history for the launcher (Super+Alt+Space)
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
