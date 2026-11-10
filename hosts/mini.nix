@@ -103,6 +103,12 @@ in
     credentials-file: /Users/mac-mini/.cloudflared/996b297a-f9a0-4721-85f5-38990859e4a6.json
     no-autoupdate: true
     ingress:
+      # While the eve program runs (main paused): Unipile's webhooks (mail, inbox events) go to the
+      # program slot's API (slot 1) instead of main's, so email to Fondaro can be tested there.
+      # Remove this rule when program/eve merges into main.
+      - hostname: tunnel.fondaro.com
+        path: ^/webhooks/unipile(/.*)?$
+        service: http://100.115.201.48:3101
       - hostname: tunnel.fondaro.com
         service: http://127.0.0.1:3001
       # Meta's WhatsApp webhook -> the eve program slot's ask member (slot 1, `eve start` on the tailnet
