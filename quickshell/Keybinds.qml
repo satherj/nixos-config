@@ -11,7 +11,7 @@ Singleton {
     property var entries: []   // [{ title, category, combos: [["Super", "←"], ...], run }]
 
     readonly property var keyNames: ({
-        Mod: "Super", Super: "Super", Ctrl: "Ctrl", Control: "Ctrl", Alt: "Alt", Shift: "Shift",
+        Mod: "Super", Super: "Super", Ctrl: "Ctrl", Control: "Ctrl", Alt: "Alt", ISO_Level3_Shift: "Alt", Shift: "Shift",
         Slash: "/", Comma: ",", Period: ".", Minus: "-", Equal: "=", BracketLeft: "[", BracketRight: "]",
         Page_Down: "PgDn", Page_Up: "PgUp", Return: "Enter", Escape: "Esc", Print: "PrtSc", Space: "Space",
         Left: "←", Right: "→", Up: "↑", Down: "↓",

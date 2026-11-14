@@ -81,6 +81,23 @@ in
   }];
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
+  # Flatpak, used for NVIDIA's native GeForce NOW app (4K on Ultimate; the browser version caps lower).
+  # NVIDIA ships it from its own repo, not Flathub; its runtime comes from Flathub.
+  services.flatpak.enable = true;
+  systemd.services.geforcenow-install = {
+    description = "Install the GeForce NOW Flatpak";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    path = [ pkgs.flatpak ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      flatpak remote-add --if-not-exists GeForceNOW https://international.download.nvidia.com/GFNLinux/flatpak/geforcenow.flatpakrepo
+      flatpak install -y --noninteractive GeForceNOW com.nvidia.geforcenow
+    '';
+  };
+
   services.tailscale.enable = true;
   # Operator lets the user run `tailscale file get` (and up/down/set) without sudo, for taildrop-receive below
   services.tailscale.extraSetFlags = [ "--operator=jonathans" ];
@@ -436,23 +453,6 @@ in
         niri msg action move-workspace-to-monitor "$target"
       done
     '')
-    # GeForce NOW as a fullscreen Chrome web app. Own profile so the VA-API decode flags apply
-    # (flags are ignored when joining an already-running Chrome); sign in once on first launch.
-    (writeShellScriptBin "geforcenow" ''
-      exec google-chrome-stable --user-data-dir="$HOME/.config/geforcenow-chrome" \
-        --app=https://play.geforcenow.com \
-        --disable-infobars --no-first-run --no-default-browser-check \
-        --disable-features=Translate,MediaRouter \
-        --enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL \
-        --ignore-gpu-blocklist "$@"
-    '')
-    (makeDesktopItem {
-      name = "geforcenow";
-      desktopName = "GeForce NOW";
-      exec = "geforcenow";
-      icon = "applications-games";
-      categories = [ "Game" ];
-    })
   ];
 
   # Quickshell desktop shell (bar, wifi/bluetooth/battery panels, launcher, notifications).

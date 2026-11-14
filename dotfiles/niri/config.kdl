@@ -14,6 +14,9 @@ input {
 
             // For example:
             layout "swerty,us"
+            // Left Alt is AltGr (Swerty quotes/brackets/;). The Aula F75 has no right Alt, so niri binds
+            // that used Alt use its xkb name ISO_Level3_Shift instead.
+            options "lv3:lalt_switch"
             // Mod+Shift+Space toggles between Swerty and US (Swedish letters on å/ä/ö keys)
             // layout "us,ru"
             // options "grp:win_space_toggle,compose:ralt,ctrl:nocaps"
@@ -334,11 +337,9 @@ animations {
 // Find more information on the wiki:
 // https://niri-wm.github.io/niri/Configuration:-Window-Rules
 
-// GeForce NOW web app: open maximized. Compositor/Chrome-level fullscreen (open-fullscreen,
-// --start-fullscreen) makes Chrome keep Esc for itself; only the page's own fullscreen request
-// enables Keyboard Lock so Esc reaches the game. Click the stream's fullscreen button once.
+// GeForce NOW (native Flatpak app): open maximized.
 window-rule {
-    match app-id=r#"^chrome-play\.geforcenow\.com"#
+    match app-id=r#"^com\.nvidia\.geforcenow"#
     open-maximized true
 }
 
@@ -399,23 +400,23 @@ binds {
     // Mod-Shift-/, which is usually the same as Mod-?,
     // shows a list of important hotkeys.
     Mod+Shift+Slash hotkey-overlay-title="Keyboard shortcuts" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "keybinds"; }
-    Mod+Alt+Space hotkey-overlay-title="Clipboard history" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "clipboard"; }
+    Mod+ISO_Level3_Shift+Space hotkey-overlay-title="Clipboard history" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "clipboard"; }
     Mod+Ctrl+Space hotkey-overlay-title="Emoji" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "emoji"; }
     Mod+Shift+S hotkey-overlay-title="Screenshot & recording menu" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "panel" "toggle" "capture"; }
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
     Mod+Shift+Return hotkey-overlay-title="Open Browser: chrome" { spawn "google-chrome-stable"; }
-    Mod+Shift+G hotkey-overlay-title="GeForce NOW" { spawn "geforcenow"; }
+    Mod+Shift+G hotkey-overlay-title="GeForce NOW" { spawn "flatpak" "run" "com.nvidia.geforcenow"; }
     Mod+D hotkey-overlay-title="Run an Application" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "toggle"; }
     Mod+Space hotkey-overlay-title="Run an Application" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "launcher" "toggle"; }
     Mod+E hotkey-overlay-title="Open Files: nautilus" { spawn "nautilus" "--new-window"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "lock" "lock"; }
+    Super+ISO_Level3_Shift+L hotkey-overlay-title="Lock the Screen" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "lock" "lock"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
     // For example, this is a standard bind to toggle the screen reader (orca).
-    Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
+    Super+ISO_Level3_Shift+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 
     // Example volume keys mappings for PipeWire & WirePlumber.
     // The allow-when-locked=true property makes them work even when the session is locked.
@@ -618,7 +619,7 @@ binds {
     // Makes the column "fill the rest of the space".
     Mod+Ctrl+F { expand-column-to-available-width; }
 
-    Mod+Alt+C { center-column; }
+    Mod+ISO_Level3_Shift+C { center-column; }
 
     // Center all fully visible columns on screen.
     Mod+Ctrl+C { center-visible-columns; }
@@ -639,13 +640,13 @@ binds {
     Mod+Shift+Equal { set-window-height "+10%"; }
 
     // Move the focused window between the floating and the tiling layout.
-    Mod+Alt+V   { toggle-window-floating; }
+    Mod+ISO_Level3_Shift+V   { toggle-window-floating; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
 
     // Toggle tabbed column display mode.
     // Windows in this column will appear as vertical tabs,
     // rather than stacked on top of each other.
-    Mod+Alt+W { toggle-column-tabbed-display; }
+    Mod+ISO_Level3_Shift+W { toggle-column-tabbed-display; }
 
     // Actions to switch layouts.
     // Note: if you uncomment these, make sure you do NOT have
@@ -660,7 +661,7 @@ binds {
     // If the shell is not running, they fall back to niri's own tools.
     Print hotkey-overlay-title="Screenshot" { spawn-sh "[ -z \"$(qs ipc -p /etc/quickshell call screenshot region 2>&1)\" ] || niri msg action screenshot"; }
     Ctrl+Print { screenshot-screen; }
-    Alt+Print hotkey-overlay-title="Screenshot a window" { spawn-sh "[ -z \"$(qs ipc -p /etc/quickshell call screenshot window 2>&1)\" ] || niri msg action screenshot-window"; }
+    ISO_Level3_Shift+Print hotkey-overlay-title="Screenshot a window" { spawn-sh "[ -z \"$(qs ipc -p /etc/quickshell call screenshot window 2>&1)\" ] || niri msg action screenshot-window"; }
     Shift+Print hotkey-overlay-title="Start / stop recording" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "recording" "toggle"; }
     Ctrl+Shift+Print hotkey-overlay-title="Discard recording" { spawn "qs" "ipc" "-p" "/etc/quickshell" "call" "recording" "discard"; }
 
@@ -676,7 +677,7 @@ binds {
 
     // The quit action will show a confirmation dialog to avoid accidental exits.
     Mod+Shift+E { quit; }
-    Ctrl+Alt+Delete { quit; }
+    Ctrl+ISO_Level3_Shift+Delete { quit; }
 
     // Powers off the monitors. To turn them back on, do any input like
     // moving the mouse or pressing any other key.
@@ -751,9 +752,12 @@ gestures {
     }
 }
 
-// Lid closed: send the laptop panel's workspaces to the connected external monitor (see lid-close-move)
+// Lid closed: send the laptop panel's workspaces to the connected external monitor (see lid-close-move).
+// niri turns eDP off on lid close and parks its workspaces on DP temporarily, but returns them to eDP
+// when the lid opens. So also run the move on lid-open (after eDP is back) to keep them on the monitor.
 switch-events {
     lid-close { spawn "lid-close-move"; }
+    lid-open { spawn "sh" "-c" "sleep 1; lid-close-move"; }
 }
 
 include "outputs.kdl"
